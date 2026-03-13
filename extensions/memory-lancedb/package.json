@@ -1,0 +1,17 @@
+{
+  "name": "@openaeon/memory-lancedb",
+  "version": "2026.3.1",
+  "private": true,
+  "description": "OpenAEON LanceDB-backed long-term memory plugin with auto-recall/capture",
+  "type": "module",
+  "dependencies": {
+    "@lancedb/lancedb": "^0.26.2",
+    "@sinclair/typebox": "0.34.48",
+    "openai": "^6.25.0"
+  },
+  "openaeon": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

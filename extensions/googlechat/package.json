@@ -1,0 +1,36 @@
+{
+  "name": "@openaeon/googlechat",
+  "version": "2026.3.1",
+  "private": true,
+  "description": "OpenAEON Google Chat channel plugin",
+  "type": "module",
+  "dependencies": {
+    "google-auth-library": "^10.6.1"
+  },
+  "peerDependencies": {
+  },
+  "openaeon": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "channel": {
+      "id": "googlechat",
+      "label": "Google Chat",
+      "selectionLabel": "Google Chat (Chat API)",
+      "detailLabel": "Google Chat",
+      "docsPath": "/channels/googlechat",
+      "docsLabel": "googlechat",
+      "blurb": "Google Workspace Chat app via HTTP webhooks.",
+      "aliases": [
+        "gchat",
+        "google-chat"
+      ],
+      "order": 55
+    },
+    "install": {
+      "npmSpec": "@openaeon/googlechat",
+      "localPath": "extensions/googlechat",
+      "defaultChoice": "npm"
+    }
+  }
+}

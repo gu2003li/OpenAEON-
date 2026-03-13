@@ -1,0 +1,12 @@
+{
+  "name": "@openaeon/whatsapp",
+  "version": "2026.3.1",
+  "private": true,
+  "description": "OpenAEON WhatsApp channel plugin",
+  "type": "module",
+  "openaeon": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

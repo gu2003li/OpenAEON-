@@ -1,0 +1,71 @@
+{
+  "agents": {
+    "list": [
+      {
+        "id": "leader-agent",
+        "default": true,
+        "name": "帮主 (LeaderAgent)",
+        "model": "gpt-4o",
+        "tools": { "allowlist": ["sessions_spawn", "write_todos", "read", "write", "exec", "web_search"] },
+        "subagents": { "allowAgents": ["*"] }
+      },
+      {
+        "id": "law-agent",
+        "name": "执法长老 (LawAgent)",
+        "model": "gpt-4o",
+        "tools": { "allowlist": ["read", "write_todos", "exec"] }
+      },
+      {
+        "id": "skill-agent",
+        "name": "传功长老 (SkillAgent)",
+        "model": "gpt-4o",
+        "tools": { "allowlist": ["read", "web_search", "exec"] }
+      },
+      {
+        "id": "guard-agent",
+        "name": "掌棒龙头 (GuardAgent)",
+        "model": "gpt-4o",
+        "tools": { "allowlist": ["exec", "web_search"] }
+      },
+      {
+        "id": "resource-agent",
+        "name": "掌钵龙头 (ResourceAgent)",
+        "model": "gpt-4o",
+        "tools": { "allowlist": ["read", "write", "web_search"] }
+      },
+      {
+        "id": "area-agent",
+        "name": "分舵主 (AreaAgent)",
+        "model": "gpt-4o",
+        "tools": { "allowlist": ["sessions_spawn", "read", "write", "exec", "web_search"] }
+      },
+      {
+        "id": "elite-agent",
+        "name": "香主 (EliteAgent)",
+        "model": "gpt-4o-mini",
+        "tools": { "allowlist": ["web_search", "read", "write", "exec"] }
+      },
+      {
+        "id": "member-agent",
+        "name": "弟子 (MemberAgent)",
+        "model": "gpt-4o-mini",
+        "tools": { "allowlist": ["web_search", "exec"] }
+      },
+      {
+        "id": "reserve-agent",
+        "name": "无袋弟子 (ReserveAgent)",
+        "model": "gpt-4o-mini",
+        "tools": { "allowlist": ["web_search", "read"] }
+      }
+    ]
+  },
+  "approvals": {
+    "exec": {
+      "requireApproval": true,
+      "allowlist": ["echo", "ls", "cat", "git status"]
+    },
+    "sessions_spawn": {
+      "requireApproval": false
+    }
+  }
+}

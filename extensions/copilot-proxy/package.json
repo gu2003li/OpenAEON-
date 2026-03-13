@@ -1,0 +1,12 @@
+{
+  "name": "@openaeon/copilot-proxy",
+  "version": "2026.3.1",
+  "private": true,
+  "description": "OpenAEON Copilot Proxy provider plugin",
+  "type": "module",
+  "openaeon": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

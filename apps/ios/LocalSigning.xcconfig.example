@@ -1,0 +1,14 @@
+// Copy to LocalSigning.xcconfig for personal local signing overrides.
+// This file is only an example and should stay committed.
+
+OPENAEON_CODE_SIGN_STYLE = Automatic
+OPENAEON_DEVELOPMENT_TEAM = P5Z8X89DJL
+
+OPENAEON_APP_BUNDLE_ID = ai.openaeon.ios.test.mariano
+OPENAEON_SHARE_BUNDLE_ID = ai.openaeon.ios.test.mariano.share
+OPENAEON_WATCH_APP_BUNDLE_ID = ai.openaeon.ios.test.mariano.watchkitapp
+OPENAEON_WATCH_EXTENSION_BUNDLE_ID = ai.openaeon.ios.test.mariano.watchkitapp.extension
+
+// Leave empty with automatic signing.
+OPENAEON_APP_PROFILE =
+OPENAEON_SHARE_PROFILE =

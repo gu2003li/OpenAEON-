@@ -1,0 +1,28 @@
+# OpenAEON gateway — Podman Quadlet (rootless)
+# Installed by setup-podman.sh into openaeon's ~/.config/containers/systemd/
+# {{OPENAEON_HOME}} is replaced at install time.
+
+[Unit]
+Description=OpenAEON gateway (rootless Podman)
+
+[Container]
+Image=openaeon:local
+ContainerName=openaeon
+UserNS=keep-id
+# Keep container UID/GID aligned with the invoking user so mounted config is readable.
+User=%U:%G
+Volume={{OPENAEON_HOME}}/.openaeon:/home/node/.openaeon
+EnvironmentFile={{OPENAEON_HOME}}/.openaeon/.env
+Environment=HOME=/home/node
+Environment=TERM=xterm-256color
+PublishPort=18789:18789
+PublishPort=18790:18790
+Pull=never
+Exec=node dist/index.js gateway --bind lan --port 18789
+
+[Service]
+TimeoutStartSec=300
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

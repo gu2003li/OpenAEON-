@@ -1,0 +1,21 @@
+extensions/diffs/src/render.ts(1,73): error TS2307: Cannot find module '@pierre/diffs' or its corresponding type declarations.
+extensions/diffs/src/render.ts(2,33): error TS2307: Cannot find module '@pierre/diffs' or its corresponding type declarations.
+extensions/diffs/src/render.ts(3,55): error TS2307: Cannot find module '@pierre/diffs/ssr' or its corresponding type declarations.
+extensions/diffs/src/render.ts(310,55): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+extensions/diffs/src/render.ts(317,22): error TS7006: Parameter 'fileDiff' implicitly has an 'any' type.
+extensions/diffs/src/types.ts(1,73): error TS2307: Cannot find module '@pierre/diffs' or its corresponding type declarations.
+extensions/diffs/src/viewer-client.ts(1,46): error TS2307: Cannot find module '@pierre/diffs' or its corresponding type declarations.
+extensions/diffs/src/viewer-client.ts(7,8): error TS2307: Cannot find module '@pierre/diffs' or its corresponding type declarations.
+src/agents/models-config.providers.ollama-autodiscovery.test.ts(37,24): error TS2352: Conversion of type 'Mock<Procedure>' to type 'typeof fetch' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'preconnect' is missing in type 'MockInstance<Procedure> & { (...args: any[]): any; new (...args: any[]): any; } & {}' but required in type 'typeof fetch'.
+src/agents/models-config.providers.ollama-autodiscovery.test.ts(65,24): error TS2352: Conversion of type 'Mock<Procedure>' to type 'typeof fetch' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'preconnect' is missing in type 'MockInstance<Procedure> & { (...args: any[]): any; new (...args: any[]): any; } & {}' but required in type 'typeof fetch'.
+src/agents/models-config.providers.ollama-autodiscovery.test.ts(83,24): error TS2352: Conversion of type 'Mock<Procedure>' to type 'typeof fetch' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'preconnect' is missing in type 'MockInstance<Procedure> & { (...args: any[]): any; new (...args: any[]): any; } & {}' but required in type 'typeof fetch'.
+src/commands/auth-choice.apply.deepseek-web.ts(82,9): error TS2353: Object literal may only specify known properties, and 'hint' does not exist in type 'WizardTextParams'.
+src/commands/auth-choice.apply.deepseek-web.ts(119,11): error TS2353: Object literal may only specify known properties, and 'hint' does not exist in type 'WizardTextParams'.
+src/providers/deepseek-web-auth.ts(43,7): error TS2561: Object literal may only specify known properties, but 'wsHeaders' does not exist in type 'ConnectOverCDPOptions'. Did you mean to write 'headers'?
+ui/src/ui/controllers/chat.test.ts(5,3): error TS2322: Type '{ client: GatewayBrowserClient | null; connected: boolean; sessionKey: string; chatLoading: boolean; chatMessages: unknown[]; chatThinkingLevel: string | null; ... 7 more ...; lastError: string | null; }' is not assignable to type 'ChatState'.
+  Types of property 'chatStreamThinking' are incompatible.
+    Type 'string | null | undefined' is not assignable to type 'string | null'.
+      Type 'undefined' is not assignable to type 'string | null'.

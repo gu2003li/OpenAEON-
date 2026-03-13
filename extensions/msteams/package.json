@@ -1,0 +1,32 @@
+{
+  "name": "@openaeon/msteams",
+  "version": "2026.3.1",
+  "description": "OpenAEON Microsoft Teams channel plugin",
+  "type": "module",
+  "dependencies": {
+    "@microsoft/agents-hosting": "^1.3.1",
+    "express": "^5.2.1"
+  },
+  "openaeon": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "channel": {
+      "id": "msteams",
+      "label": "Microsoft Teams",
+      "selectionLabel": "Microsoft Teams (Bot Framework)",
+      "docsPath": "/channels/msteams",
+      "docsLabel": "msteams",
+      "blurb": "Bot Framework; enterprise support.",
+      "aliases": [
+        "teams"
+      ],
+      "order": 60
+    },
+    "install": {
+      "npmSpec": "@openaeon/msteams",
+      "localPath": "extensions/msteams",
+      "defaultChoice": "npm"
+    }
+  }
+}
