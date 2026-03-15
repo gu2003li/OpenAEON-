@@ -1,4 +1,5 @@
 import { defineConfig } from "tsdown";
+import pkg from "./package.json" with { type: "json" };
 
 const env = {
   NODE_ENV: "production",
@@ -26,4 +27,6 @@ export default defineConfig({
   minify: false,
   hash: false,
   clean: true,
+  unbundle: true,
+  external: Object.keys(pkg.dependencies || {}),
 });

@@ -31,6 +31,9 @@ const excludedDirs = [
   ".artifacts",
   "docs/zh-CN",
   "vendor/a2ui/renderers/lit/dist",
+  "assets",
+  "tmp",
+  "temp",
 ];
 
 const shouldSelect = (filePath) => {
