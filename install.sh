@@ -1659,19 +1659,35 @@ run_pnpm() {
     "${PNPM_CMD[@]}" "$@"
 }
 
-ensure_user_local_bin_on_path() {
-    local target="$HOME/.local/bin"
+ensure_bin_on_path() {
+    local target="$1"
+    if [[ -z "$target" ]]; then
+        return 0
+    fi
     mkdir -p "$target"
 
-    export PATH="$target:$PATH"
+    if [[ ":$PATH:" != *":$target:"* ]]; then
+        export PATH="$target:$PATH"
+    fi
 
-    # shellcheck disable=SC2016
-    local path_line='export PATH="$HOME/.local/bin:$PATH"'
+    # Escape $HOME for the RC files if it starts with /Users/ or /home/
+    local path_line
+    if [[ "$target" == "$HOME"* ]]; then
+        local relative_target="${target#$HOME/}"
+        path_line='export PATH="$HOME/'"${relative_target}"':$PATH"'
+    else
+        path_line='export PATH="'"${target}"':$PATH"'
+    fi
+
     for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
-        if [[ -f "$rc" ]] && ! grep -q ".local/bin" "$rc"; then
+        if [[ -f "$rc" ]] && ! grep -q "$target" "$rc"; then
             echo "$path_line" >> "$rc"
         fi
     done
+}
+
+ensure_user_local_bin_on_path() {
+    ensure_bin_on_path "$HOME/.local/bin"
 }
 
 npm_global_bin_dir() {
@@ -1755,25 +1771,31 @@ warn_openaeon_not_found() {
         echo -e "Using nodenv? Run: ${INFO}nodenv rehash${NC}"
     fi
 
-    local npm_prefix=""
-    npm_prefix="$(npm prefix -g 2>/dev/null || true)"
-    local npm_bin=""
-    npm_bin="$(npm_global_bin_dir 2>/dev/null || true)"
-    if [[ -n "$npm_prefix" ]]; then
-        echo -e "npm prefix -g: ${INFO}${npm_prefix}${NC}"
+    local bin_dir=""
+    if [[ "$INSTALL_METHOD" == "git" ]]; then
+        bin_dir="${PREFIX:-$HOME/.openaeon}/bin"
+    else
+        bin_dir="$(npm_global_bin_dir 2>/dev/null || true)"
     fi
-    if [[ -n "$npm_bin" ]]; then
-        echo -e "npm bin -g: ${INFO}${npm_bin}${NC}"
-        echo -e "If needed: ${INFO}export PATH=\"${npm_bin}:\\$PATH\"${NC}"
+
+    if [[ -n "$bin_dir" ]]; then
+        echo -e "Binary location: ${INFO}${bin_dir}${NC}"
+        # shellcheck disable=SC2016
+        echo -e "If needed: ${INFO}export PATH=\"${bin_dir}:"'$PATH"'${NC}
     fi
 }
 
 resolve_openaeon_bin() {
     refresh_shell_command_cache
-    local resolved=""
     resolved="$(type -P openaeon 2>/dev/null || true)"
     if [[ -n "$resolved" && -x "$resolved" ]]; then
         echo "$resolved"
+        return 0
+    fi
+
+    local git_bin="${PREFIX:-$HOME/.openaeon}/bin/openaeon"
+    if [[ -x "$git_bin" ]]; then
+        echo "$git_bin"
         return 0
     fi
 
@@ -1856,6 +1878,7 @@ set -euo pipefail
 exec node "${repo_dir}/dist/entry.js" "\$@"
 EOF
     chmod +x "$bin_dir/openaeon"
+    ensure_bin_on_path "$bin_dir"
     ui_success "OpenAEON wrapper installed to $bin_dir/openaeon"
     ui_info "This checkout uses pnpm — run pnpm install (or corepack pnpm install) for deps"
 }
@@ -2282,7 +2305,7 @@ main() {
     if [[ "$INSTALL_METHOD" == "git" && -n "$final_git_dir" ]]; then
         ui_section "Source install details"
         ui_kv "Checkout" "$final_git_dir"
-        ui_kv "Wrapper" "$HOME/.local/bin/openaeon"
+        ui_kv "Wrapper" "${PREFIX:-$HOME/.openaeon}/bin/openaeon"
         ui_kv "Update command" "openaeon update --restart"
         ui_kv "Switch to npm" "curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- --install-method npm"
     elif [[ "$is_upgrade" == "true" ]]; then
