@@ -1456,12 +1456,21 @@ install_node() {
 
 # Check Git
 check_git() {
-    if command -v git &> /dev/null; then
-        ui_success "Git already installed"
-        return 0
+    if ! command -v git &> /dev/null; then
+        ui_info "Git not found, installing it now"
+        return 1
     fi
-    ui_info "Git not found, installing it now"
-    return 1
+
+    # On macOS, git might be a shim that triggers xcode-select or requires a license
+    if [[ "$OS" == "macos" ]]; then
+        if ! xcode-select -p &>/dev/null; then
+            ui_warn "Git found but Xcode developer tools are not configured"
+            return 1
+        fi
+    fi
+
+    ui_success "Git already installed"
+    return 0
 }
 
 is_root() {
@@ -1502,7 +1511,15 @@ require_sudo() {
 
 install_git() {
     if [[ "$OS" == "macos" ]]; then
-        run_quiet_step "Installing Git" brew install git
+        if command -v brew &> /dev/null; then
+            run_quiet_step "Installing Git" brew install git
+        else
+            ui_info "Attempting to trigger Xcode Command Line Tools installation..."
+            xcode-select --install &>/dev/null || true
+            ui_warn "Homebrew not found and Xcode tools are not configured."
+            ui_info "Please follow the macOS dialog to install developer tools, then re-run this script."
+            exit 1
+        fi
     elif [[ "$OS" == "linux" ]]; then
         require_sudo
         if command -v apt-get &> /dev/null; then
@@ -1653,7 +1670,7 @@ ensure_pnpm() {
         ui_info "Configuring pnpm via Corepack"
         corepack enable >/dev/null 2>&1 || true
         if ! run_quiet_step "Activating pnpm" corepack prepare pnpm@10 --activate; then
-            ui_warn "Corepack pnpm activation failed; falling back"
+            ui_warn "Corepack pnpm activation failed (possibly due to signature verification); falling back to npm install"
         fi
         refresh_shell_command_cache
         if detect_pnpm_cmd && pnpm_cmd_is_ready; then
