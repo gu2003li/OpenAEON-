@@ -2084,7 +2084,7 @@ run_bootstrap_onboarding_if_needed() {
     fi
 
     if [[ ! -r /dev/tty || ! -w /dev/tty ]]; then
-        ui_info "BOOTSTRAP.md found but no TTY; run openaeon onboard to finish setup"
+        ui_info "BOOTSTRAP.md found but no TTY; run openaeon onboard --install-daemon to finish setup"
         return
     fi
 
@@ -2099,8 +2099,8 @@ run_bootstrap_onboarding_if_needed() {
         return
     fi
 
-    "$claw" onboard || {
-        ui_error "Onboarding failed; run openaeon onboard to retry"
+    "$claw" onboard --install-daemon || {
+        ui_error "Onboarding failed; run openaeon onboard --install-daemon to retry"
         return
     }
 }
@@ -2425,7 +2425,7 @@ main() {
         fi
     else
         if [[ "$NO_ONBOARD" == "1" || "$skip_onboard" == "true" ]]; then
-            ui_info "Skipping onboard (requested); run openaeon onboard later"
+            ui_info "Skipping onboard (requested); run openaeon onboard --install-daemon later"
         else
             local config_path="${OPENAEON_CONFIG_PATH:-$HOME/.openaeon.json}"
             if [[ -f "${config_path}" || -f "$HOME/.clawdbot/clawdbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
@@ -2448,9 +2448,9 @@ main() {
                     return 0
                 fi
                 exec </dev/tty
-                exec "$claw" onboard
+                exec "$claw" onboard --install-daemon
             fi
-            ui_info "No TTY; run openaeon onboard to finish setup"
+            ui_info "No TTY; run openaeon onboard --install-daemon to finish setup"
             return 0
         fi
     fi
