@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # OpenAEON Installer for macOS and Linux
-# Usage: curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/luolin-ai.openaeonWeComzh/main/install.sh | bash
+# Usage: curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash
 
 BOLD='\033[1m'
 ACCENT='\033[38;2;255;77;77m'       # coral-bright  #ff4d4d
@@ -1788,7 +1788,7 @@ resolve_openaeon_bin() {
 
 install_openaeon_from_git() {
     local repo_dir="$1"
-    local repo_url="https://github.com/luolin-ai.openaeonWeComzh.git"
+    local repo_url="https://github.com/openaeon/OpenAEON.git"
 
     if [[ -d "$repo_dir/.git" ]]; then
         ui_info "Installing OpenAEON from git checkout: ${repo_dir}"
