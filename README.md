@@ -177,3 +177,13 @@ Built upon the foundations of [OpenClaw](https://github.com/openaeon/OpenAEON).
 ### **Convergence is the only outcome. 🎯**
 
 ### **收敛是唯一的结局。🎯**
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=openaeon%2FOpenAEON&type=timeline&logscale=&legend=bottom-right">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=openaeon/OpenAEON&type=timeline&theme=dark&logscale&legend=bottom-right" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=openaeon/OpenAEON&type=timeline&logscale&legend=bottom-right" />
+   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=openaeon/OpenAEON&type=timeline&logscale&legend=bottom-right" />
+ </picture>
+</a>
