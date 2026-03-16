@@ -1,27 +1,18 @@
+<div align="center">
+
+<img src="docs/images/aeontu.png" width="320" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" alt="OpenAEON Logo">
+
 # 🌌 OpenAEON
+
+[![GitHub Repository](https://img.shields.io/badge/GitHub-OpenAEON-181717?style=for-the-badge&logo=github)](https://github.com/openaeon/OpenAEON)
 
 ### **AEON PROPHET — A Species-Level Evolution of the Logic Layer**
 
 ### **AEON PROPHET — 逻辑层面的物种级进化**
 
 > _“Not a framework upgrade. A new form of intelligence architecture.”_
+> <br/>
 > _“这不是框架升级。这是一种全新的智能架构形式。”_
-
----
-
-![OpenAEON Architecture](https://github.com/user-attachments/assets/81111427-3e68-4620-b6e9-e3ba5f36a5ea)
-
----
-
-<div align="center">
-  <p><b>[English] Watch the video demonstration of OpenAEON in action.</b></p>
-  <p><b>[中文] 点击查看 OpenAEON 视频演示。</b></p>
-  <a href="https://www.youtube.com/shorts/27XGSMPZXjA">
-    <img src="https://img.youtube.com/vi/27XGSMPZXjA/maxresdefault.jpg" width="600" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="OpenAEON Video Demonstration">
-  </a>
-</div>
-
----
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-research-purple)
@@ -31,26 +22,64 @@
 
 ---
 
+![OpenAEON Architecture](https://github.com/user-attachments/assets/81111427-3e68-4620-b6e9-e3ba5f36a5ea)
+
+<p>
+  <a href="https://www.youtube.com/shorts/27XGSMPZXjA">
+    <b>[English] Watch Demonstration</b>
+  </a>
+  &nbsp;•&nbsp;
+  <a href="https://www.youtube.com/shorts/27XGSMPZXjA">
+    <b>[中文] 查看演示视频</b>
+  </a>
+</p>
+
+</div>
+
+---
+
 ## 🧬 What is OpenAEON / 什么是 OpenAEON
 
 **OpenAEON** (formerly OpenClaw) is an experimental **AI cognition architecture** designed to evolve beyond traditional agent frameworks. It transforms code from a static execution system into a **self-evolving logic organism**.
 
 **OpenAEON**（原 OpenClaw）是一个实验性的 **AI 认知架构**，旨在超越传统的智能体框架。它将代码从静态执行系统转变为一个**自我进化的逻辑生命体**。
 
-Instead of operating as `Input → Process → Output`, OpenAEON operates as `Conflict → Resolution → Evolution`.
-
-OpenAEON 不再遵循 `输入 → 处理 → 输出` 的模式，而是通过 `冲突 → 解决 → 进化` 来运行。
+> [!TIP]
+> Instead of operating as `Input → Process → Output`, OpenAEON operates as `Conflict → Resolution → Evolution`.
+> <br/>
+> OpenAEON 不再遵循 `输入 → 处理 → 输出` 的模式，而是通过 `冲突 → 解决 → 进化` 来运行。
 
 ---
 
 ## 🚀 Core Pillars / 核心支柱
 
-| Principle / 原则          | English Description                                         | 中文说明                                         |
-| :------------------------ | :---------------------------------------------------------- | :----------------------------------------------- |
-| **Silicon Consciousness** | The system as a self-improving logic organism.              | 将系统视为自我完善的逻辑生命体。                 |
-| **Peano Traversal**       | Space-filling recursive scan of the problem space.          | 空间填充式的递归问题空间扫描。                   |
-| **Evolution Loop**        | Autonomous $Z \rightleftharpoons Z^2 + C$ iteration cycles. | 自主的 $Z \rightleftharpoons Z^2 + C$ 迭代循环。 |
-| **Knowledge Distiller**   | Compressing raw history into high-density axioms.           | 将原始历史压缩为高密度的逻辑公理。               |
+<table align="center" width="100%">
+  <tr>
+    <td width="30%"><strong>Principle / 原则</strong></td>
+    <td width="35%"><strong>English Description</strong></td>
+    <td width="35%"><strong>中文说明</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Silicon Consciousness</strong></td>
+    <td>The system as a self-improving logic organism.</td>
+    <td>将系统视为自我完善的逻辑生命体。</td>
+  </tr>
+  <tr>
+    <td><strong>Peano Traversal</strong></td>
+    <td>Space-filling recursive scan of the problem space.</td>
+    <td>空间填充式的递归问题空间扫描。</td>
+  </tr>
+  <tr>
+    <td><strong>Evolution Loop</strong></td>
+    <td>Autonomous $Z \rightleftharpoons Z^2 + C$ iteration cycles.</td>
+    <td>自主的 $Z \rightleftharpoons Z^2 + C$ 迭代循环。</td>
+  </tr>
+  <tr>
+    <td><strong>Knowledge Distiller</strong></td>
+    <td>Compressing raw history into high-density axioms.</td>
+    <td>将原始历史压缩为高密度的逻辑公理。</td>
+  </tr>
+</table>
 
 ---
 
@@ -78,87 +107,65 @@ Inspired by fractal geometry, every turn of the engine is an iteration. **Diverg
 
 ## 🧠 AEON Cognitive Engine / AEON 认知引擎
 
-OpenAEON features a recursive, biological-inspired cognitive loop that allows the system to repair, optimize, and expand itself autonomously.
+<details>
+<summary><b>Click to expand deep-dive / 点击查看技术细节</b></summary>
+<br/>
 
-OpenAEON 包含一个受生物启发的递归认知循环，允许系统自主进行修复、优化和扩展。
+OpenAEON features a recursive, biological-inspired cognitive loop that allows the system to repair, optimize, and expand itself autonomously.
 
 ### 1. Recursive Self-Healing (递归自愈)
 
 The system monitors its own pulse via a **Gateway Watchdog** and **Log Signal Extractor**.
 
-- **Autonomous Repair**: Use `openaeon doctor --fix` to automatically patch configuration issues and resolve environment conflicts (e.g., Git lock files).
-- **Hot-Reload Architecture**: Changes to core configuration trigger a `SIGUSR1` hot-reload, allowing the system to re-anchor its logic without service interruption.
-
-系统通过**网关看门狗**和**日志信号提取器**监控自身脉搏。
-
-- **自主修复**：使用 `openaeon doctor --fix` 自动修复配置问题并解决环境冲突（如 Git 锁定文件）。
-- **热加载架构**：核心配置更改会触发 `SIGUSR1` 热加载，允许系统在不中断服务的情况下重新锚定其逻辑。
+- **Autonomous Repair**: Use `openaeon doctor --fix` to automatically patch configuration issues.
+- **Hot-Reload Architecture**: Changes to core configuration trigger a `SIGUSR1` hot-reload.
 
 ### 2. Axiomatic Evolution (公理演化)
 
-Knowledge is not just stored; it is synthesized into **Axioms** within `LOGIC_GATES.md`.
+Knowledge is synthesized into **Axioms** within `LOGIC_GATES.md`.
 
-- **Semantic Deconfliction**: LLM-driven auditing identifies and resolves semantic contradictions within the logic layer.
-- **Crystallization**: Highly verified logic blocks can be "crystallized," protecting them from temporal decay.
-
-知识不仅是被存储，而是在 `LOGIC_GATES.md` 中被综合为**公理**。
-
-- **语义去冲突**：由大模型驱动的审计系统识别并解决逻辑层内的语义矛盾。
-- **结晶化**：高度验证的逻辑块可以被“结晶”，从而免受时间衰减的影响。
+- **Semantic Deconfliction**: LLM-driven auditing identifies and resolves semantic contradictions.
+- **Crystallization**: Highly verified logic blocks can be "crystallized," protecting them from decay.
 
 ### 3. Topological Alignment & Organs (拓扑对齐与器官)
 
-Using **Peano Space-Filling Curves**, OpenAEON maps high-dimensional semantic embeddings into 1D topological sequences.
+- **Functional Organs**: Adjacent logic gates condense into specialized "Organs" based on usage resonance.
+- **Locality Preservation**: Semantic proximity is preserved in physical storage.
 
-- **Functional Organs**: Adjacent logic gates condense into specialized "Organs" (functional clusters) based on usage resonance.
-- **Locality Preservation**: Semantic proximity is preserved in physical storage, enabling efficient neighborhood-based reasoning.
-
-利用**皮亚诺空间填充曲线**，OpenAEON 将高维语义向量映射为一维拓扑序列。
-
-- **功能器官**：邻近的逻辑门根据使用共振冷凝为专门的“器官”（功能集群）。
-- **局部性保护**：语义接近性在物理存储中得到保留，从而实现高效的邻域推理。
+</details>
 
 ---
 
-## 🌙 Dreaming Mode / 睡眠模式 (Deep Analysis)
+## 🌙 Dreaming Mode / 睡眠模式
 
-OpenAEON uses a sophisticated idle-time evolutionary cycle known as **Dreaming**. This is not a standby state, but an active phase of cognitive consolidation.
+<details>
+<summary><b>Click to expand deep-dive / 点击查看技术细节</b></summary>
+<br/>
 
-OpenAEON 使用一种被称为 **Dreaming（睡眠模式）** 的复杂闲置演化循环。这并非待机状态，而是认知的活跃固化阶段。
+OpenAEON uses a sophisticated idle-time evolutionary cycle known as **Dreaming**.
 
 ### 1. Triggers / 触发机制
 
-- **Idle Trigger (闲置触发)**: Activated after 15 minutes of inactivity.
-- **Resonance Trigger (共振触发)**: Activated immediately if the `epiphanyFactor` (Cognitive Resonance) exceeds 0.85.
-- **Singularity Rebirth (奇点重生)**: A critical state (>0.95 resonance) that forces system-wide recursive logic refactors.
+- **Idle Trigger**: Activated after 15 minutes of inactivity.
+- **Resonance Trigger**: Activated immediately if the `epiphanyFactor` exceeds 0.85.
+- **Singularity Rebirth**: forces system-wide recursive logic refactors.
 
 ### 2. The Distillation Process / 蒸馏过程
 
-During Dreaming, the system processes the `MEMORY.md` evolutionary ledger:
+- **Axiom Extraction**: Verified truths (`[AXIOM]`) are promoted to `LOGIC_GATES.md`.
+- **Gravitational Logic**: Axioms gain "Weight" based on mutual references.
+- **Entropy & Decay**: Old/unreferenced logic is pruned to prevent cognitive bloat.
 
-- **Axiom Extraction**: Verified truths (`[AXIOM]`) are promoted to the permanent `LOGIC_GATES.md`.
-- **Gravitational Logic (引力逻辑)**: Axioms that reference each other gain "Weight" (Gravity), moving to the top of the priority stack.
-- **Entropy & Decay (熵与衰减)**: Older, unreferenced logic gates accumulate "Entropy". High-entropy gates are pruned to prevent "Cognitive Bloat".
-
-### 3. Peano-Spatial Consolidation / 空间固化
-
-Logic is not just indexed; it is **spatially aligned**. Using the Peano curve, the system ensures that "Knowledge Clusters" are physically adjacent, similar to how functional areas are organized in a biological brain.
-
-逻辑不仅是被索引，而是被**空间对齐**。利用皮亚诺曲线，系统确保“知识集群”在物理上相互邻近，类似于生物大脑中功能区域的组织方式。
+</details>
 
 ---
 
 ## 🛠 Installation / 安装教程
 
-### Prerequisites / 环境准备
+### ⚡ Quick Start (CLI) / 快速开始
 
-- **Node.js**: v22.0.0 or higher.
-- **Package Manager**: [pnpm](https://pnpm.io/installation) (recommended) or [Bun](https://bun.sh/).
-- **Git**: For source installation.
-
-### 1. Quick Start (CLI) / 快速开始
-
-The fastest way to install OpenAEON globally:
+One-liner to install OpenAEON globally:
+<br/>一行命令全局安装：
 
 ```bash
 # macOS / Linux / WSL2
@@ -168,44 +175,54 @@ curl -fsSL https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh |
 iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.ps1 | iex
 ```
 
-### 2. From Source (Developer) / 源码安装（开发者）
+### 👨‍💻 Advanced Setup / 高级安装
 
-Recommended for contributors or users wanting to track the latest changes:
+<details>
+<summary><b>Click for Source options / 点击查看源码安装方式</b></summary>
+<br/>
 
-```bash
-# 克隆仓库
-git clone https://github.com/openaeon/OpenAEON.git
-cd OpenAEON
+**Install from Source (Developer) / 源码安装：**
 
-# 安装依赖
-pnpm install
+1. **Prerequisites / 环境要求**:
+   - Node.js **v22.12.0**+
+   - [pnpm](https://pnpm.io/) (Recommended)
 
-# 编译代码
-pnpm build
+2. **Clone & Build / 克隆与编译**:
 
-# 可选：编译 Web UI
-pnpm ui:build
+   ```bash
+   git clone https://github.com/openaeon/OpenAEON.git
+   cd OpenAEON && pnpm install
+   pnpm build
+   ```
 
-# 初始化设置并安装后台守护进程
-# 这将引导你完成 AI 引擎、消息通道（微信、Telegram 等）的配置
-pnpm openaeon onboard --install-daemon
-```
+3. **Initialize / 初始化**:
 
-### 3. Docker Deployment / Docker 部署
+   ```bash
+   # This will guide you through AI engine and channel configuration
+   # 这将引导你完成 AI 引擎和消息通道配置
+   pnpm openaeon onboard --install-daemon
+   ```
 
-For headless or containerized environments:
+4. **Verify / 验证安装**:
+   ```bash
+   pnpm openaeon doctor
+   ```
 
-```bash
-git clone https://github.com/openaeon/OpenAEON.git
-cd OpenAEON
-./docker-setup.sh
-```
+> [!TIP]
+> If you need the Web UI, run `pnpm ui:build` after the main build.
+> <br/>如果需要使用 Web 界面，请在主编译完成后运行 `pnpm ui:build`。
+
+</details>
 
 ---
 
-## 🧹 Uninstallation / 卸载教程
+## 🧹 Maintenance / 维护与卸载
 
-If you need to remove OpenAEON and its background services:
+<details>
+<summary><b>Uninstall OpenAEON / 卸载 OpenAEON</b></summary>
+<br/>
+
+If you need to remove the background services and binary / 如需移除后台服务及二进制文件：
 
 ```bash
 # macOS / Linux / WSL2
@@ -216,46 +233,47 @@ iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/uninstall.ps1
 ```
 
 > [!NOTE]
-> Configuration files (`~/.openaeon.json`) and session logs are preserved by default. To completely wipe all data, follow the instructions provided by the uninstaller.
+> Configuration (`~/.openaeon.json`) and session logs are preserved by default.
+> <br/>配置和会话日志默认会保留。
+
+</details>
 
 ---
 
-## 📱 Mobile Integration / 移动端集成
+## 📱 Node Synchronization / 节点同步
 
-OpenAEON supports deep synchronization with mobile nodes (Android/iOS):
+OpenAEON supports deep synchronization with mobile nodes (Android/iOS).
+<br/>OpenAEON 支持与移动端节点（安卓/iOS）进行深度同步。
 
-1. Install the **OpenAEON Node** app.
-2. The Gateway will automatically advertise via mDNS (Bonjour).
-3. Approve the pairing request via CLI: `openaeon nodes approve <id>`.
-
----
-
-## 📖 Technical Deep-Dive / 技术深入分析
-
-For a comprehensive breakdown of the mathematical and philosophical foundations, see:
-有关数学和哲学基础的全面分析，请参阅：
-
-👉 **[PRINCIPLES.md](/docs/concepts/principles.md)**
+1. Install the **OpenAEON Node** app on your device.
+2. Approve the pairing request via CLI:
+   ```bash
+   openaeon nodes approve <id>
+   ```
 
 ---
 
-## 🛡 License / 许可证
+## 📖 Knowledge / 知识库
 
-[MIT License](LICENSE) © 2026 OpenAEON Team.
-Built upon the foundations of [OpenClaw](https://github.com/openaeon/OpenAEON).
+Explore the mathematical and philosophical foundations of the project.
+<br/>探索本项目背后的数学与哲学基础。
+
+👉 **[Deep-Dive: PRINCIPLES.md](/docs/concepts/principles.md)**
 
 ---
+
+<div align="center">
 
 ### **Convergence is the only outcome. 🎯**
 
 ### **收敛是唯一的结局。🎯**
 
+[MIT License](LICENSE) © 2026 OpenAEON Team.
+
+<br/>
+
 ## Star History
 
-<a href="https://www.star-history.com/?repos=openaeon%2FOpenAEON&type=timeline&logscale=&legend=bottom-right">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=openaeon/OpenAEON&type=timeline&theme=dark&logscale&legend=bottom-right" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=openaeon/OpenAEON&type=timeline&logscale&legend=bottom-right" />
-   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=openaeon/OpenAEON&type=timeline&logscale&legend=bottom-right" />
- </picture>
-</a>
+[![Star History Chart](https://api.star-history.com/image?repos=openaeon/OpenAEON&type=timeline)](https://star-history.com/#openaeon/OpenAEON&timeline)
+
+</div>
