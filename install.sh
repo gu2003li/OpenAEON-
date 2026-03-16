@@ -967,7 +967,7 @@ print_usage() {
 OpenAEON installer (macOS + Linux)
 
 Usage:
-  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/luolin-ai.openaeonWeComzh/main/install.sh | bash -s -- [options]
+  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- [options]
 
 Options:
   --install-method, --method npm|git   Install via npm (default) or from a git checkout
@@ -997,9 +997,9 @@ Environment variables:
   SHARP_IGNORE_GLOBAL_LIBVIPS=0|1    Default: 1 (avoid sharp building against global libvips)
 
 Examples:
-  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/luolin-ai.openaeonWeComzh/main/install.sh | bash
-  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/luolin-ai.openaeonWeComzh/main/install.sh | bash -s -- --no-onboard
-  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/luolin-ai.openaeonWeComzh/main/install.sh | bash -s -- --install-method git --no-onboard
+  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash
+  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- --no-onboard
+  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- --install-method git --no-onboard
 EOF
 }
 
@@ -1187,7 +1187,7 @@ print_homebrew_admin_fix() {
     echo "  2) Ask an Administrator to grant admin rights, then sign out/in:"
     echo "     sudo dseditgroup -o edit -a ${current_user} -t user admin"
     echo "Then retry:"
-    echo "  curl -fsSL https://raw.githubusercontent.com/luolin-ai.openaeonWeComzh/main/install.sh | bash"
+    echo "  curl -fsSL https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash"
 }
 
 install_homebrew() {
@@ -1943,7 +1943,7 @@ run_bootstrap_onboarding_if_needed() {
         return
     fi
 
-    local config_path="${OPENAEON_CONFIG_PATH:-$HOME/.luolin-ai.openaeonWeComzh.json}"
+    local config_path="${OPENAEON_CONFIG_PATH:-$HOME/.openaeon.json}"
     if [[ -f "${config_path}" || -f "$HOME/.clawdbot/clawdbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
         return
     fi
@@ -2251,7 +2251,7 @@ main() {
         ui_kv "Checkout" "$final_git_dir"
         ui_kv "Wrapper" "$HOME/.local/bin/openaeon"
         ui_kv "Update command" "openaeon update --restart"
-        ui_kv "Switch to npm" "curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/luolin-ai.openaeonWeComzh/main/install.sh | bash -s -- --install-method npm"
+        ui_kv "Switch to npm" "curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- --install-method npm"
     elif [[ "$is_upgrade" == "true" ]]; then
         ui_info "Upgrade complete"
         if [[ -r /dev/tty && -w /dev/tty ]]; then
@@ -2290,7 +2290,7 @@ main() {
         if [[ "$NO_ONBOARD" == "1" || "$skip_onboard" == "true" ]]; then
             ui_info "Skipping onboard (requested); run openaeon onboard later"
         else
-            local config_path="${OPENAEON_CONFIG_PATH:-$HOME/.luolin-ai.openaeonWeComzh.json}"
+            local config_path="${OPENAEON_CONFIG_PATH:-$HOME/.openaeon.json}"
             if [[ -f "${config_path}" || -f "$HOME/.clawdbot/clawdbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
                 ui_info "Config already present; running doctor"
                 run_doctor

@@ -78,46 +78,50 @@ Inspired by fractal geometry, every turn of the engine is an iteration. **Diverg
 
 ## 🛠 Installation / 安装教程
 
-### Quick Start (CLI) / 快速开始
+### Prerequisites / 环境准备
 
-The fastest way to experience OpenAEON is via our one-line installer:
+- **Node.js**: v22.0.0 or higher.
+- **Package Manager**: [pnpm](https://pnpm.io/installation) (recommended) or [Bun](https://bun.sh/).
+- **Git**: For source installation.
 
-体验 OpenAEON 最快的方式是通过我们的单行安装程序：
+### 1. Quick Start (CLI) / 快速开始
+
+The fastest way to install OpenAEON globally:
 
 ```bash
 # macOS / Linux / WSL2
-curl -fsSL https://openaeon.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash
+
+# Windows (PowerShell)
+iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.ps1 | iex
 ```
 
-### From Source (Developer) / 源码安装（开发者）
+### 2. From Source (Developer) / 源码安装（开发者）
 
-For contributors or those who want to run from a local checkout:
-
-对于贡献者或希望从本地检出运行的用户：
+Recommended for contributors or users wanting to track the latest changes:
 
 ```bash
 # 克隆仓库
 git clone https://github.com/openaeon/OpenAEON.git
 cd OpenAEON
 
-# 安装项目依赖
+# 安装依赖
 pnpm install
 
-# 编译项目 (首次运行将自动构建 UI 前端工程)
+# 编译代码
 pnpm build
-pnpm ui:build
-pnpm gateway:watch
-# 启动全中文沉浸式配置向导，注册基础设置并安装后台守护进程
-pnpm openaeon onboard --install-daemon
-pnpm openaeon gateway stop
 
+# 可选：编译 Web UI
+pnpm ui:build
+
+# 初始化设置并安装后台守护进程
+# 这将引导你完成 AI 引擎、消息通道（微信、Telegram 等）的配置
+pnpm openaeon onboard --install-daemon
 ```
 
-### Docker Deployment / Docker 部署
+### 3. Docker Deployment / Docker 部署
 
 For headless or containerized environments:
-
-对于无头或容器化环境：
 
 ```bash
 git clone https://github.com/openaeon/OpenAEON.git
@@ -125,19 +129,32 @@ cd OpenAEON
 ./docker-setup.sh
 ```
 
-### Mobile Integration / 移动端集成
+---
+
+## 🧹 Uninstallation / 卸载教程
+
+If you need to remove OpenAEON and its background services:
+
+```bash
+# macOS / Linux / WSL2
+curl -fsSL https://raw.githubusercontent.com/openaeon/OpenAEON/main/uninstall.sh | bash
+
+# Windows (PowerShell)
+iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/uninstall.ps1 | iex
+```
+
+> [!NOTE]
+> Configuration files (`~/.openaeon.json`) and session logs are preserved by default. To completely wipe all data, follow the instructions provided by the uninstaller.
+
+---
+
+## 📱 Mobile Integration / 移动端集成
 
 OpenAEON supports deep synchronization with mobile nodes (Android/iOS):
 
 1. Install the **OpenAEON Node** app.
 2. The Gateway will automatically advertise via mDNS (Bonjour).
 3. Approve the pairing request via CLI: `openaeon nodes approve <id>`.
-
-OpenAEON 支持与移动端节点（Android/iOS）的高效同步：
-
-1. 安装 **OpenAEON Node** 应用。
-2. 网关将通过 mDNS (Bonjour) 自动发布。
-3. 通过 CLI 批准配对请求：`openaeon nodes approve <id>`。
 
 ---
 
