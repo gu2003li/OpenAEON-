@@ -83,6 +83,13 @@ const METHOD_SCOPE_GROUPS: Record<OperatorScope, readonly string[]> = {
     "agents.memory.list",
     "agents.memory.get",
     "agents.memory.status",
+    "aeon.status",
+    "aeon.decision.explain",
+    "aeon.intent.trace",
+    "aeon.ethics.evaluate",
+    "aeon.memory.trace",
+    "aeon.execution.lookup",
+    "aeon.thinking.stream",
   ],
   [WRITE_SCOPE]: [
     "send",

@@ -1,8 +1,45 @@
 import { LitElement, html, css, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { t } from "../../i18n/index.ts";
 import { icons } from "../icons.ts";
 import { detectTextDirection } from "../text-direction.ts";
 import type { ChatAttachment } from "../ui-types.ts";
+
+type QuickCommandSpec = {
+  name: string;
+  syntax: string;
+  template: string;
+};
+
+const QUICK_COMMANDS: QuickCommandSpec[] = [
+  { name: "new", syntax: "/new", template: "/new" },
+  { name: "main", syntax: "/main", template: "/main" },
+  { name: "sandbox", syntax: "/sandbox", template: "/sandbox" },
+  { name: "aeon", syntax: "/aeon", template: "/aeon" },
+  { name: "focus", syntax: "/focus", template: "/focus" },
+  {
+    name: "thinking",
+    syntax: "/thinking",
+    template: "/thinking",
+  },
+  {
+    name: "eternal",
+    syntax: "/eternal [on|off|toggle]",
+    template: "/eternal toggle",
+  },
+  {
+    name: "web",
+    syntax: "/web [on|off|toggle]",
+    template: "/web toggle",
+  },
+  { name: "refresh", syntax: "/refresh", template: "/refresh" },
+  { name: "clear", syntax: "/clear", template: "/clear" },
+];
+
+function quickCommandDescription(name: string): string {
+  const key = `chat.quickCmdDesc_${name}`;
+  return t(key as never);
+}
 
 @customElement("chat-input-area")
 export class ChatInputArea extends LitElement {
@@ -11,6 +48,9 @@ export class ChatInputArea extends LitElement {
   @property({ type: Boolean }) sending = false;
   @property({ type: Boolean }) canAbort = false;
   @property({ type: Array }) attachments: ChatAttachment[] = [];
+  @state() private commandCursor = 0;
+  @state() private attachmentError: string | null = null;
+  private static readonly MAX_ATTACHMENT_BYTES = 5_000_000;
 
   static styles = css`
     :host {
@@ -82,6 +122,21 @@ export class ChatInputArea extends LitElement {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    .chat-attachment__name {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      font-size: 10px;
+      line-height: 1.2;
+      padding: 2px 4px;
+      color: #e2e8f0;
+      background: rgba(2, 6, 23, 0.78);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .chat-attachment__remove {
@@ -204,10 +259,115 @@ export class ChatInputArea extends LitElement {
       background: rgba(0, 0, 0, 0.05);
       border-radius: 4px;
     }
+
+    .attachment-error {
+      font-size: 12px;
+      color: #f87171;
+      margin-top: 2px;
+    }
+
+    .quick-commands {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--surface-1, rgba(2, 6, 23, 0.75));
+      overflow: hidden;
+    }
+
+    .quick-command-row {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: var(--text-color);
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 10px;
+      text-align: left;
+      padding: 8px 10px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+    }
+
+    .quick-command-row:last-child {
+      border-bottom: none;
+    }
+
+    .quick-command-row:hover,
+    .quick-command-row[data-active="true"] {
+      background: var(--surface-2, rgba(15, 23, 42, 0.6));
+    }
+
+    .quick-command-row code {
+      font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+      color: #2dd4bf;
+    }
+
+    .quick-command-hint {
+      font-size: 11px;
+      color: var(--muted-color, #94a3b8);
+      padding: 0 2px;
+    }
   `;
 
   private generateAttachmentId(): string {
     return `att-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  }
+
+  private async readFileAsDataUrl(file: File): Promise<string> {
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        const dataUrl = typeof reader.result === "string" ? reader.result : "";
+        if (!dataUrl) {
+          reject(new Error("Failed to read file as data URL"));
+          return;
+        }
+        resolve(dataUrl);
+      });
+      reader.addEventListener("error", () => reject(new Error("Failed to read file")));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private emitAttachments(next: ChatAttachment[]) {
+    this.dispatchEvent(
+      new CustomEvent("attachments-change", {
+        detail: { attachments: next },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private async addFiles(files: File[]) {
+    this.attachmentError = null;
+    const accepted = files.filter((file) => file.type.startsWith("image/"));
+    if (accepted.length !== files.length) {
+      this.attachmentError = t("chat.uploadOnlyImages");
+    }
+    const tooLarge = accepted.find((file) => file.size > ChatInputArea.MAX_ATTACHMENT_BYTES);
+    if (tooLarge) {
+      this.attachmentError = t("chat.uploadTooLarge", { name: tooLarge.name });
+      return;
+    }
+    const appended: ChatAttachment[] = [];
+    for (const file of accepted) {
+      try {
+        const dataUrl = await this.readFileAsDataUrl(file);
+        appended.push({
+          id: this.generateAttachmentId(),
+          dataUrl,
+          mimeType: file.type,
+          fileName: file.name,
+          sizeBytes: file.size,
+        });
+      } catch {
+        this.attachmentError = t("chat.uploadReadFailed", { name: file.name });
+      }
+    }
+    if (appended.length > 0) {
+      this.emitAttachments([...this.attachments, ...appended]);
+    }
   }
 
   private handlePaste = (e: ClipboardEvent) => {
@@ -216,44 +376,23 @@ export class ChatInputArea extends LitElement {
       return;
     }
 
-    const imageItems: DataTransferItem[] = [];
+    const imageFiles: File[] = [];
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item.type.startsWith("image/")) {
-        imageItems.push(item);
-      }
-    }
-
-    if (imageItems.length === 0) {
-      return;
-    }
-
-    e.preventDefault();
-
-    for (const item of imageItems) {
-      const file = item.getAsFile();
-      if (!file) {
+      if (!item.type.startsWith("image/")) {
         continue;
       }
-
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        const dataUrl = reader.result as string;
-        const newAttachment: ChatAttachment = {
-          id: this.generateAttachmentId(),
-          dataUrl,
-          mimeType: file.type,
-        };
-        this.dispatchEvent(
-          new CustomEvent("attachments-change", {
-            detail: { attachments: [...this.attachments, newAttachment] },
-            bubbles: true,
-            composed: true,
-          }),
-        );
-      });
-      reader.readAsDataURL(file);
+      const file = item.getAsFile();
+      if (file) {
+        imageFiles.push(file);
+      }
     }
+
+    if (imageFiles.length === 0) {
+      return;
+    }
+    e.preventDefault();
+    void this.addFiles(imageFiles);
   };
 
   private adjustTextareaHeight(el: HTMLTextAreaElement) {
@@ -261,13 +400,120 @@ export class ChatInputArea extends LitElement {
     el.style.height = `${el.scrollHeight}px`;
   }
 
+  connectedCallback(): void {
+    super.connectedCallback();
+    window.addEventListener("keydown", this.handleGlobalKeydown);
+  }
+
+  disconnectedCallback(): void {
+    window.removeEventListener("keydown", this.handleGlobalKeydown);
+    super.disconnectedCallback();
+  }
+
+  private handleGlobalKeydown = (event: KeyboardEvent) => {
+    if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "k" || event.shiftKey) {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (
+      target &&
+      (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
+    ) {
+      return;
+    }
+    event.preventDefault();
+    this.focusTextarea();
+  };
+
+  private focusTextarea() {
+    const textarea = this.renderRoot.querySelector("textarea");
+    if (!(textarea instanceof HTMLTextAreaElement)) {
+      return;
+    }
+    textarea.focus();
+  }
+
+  private emitDraftChange(draft: string) {
+    this.dispatchEvent(
+      new CustomEvent("draft-change", {
+        detail: { draft },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private parseQuickCommand(
+    rawDraft: string,
+  ): { name: string; args: string[]; raw: string } | null {
+    const trimmed = rawDraft.trim();
+    if (!trimmed.startsWith("/")) {
+      return null;
+    }
+    if (trimmed === "/") {
+      return { name: "", args: [], raw: trimmed };
+    }
+    const parts = trimmed.slice(1).split(/\s+/).filter(Boolean);
+    if (parts.length === 0) {
+      return null;
+    }
+    const [name, ...args] = parts;
+    return { name: name.toLowerCase(), args, raw: trimmed };
+  }
+
+  private quickCommandOptions(): QuickCommandSpec[] {
+    const parsed = this.parseQuickCommand(this.draft);
+    if (!parsed) {
+      return [];
+    }
+    const token = parsed.name;
+    if (!token) {
+      return QUICK_COMMANDS;
+    }
+    return QUICK_COMMANDS.filter((entry) => entry.name.startsWith(token));
+  }
+
+  private tryDispatchQuickCommand(): boolean {
+    const parsed = this.parseQuickCommand(this.draft);
+    if (!parsed) {
+      return false;
+    }
+    const allowed = new Set(QUICK_COMMANDS.map((entry) => entry.name));
+    if (!allowed.has(parsed.name)) {
+      return false;
+    }
+    this.dispatchEvent(
+      new CustomEvent("local-command", {
+        detail: parsed,
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    this.emitDraftChange("");
+    return true;
+  }
+
+  private applyQuickCommandTemplate(next: string) {
+    this.emitDraftChange(next);
+    requestAnimationFrame(() => this.focusTextarea());
+  }
+
+  private handlePickFiles() {
+    const input = this.renderRoot.querySelector<HTMLInputElement>("#chat-file-input");
+    input?.click();
+  }
+
   render() {
     const hasAttachments = this.attachments.length > 0;
+    const quickCommands = this.quickCommandOptions();
+    const commandPanelVisible = quickCommands.length > 0 && this.connected;
+    const activeCommand =
+      quickCommands[Math.max(0, Math.min(this.commandCursor, quickCommands.length - 1))];
     const composePlaceholder = this.connected
       ? hasAttachments
-        ? "Add a message or paste more images..."
-        : "Message (↩ to send, Shift+↩ for line breaks, paste images)"
-      : "Connect to the gateway to start chatting…";
+        ? t("chat.composePlaceholderWithAttachments")
+        : t("chat.composePlaceholder")
+      : t("chat.composeDisconnectedPlaceholder");
 
     return html`
       <div class="chat-compose">
@@ -279,17 +525,12 @@ export class ChatInputArea extends LitElement {
               (att) => html`
               <div class="chat-attachment">
                 <img src=${att.dataUrl} alt="Attachment" class="chat-attachment__img" />
+                ${att.fileName ? html`<div class="chat-attachment__name" title=${att.fileName}>${att.fileName}</div>` : nothing}
                 <button
                   class="chat-attachment__remove"
                   @click=${() => {
                     const next = this.attachments.filter((a) => a.id !== att.id);
-                    this.dispatchEvent(
-                      new CustomEvent("attachments-change", {
-                        detail: { attachments: next },
-                        bubbles: true,
-                        composed: true,
-                      }),
-                    );
+                    this.emitAttachments(next);
                   }}
                 >${icons.x}</button>
               </div>
@@ -299,15 +540,30 @@ export class ChatInputArea extends LitElement {
         `
             : nothing
         }
+        ${this.attachmentError ? html`<div class="attachment-error" role="status">${this.attachmentError}</div>` : nothing}
 
         <div class="chat-compose__row">
           <label class="field chat-compose__field">
-            <span>Message</span>
+            <span>${t("chat.messageLabel")}</span>
             <textarea
               .value=${this.draft}
               dir=${detectTextDirection(this.draft)}
               ?disabled=${!this.connected}
               @keydown=${(e: KeyboardEvent) => {
+                if (commandPanelVisible && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+                  e.preventDefault();
+                  const delta = e.key === "ArrowDown" ? 1 : -1;
+                  const size = quickCommands.length;
+                  this.commandCursor = (this.commandCursor + delta + size) % size;
+                  return;
+                }
+                if (commandPanelVisible && e.key === "Tab" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (activeCommand) {
+                    this.applyQuickCommandTemplate(activeCommand.template);
+                  }
+                  return;
+                }
                 if (
                   e.key !== "Enter" ||
                   e.isComposing ||
@@ -318,41 +574,102 @@ export class ChatInputArea extends LitElement {
                   return;
                 }
                 e.preventDefault();
+                if (this.tryDispatchQuickCommand()) {
+                  return;
+                }
                 this.dispatchEvent(new CustomEvent("send", { bubbles: true, composed: true }));
               }}
               @input=${(e: Event) => {
                 const target = e.target as HTMLTextAreaElement;
                 this.adjustTextareaHeight(target);
-                this.dispatchEvent(
-                  new CustomEvent("draft-change", {
-                    detail: { draft: target.value },
-                    bubbles: true,
-                    composed: true,
-                  }),
-                );
+                this.emitDraftChange(target.value);
+                if (this.commandCursor >= quickCommands.length) {
+                  this.commandCursor = 0;
+                }
               }}
               @paste=${this.handlePaste}
+              @dragover=${(e: DragEvent) => {
+                if (!this.connected) {
+                  return;
+                }
+                e.preventDefault();
+              }}
+              @drop=${(e: DragEvent) => {
+                const files = Array.from(e.dataTransfer?.files ?? []);
+                if (files.length === 0) {
+                  return;
+                }
+                e.preventDefault();
+                void this.addFiles(files);
+              }}
               placeholder=${composePlaceholder}
             ></textarea>
           </label>
 
           <div class="chat-compose__actions">
+            <input
+              id="chat-file-input"
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              @change=${(e: Event) => {
+                const input = e.target as HTMLInputElement;
+                const files = Array.from(input.files ?? []);
+                if (files.length > 0) {
+                  void this.addFiles(files);
+                }
+                input.value = "";
+              }}
+            />
+            <button
+              class="btn"
+              type="button"
+              ?disabled=${!this.connected}
+              @click=${() => this.handlePickFiles()}
+              title=${t("chat.uploadTitle")}
+            >
+              ${icons.paperclip} ${t("chat.uploadButton")}
+            </button>
             <button
               class="btn"
               ?disabled=${!this.connected || (!this.canAbort && this.sending)}
               @click=${() => this.dispatchEvent(new CustomEvent(this.canAbort ? "abort" : "new-session", { bubbles: true, composed: true }))}
             >
-              ${this.canAbort ? "Stop" : "New session"}
+              ${this.canAbort ? t("chat.stop") : t("chat.newSession")}
             </button>
             <button
               class="btn primary"
               ?disabled=${!this.connected}
               @click=${() => this.dispatchEvent(new CustomEvent("send", { bubbles: true, composed: true }))}
             >
-              ${this.sending ? "Queue" : "Send"}<kbd class="btn-kbd">↵</kbd>
+              ${this.sending ? t("chat.queue") : t("chat.send")}<kbd class="btn-kbd">↵</kbd>
             </button>
           </div>
         </div>
+        ${
+          commandPanelVisible
+            ? html`
+                <div class="quick-commands" role="listbox" aria-label="Quick commands">
+                  ${quickCommands.map(
+                    (entry, index) => html`
+                      <button
+                        type="button"
+                        class="quick-command-row"
+                        data-active=${String(index === this.commandCursor)}
+                        @mouseenter=${() => (this.commandCursor = index)}
+                        @click=${() => this.applyQuickCommandTemplate(entry.template)}
+                      >
+                        <code>${entry.syntax}</code>
+                        <span>${quickCommandDescription(entry.name)}</span>
+                      </button>
+                    `,
+                  )}
+                </div>
+                <div class="quick-command-hint">${t("chat.quickCommandTip")}</div>
+              `
+            : nothing
+        }
       </div>
     `;
   }

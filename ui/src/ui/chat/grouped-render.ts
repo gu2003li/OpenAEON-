@@ -314,6 +314,19 @@ function renderGroupedMessage(
 
   return html`
     <div class="${bubbleClasses}">
+      ${
+        opts.isStreaming
+          ? html`
+              <div class="chat-formula-pulse" aria-hidden="true">
+                <span class="chat-formula-pulse__expr">R(n+1)=f(R(n),intent,entropy)</span>
+                <span
+                  class="chat-formula-pulse__bar"
+                  style=${`--pulse-chaos:${Math.max(0, Math.min(1, (opts.chaosScore ?? 0) / 10))};--pulse-epiphany:${Math.max(0, Math.min(1, opts.epiphanyFactor ?? 0))};`}
+                ></span>
+              </div>
+            `
+          : nothing
+      }
       ${canCopyMarkdown && markdown ? renderCopyAsMarkdownButton(markdown) : nothing}
       ${renderMessageImages(images)}
       ${

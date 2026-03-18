@@ -9,7 +9,14 @@ import {
 import { normalizeMessage, normalizeRoleForGrouping } from "../chat/message-normalizer.ts";
 import { icons } from "../icons.ts";
 import { detectTextDirection } from "../text-direction.ts";
-import type { GatewaySessionRow, SessionsListResult } from "../types.ts";
+import type {
+  GatewaySessionRow,
+  SessionsListResult,
+  ChatManualState,
+  ChatManualMode,
+  ChatManualSection,
+  ManualRuntimeSnapshot,
+} from "../types.ts";
 import type { ChatItem, MessageGroup } from "../types/chat-types.ts";
 import type { ChatAttachment, ChatQueueItem } from "../ui-types.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
@@ -81,6 +88,10 @@ export type ChatProps = {
   onAbort?: () => void;
   onQueueRemove: (id: string) => void;
   onNewSession: () => void;
+  onOpenSandbox?: () => void;
+  onOpenAeon?: () => void;
+  eternalMode?: boolean;
+  onToggleEternalMode?: () => void;
   onOpenSidebar?: (content: string) => void;
   onCloseSidebar?: () => void;
   onSplitRatioChange?: (ratio: number) => void;
@@ -89,12 +100,29 @@ export type ChatProps = {
   onToggleWebSearch?: (enabled: boolean) => void;
   // Plan approval
   onApprovePlan?: () => void;
+  onQuickCommand?: (command: ChatQuickCommand) => void;
   // Subagent details for sidebar
-  sandboxChatEvents?: Record<string, unknown>;
+  sandboxChatEvents?: import("../types.ts").SandboxChatEvents;
   sandboxSessions?: GatewaySessionRow[];
   cognitiveLog?: import("../types.ts").CognitiveLogEntry[];
+  executionDelivery?: import("../types.ts").AeonExecutionDelivery;
+  fractalState?: import("../types.ts").FractalThemeState;
+  manualState?: ChatManualState;
+  manualRuntime?: ManualRuntimeSnapshot;
+  onManualToggle?: (
+    visible: boolean,
+    options?: { mode?: ChatManualMode; section?: ChatManualSection },
+  ) => void;
+  onManualModeChange?: (mode: ChatManualMode) => void;
+  onManualSectionChange?: (section: ChatManualSection) => void;
   chaosScore: number;
   epiphanyFactor: number;
+};
+
+export type ChatQuickCommand = {
+  name: string;
+  args: string[];
+  raw: string;
 };
 
 const COMPACTION_TOAST_DURATION_MS = 5000;
@@ -177,13 +205,14 @@ export function renderChat(props: ChatProps) {
   const activeSession = props.sessions?.sessions?.find((row) => row.key === props.sessionKey);
   const reasoningLevel = activeSession?.reasoningLevel ?? "off";
   const showReasoning = props.showThinking && reasoningLevel !== "off";
+  const fractalState = props.fractalState ?? deriveFractalState(props);
   const assistantIdentity = {
     name: props.assistantName,
     avatar: props.assistantAvatar ?? props.assistantAvatarUrl ?? null,
   };
 
   return html`
-    <chat-layout .props=${props}>
+    <chat-layout .props=${{ ...props, fractalState }}>
       <div slot="messages" style="display: contents;">
         ${
           props.loading
@@ -238,6 +267,30 @@ export function renderChat(props: ChatProps) {
       </div>
     </chat-layout>
   `;
+}
+
+function deriveFractalState(props: ChatProps): import("../types.ts").FractalThemeState {
+  const chaos = Math.max(0, Math.min(1, (props.chaosScore ?? 0) / 10));
+  const resonance = Math.max(0, Math.min(1, props.epiphanyFactor ?? 0));
+  const depthRaw = 1 + Math.round((chaos * 0.65 + resonance * 0.35) * 3);
+  const depthLevel = Math.max(1, Math.min(4, depthRaw)) as 1 | 2 | 3 | 4;
+  const running = Boolean(props.stream?.trim());
+  const delivery = props.executionDelivery?.state ?? "persist_failed";
+  const formulaPhase = delivery === "persist_failed" ? "error" : running ? "active" : "idle";
+  const deliveryBand =
+    delivery === "persist_failed"
+      ? "warn"
+      : delivery === "persisted" || delivery === "acknowledged"
+        ? "safe"
+        : "pending";
+  const noiseLevel = Math.max(0.08, Math.min(0.9, 0.15 + chaos * 0.55));
+  return {
+    depthLevel,
+    resonanceLevel: resonance,
+    formulaPhase,
+    noiseLevel,
+    deliveryBand,
+  };
 }
 
 const CHAT_HISTORY_RENDER_LIMIT = 200;

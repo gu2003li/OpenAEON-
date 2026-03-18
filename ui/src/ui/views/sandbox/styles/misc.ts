@@ -76,6 +76,10 @@ export const miscStyles = html`
     .sandbox-recruit-tab {
       padding: 16px 0;
       border-bottom: 2px solid transparent;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      background: transparent;
       color: #94a3b8;
       font-weight: 600;
       cursor: pointer;
@@ -98,12 +102,15 @@ export const miscStyles = html`
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 12px;
       padding: 20px;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 16px;
       cursor: pointer;
       transition: all 0.2s ease;
+      text-align: center;
+      color: inherit;
     }
     .recruit-card:hover {
       background: rgba(255, 255, 255, 0.06);

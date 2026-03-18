@@ -39,6 +39,39 @@
 > [!TIP]
 > OpenAEON 不再遵循 `输入 → 处理 → 输出` 的模式，而是通过 `冲突 → 解决 → 进化` 来运行。
 
+**OpenAEON = Open + Eternal Evolution**
+
+- **Open**：默认可扩展、可审计、可协作。
+- **Eternal Evolution**：面向长生命周期智能系统的持续自适应演化闭环。
+- **AEON（Eon）**：源于希腊语 **αἰών（aiōn）**，表达“永恒 / 纪元 / 存在尺度”的语义。
+
+### 当前逻辑模型（已落地）
+
+OpenAEON 当前以可验证的五段闭环运行：
+
+1. **Perceive（感知）**：读取会话状态、运行时遥测、任务意图与工具反馈。
+2. **Adjudicate（裁决）**：基于 guardrail、策略强度与认知置信标签完成决策。
+3. **Act（执行）**：在策略与安全约束下执行 agent/tool 行为。
+4. **Persist（落盘）**：写入交付状态（`persisted` / `persist_failed`）与记忆检查点。
+5. **Trace（追溯）**：通过 AEON 接口暴露结构化状态用于运维与审计。
+
+这保证了 OpenAEON 的演化不是口号，而是可观测、可回滚、以用户结果为导向的工程系统。
+
+### 记忆逻辑（已落地）
+
+AEON 的记忆系统采用分层实现，兼顾实时性与可追溯性：
+
+1. **工作记忆（进程内）**  
+   最近认知事件保存在内存尾部，用于 UI 和运行时快速反馈。
+2. **持久化事件流（state-dir JSONL）**  
+   思考/认知事件按会话与 agent 维度落盘，支持回放与审计。
+3. **蒸馏检查点机制**  
+   蒸馏过程推进 checkpoint，并向 `MEMORY.md` 追加检查点标记，而不是清空文件。
+4. **运行时记忆遥测**  
+   `lastDistillAt`、`checkpoint`、`totalEntries`、`lastWriteSource` 可通过 `aeon.status` 与 `aeon.memory.trace` 获取。
+
+这让记忆既能高效服务当前执行，也能在长时间运行后被稳定追溯。
+
 ---
 
 ## 🚀 核心支柱
@@ -139,6 +172,84 @@ OpenAEON 使用一种被称为 **Dreaming（睡眠模式）** 的复杂闲置演
 
 ---
 
+## ✅ 当前已实现能力
+
+以下能力已在当前 OpenAEON 代码和 UI 中实现：
+
+### 1) 安全优先执行与策略遥测
+
+- 策略输出端到端可见（`maintenanceDecision`、`guardrailDecision`、`reasonCode`）。
+- 决策语义结构化输出（`decisionCard`、`impactLens`、`selfKernel`、`epistemicLabel`）。
+- Chat 与 Sandbox 均可读取并展示 typed 策略与意识数据。
+
+### 2) AEON 状态契约版本化（含兼容层）
+
+- `aeon.status` 已支持 `schemaVersion: 3` 与结构化 `telemetry` 主块。
+- 兼容镜像字段保留一个过渡周期，避免旧消费者断裂。
+- 已落地只读追溯接口：
+  - `aeon.memory.trace`
+  - `aeon.execution.lookup`
+  - `aeon.thinking.stream`
+
+### 3) 可靠性与持久化增强
+
+- 交付状态显式区分 `persisted` / `persist_failed`，并带时间戳/原因语义。
+- 演化日志在仓库路径不可写时自动回退到 state-dir。
+- 思考/认知流支持持久化与后续回放查询。
+
+### 4) 长会话运行能力
+
+- Eternal 模式已接入会话状态与 UI 双向同步。
+- AEON 状态暴露记忆持久化元数据（`lastDistillAt`、`checkpoint`、`totalEntries`、`lastWriteSource`）。
+- 认知日志采用“内存尾部 + 持久流”双层结构，避免长时间运行后上下文不可追溯。
+- Chat/Sandbox 展示真实运行状态，而非仅视觉装饰。
+
+### 5) Chat 体验升级（分形 + 可操作性）
+
+- 新增分形状态模型（`depthLevel`、`resonanceLevel`、`formulaPhase`、`noiseLevel`、`deliveryBand`）。
+- 新增结构化聊天手册（速查 + 引导）并绑定真实运行时字段。
+- 新增公式轨道/脉冲与执行状态映射。
+- 已补齐中英 i18n 键并适配 reduced-motion，降低闪烁和视觉疲劳。
+
+### 6) Sandbox 重构与布局加固
+
+- Sandbox v2 升级为 typed 运行控制台（会话、时间线、智能体、系统快照、意识遥测、策略/决策/影响卡）。
+- 通过视图级样式命名空间隔离，修复全局样式污染导致的错位重叠。
+- 已修复左栏/顶栏/遥测面板多处叠层与错位问题。
+
+### 7) 测试验证入口
+
+- 会话压缩与历史修复：
+  - `src/agents/history-compactor.test.ts`
+  - `src/agents/pi-embedded-runner.sanitize-session-history.test.ts`
+  - `src/agents/pi-embedded-runner/run/attempt.test.ts`
+- 演化日志回退：
+  - `src/gateway/aeon-evolution-log.test.ts`
+- AEON 状态契约覆盖：
+  - `src/gateway/server-methods/aeon.test.ts`
+
+---
+
+## 🛰 当前运行面板
+
+OpenAEON 当前是多运行面板协同系统：
+
+- **CLI (`openaeon`)**：初始化、配置、通道、会话、诊断与运维入口。
+- **Gateway**：WebSocket 控制面 + 多通道路由 + agent 执行运行时。
+- **Control UI**：Chat / Sandbox / AEON 遥测 / 会话 / 配置统一可视化操作台。
+- **移动与桌面节点**：支持多端配对与协同运行。
+
+### AEON 运行时接口（控制面）
+
+- `aeon.status`（schema v3 + 兼容镜像）
+- `aeon.memory.trace`
+- `aeon.execution.lookup`
+- `aeon.thinking.stream`
+
+这些接口驱动 Chat、Sandbox、AEON 页面显示真实运行状态。
+
+---
+
 ## 🛠 安装教程
 
 ### ⚡ 快速开始 (CLI)
@@ -192,6 +303,47 @@ iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.ps1 |
 
 ---
 
+## ⚙️ 本地运行手册
+
+### 启动 Gateway + Control UI
+
+```bash
+# 默认在 :18789 提供本地控制台
+openaeon gateway
+```
+
+打开：
+
+- [http://127.0.0.1:18789/](http://127.0.0.1:18789/)
+
+### UI 开发模式
+
+```bash
+pnpm ui:dev
+```
+
+### 常用开发命令
+
+```bash
+# 安装依赖
+pnpm install
+
+# 类型/构建
+pnpm build
+pnpm tsgo
+
+# 规范与格式
+pnpm check
+pnpm format:fix
+
+# 测试
+pnpm test
+pnpm test:coverage
+pnpm test:ui
+```
+
+---
+
 ## 🧹 维护与卸载
 
 <details>
@@ -231,7 +383,16 @@ OpenAEON 支持与移动端节点（安卓/iOS）进行深度同步。
 
 探索本项目背后的数学与哲学基础。
 
-👉 **[技术深潜: PRINCIPLES.md](/docs/concepts/principles.md)**
+👉 **[技术深潜：Principles](https://docs.openaeon.ai/concepts/principles)**
+
+## 📚 文档导航
+
+- [快速开始](https://docs.openaeon.ai/start/getting-started)
+- [Control UI](https://docs.openaeon.ai/web/control-ui)
+- [网关配置](https://docs.openaeon.ai/gateway/configuration)
+- [消息通道](https://docs.openaeon.ai/channels/telegram)
+- [测试指南](https://docs.openaeon.ai/help/testing)
+- [故障排查](https://docs.openaeon.ai/gateway/troubleshooting)
 
 ---
 

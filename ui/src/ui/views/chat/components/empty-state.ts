@@ -5,6 +5,12 @@ import type { ChatProps } from "../../chat.ts";
 export function renderEmptyState(props: ChatProps) {
   return html`
     <div class="chat-empty-state fractal-nexus">
+      <div class="chat-empty-field" aria-hidden="true">
+        <div class="chat-empty-field__grid"></div>
+        <div class="chat-empty-field__rings"></div>
+        <div class="chat-empty-field__formula"></div>
+        <div class="chat-empty-field__noise"></div>
+      </div>
       <div class="chat-empty-figure fractal-core">
         <div class="fractal-ring fractal-ring--1"></div>
         <div class="fractal-ring fractal-ring--2"></div>

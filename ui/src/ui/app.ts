@@ -88,6 +88,8 @@ import type {
   ToolsCatalogResult,
   StatusSummary,
   AeonStatusResult,
+  ChatManualMode,
+  ChatManualSection,
   NostrProfile,
 } from "./types.ts";
 import { type ChatAttachment, type ChatQueueItem, type CronFormState } from "./ui-types.ts";
@@ -155,7 +157,7 @@ export class OPENAEONApp extends LitElement {
   @state() chatStreamThinking: string | null = null;
   @state() chatStreamStartedAt: number | null = null;
   @state() chatRunId: string | null = null;
-  @state() sandboxChatEvents: Record<string, unknown> = {};
+  @state() sandboxChatEvents: import("./types.js").SandboxChatEvents = {};
   @state() compactionStatus: CompactionStatus | null = null;
   @state() fallbackStatus: FallbackStatus | null = null;
   @state() chatAvatarUrl: string | null = null;
@@ -167,6 +169,10 @@ export class OPENAEONApp extends LitElement {
   @state() chatManualRefreshInFlight = false;
   @state() chatWebSearchEnabled = this.settings.chatWebSearchEnabled ?? true;
   @state() chatManualVisible = false;
+  @state() chatManualMode: ChatManualMode = "quick";
+  @state() chatManualSection: ChatManualSection = "overview";
+  @state() chatManualLastOpenedAt: number | null = null;
+  @state() chatManualDismissedHints: string[] = [];
   // Sidebar state for tool output viewing
   @state() sidebarOpen = false;
   @state() sidebarContent: string | null = null;
@@ -266,6 +272,11 @@ export class OPENAEONApp extends LitElement {
   @state() aeonLogicError: string | null = null;
   @state() aeonLogicContent: string | null = null;
   @state() aeonSystemStatus: AeonStatusResult | null = null;
+  @state() aeonThinkingCursor: string | null = null;
+  @state() aeonThinkingEvents: import("./types.ts").AeonThinkingStreamEntry[] = [];
+  @state() aeonEternalMode = this.settings.aeonEternalMode ?? false;
+  @state() aeonEternalModeSource: "url" | "session" | "local" | "default" = "default";
+  aeonEternalHydratedSessionKey: string | null = null;
   @state() aeonManualVisible = false;
 
   // Sandbox / Deep Agents task plan state
@@ -700,6 +711,27 @@ export class OPENAEONApp extends LitElement {
     await loadAeonLogic(this as unknown as AeonState);
   }
 
+  async handleToggleEternalMode(next: boolean, source: "local" | "url" = "local") {
+    this.aeonEternalMode = next;
+    this.aeonEternalModeSource = source;
+    this.applySettings({
+      ...this.settings,
+      aeonEternalMode: next,
+    });
+    if (!this.client || !this.connected || !this.sessionKey) {
+      return;
+    }
+    try {
+      await this.client.request("sessions.patch", {
+        key: this.sessionKey,
+        eternalMode: next,
+      });
+      this.aeonEternalHydratedSessionKey = this.sessionKey;
+    } catch (err) {
+      this.lastError = `Failed to persist eternal mode: ${String(err)}`;
+    }
+  }
+
   async handleAeonLogicCompaction() {
     if (!this.client || !this.connected) return;
     try {
@@ -713,8 +745,20 @@ export class OPENAEONApp extends LitElement {
     this.aeonManualVisible = visible;
   }
 
-  handleToggleChatManual(visible: boolean) {
+  handleToggleChatManual(
+    visible: boolean,
+    options?: { mode?: ChatManualMode; section?: ChatManualSection },
+  ) {
     this.chatManualVisible = visible;
+    if (visible) {
+      this.chatManualLastOpenedAt = Date.now();
+      if (options?.mode) {
+        this.chatManualMode = options.mode;
+      }
+      if (options?.section) {
+        this.chatManualSection = options.section;
+      }
+    }
   }
 
   async loadSandboxData() {

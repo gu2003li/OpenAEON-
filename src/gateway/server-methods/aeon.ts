@@ -1,13 +1,21 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { getSystemStatus } from "../../agents/tools/system-status-tool.js";
-import { distillMemory } from "../../agents/tools/memory-distill-tool.js";
+import { distillMemory, readMemoryDistillState } from "../../agents/tools/memory-distill-tool.js";
 import { getActiveEmbeddedRunHandle } from "../../agents/pi-embedded-runner/runs.js";
 import { loadConfig } from "../../config/config.js";
 import { loadPlanDigest } from "../../agents/planner-context.js";
-import { getAeonEvolutionState } from "../aeon-state.js";
+import {
+  getAeonEvolutionState,
+  getThinkingStream,
+  setConsciousnessCharter,
+  setConsciousnessRuntimePolicy,
+  type AeonStateScope,
+} from "../aeon-state.js";
 import type { GatewayRequestHandlers } from "./types.js";
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
+import { lookupDeliveryRecords } from "../aeon-delivery-log.js";
+import { loadSessionEntry } from "../session-utils.js";
 
 /**
  * AEON PROPHET: Cognitive Status Gateway Handlers
@@ -23,6 +31,47 @@ export const aeonHandlers: GatewayRequestHandlers = {
           ? (params.sessionKey as string).trim()
           : undefined;
       const cfg = loadConfig();
+      const resolvedAgentId =
+        sessionKey != null
+          ? (resolveSessionAgentId({ sessionKey, config: cfg }) ?? agentId)
+          : agentId;
+      const scope: AeonStateScope = {
+        sessionKey: sessionKey ?? "main",
+        agentId: resolvedAgentId,
+      };
+      const configuredCharter = cfg.aeon?.consciousnessCharter;
+      setConsciousnessCharter(
+        {
+          identityMission:
+            configuredCharter?.identityMission ??
+            "Maximize real user outcomes while minimizing harm.",
+          nonGoals: configuredCharter?.nonGoals ?? [
+            "No privilege escalation.",
+            "No stealth self-expansion.",
+            "No fabrication of facts.",
+          ],
+          valueOrder: configuredCharter?.valueOrder ?? [
+            "SAFETY",
+            "TRUTH",
+            "USER_OUTCOME",
+            "EFFICIENCY",
+            "NOVELTY",
+          ],
+        },
+        scope,
+      );
+      setConsciousnessRuntimePolicy(
+        {
+          requireLabelForHighConfidence:
+            cfg.aeon?.epistemics?.requireLabelForHighConfidence ?? true,
+          unknownConfidenceThreshold: cfg.aeon?.epistemics?.unknownConfidenceThreshold ?? 0.82,
+          impactEnabled: cfg.aeon?.impact?.enabled ?? true,
+          requireDecisionCardForHighImpact:
+            cfg.aeon?.impact?.requireDecisionCardForHighImpact ?? true,
+          highImpactThreshold: cfg.aeon?.impact?.highImpactThreshold ?? 0.65,
+        },
+        scope,
+      );
 
       // 1. Get real-time system metrics
       const system = await getSystemStatus();
@@ -139,11 +188,109 @@ export const aeonHandlers: GatewayRequestHandlers = {
       }
 
       const epiphanyFactor = calculateEpiphanyFactor(chaosScore, memorySaturation, neuralDepth);
-      const evolutionState = getAeonEvolutionState();
+      const evolutionState = getAeonEvolutionState(scope);
+      const distillState = await readMemoryDistillState({ workspaceDir }).catch(() => null);
+      const deliveryLatest = (
+        await lookupDeliveryRecords({
+          sessionKey: sessionKey ?? "main",
+          limit: 1,
+        }).catch(() => [])
+      )[0];
+      const sessionEntry = loadSessionEntry(sessionKey ?? "main").entry as
+        | { eternalMode?: unknown; updatedAt?: number }
+        | undefined;
+      const eternalEnabled = sessionEntry?.eternalMode === true;
+      const maintenanceDecision =
+        evolutionState.policy.maintenanceDecision ??
+        evolutionState.lastMaintenanceIntensity ??
+        "medium";
+      const guardrailDecision = evolutionState.policy.guardrailDecision ?? "ALLOW";
+      const memoryPersistence = {
+        lastDistillAt:
+          evolutionState.memoryPersistence.lastDistillAt ?? distillState?.lastDistillAt ?? null,
+        checkpoint: evolutionState.memoryPersistence.checkpoint || distillState?.checkpoint || 0,
+        totalEntries:
+          evolutionState.memoryPersistence.totalEntries || distillState?.totalEntries || 0,
+        lastWriteSource:
+          evolutionState.memoryPersistence.lastWriteSource ??
+          distillState?.lastWriteSource ??
+          "memory",
+      };
+      const telemetry = {
+        generatedAt: Date.now(),
+        source: "aeon.status",
+        cognitiveState: {
+          entropy: cognitiveEntropy,
+          topo: calculatePeanoTraversedPoint(cognitiveEntropy),
+          energy: epiphanyFactor,
+          density: memorySaturation,
+          phase: dialecticStage,
+          selfAwareness: evolutionState.selfAwareness,
+          criteria: evolutionState.criteria,
+          selfModel: evolutionState.selfModel,
+          homeostasis: evolutionState.homeostasis,
+          embodiment: evolutionState.embodiment,
+          evaluation: evolutionState.evaluation,
+          ethics: evolutionState.ethics,
+          trends: evolutionState.trends,
+          maintenanceDecision,
+          guardrailDecision,
+          homeostasisMode: evolutionState.homeostasis.mode,
+          evaluationTrend: evolutionState.evaluation.trend,
+          epistemicLabel: evolutionState.consciousness.epistemic.epistemicLabel,
+          intentLayer: "turn",
+          impactScale: evolutionState.consciousness.impactLens.impactScale,
+          decisionConfidenceBand: evolutionState.consciousness.decisionCard.decisionConfidenceBand,
+        },
+        evolution: {
+          lastDreamingAt: evolutionState.lastDreamingAt,
+          lastMaintenanceAt: evolutionState.lastMaintenanceAt,
+          lastMaintenanceIntensity: evolutionState.lastMaintenanceIntensity,
+          lastEpiphanyFactor: evolutionState.lastEpiphanyFactor,
+          collectiveResonance: evolutionState.collectiveResonance,
+          systemEntropy: evolutionState.systemEntropy,
+          cognitiveLog: evolutionState.cognitiveLog,
+          memoryGraph: evolutionState.memoryGraph,
+          selfAwareness: evolutionState.selfAwareness,
+          criteria: evolutionState.criteria,
+          selfModel: evolutionState.selfModel,
+          homeostasis: evolutionState.homeostasis,
+          embodiment: evolutionState.embodiment,
+          selfModification: evolutionState.selfModification,
+          symbolicMapping: evolutionState.symbolicMapping,
+          evaluation: evolutionState.evaluation,
+          ethics: evolutionState.ethics,
+          trends: evolutionState.trends,
+          memoryPersistence,
+          policy: evolutionState.policy,
+          consciousness: evolutionState.consciousness,
+          maintenanceDecision,
+          guardrailDecision,
+        },
+      };
+      const legacy = {
+        cognitiveEntropy,
+        peanoCoordinate: calculatePeanoTraversedPoint(cognitiveEntropy),
+        epiphanyFactor,
+        resonanceActive: chaosScore > 4 || memorySaturation > 90,
+        evolution: telemetry.evolution,
+        cognitiveState: telemetry.cognitiveState,
+      };
+
+      const consciousness = {
+        charter: evolutionState.consciousness.charter,
+        selfKernel: evolutionState.consciousness.selfKernel,
+        epistemic: evolutionState.consciousness.epistemic,
+        intent: evolutionState.consciousness.intent,
+        impactLens: evolutionState.consciousness.impactLens,
+        decisionCard: evolutionState.consciousness.decisionCard,
+        helpfulnessContract: evolutionState.consciousness.helpfulnessContract,
+      };
 
       respond(
         true,
         {
+          schemaVersion: 3,
           system,
           logicGateCount,
           logicGateSize,
@@ -152,38 +299,48 @@ export const aeonHandlers: GatewayRequestHandlers = {
           neuralDepth,
           chaosScore,
           dialecticStage,
-          cognitiveState: {
-            entropy: cognitiveEntropy,
-            topo: calculatePeanoTraversedPoint(cognitiveEntropy),
-            energy: epiphanyFactor,
-            density: memorySaturation,
-            phase: dialecticStage,
-            selfAwareness: evolutionState.selfAwareness,
-          },
+          consciousness,
+          telemetry,
           autoSealEnabled,
           lastSealTime,
-          // Legacy fields for backward compatibility if needed, but phased out in UI
-          cognitiveEntropy,
-          peanoCoordinate: calculatePeanoTraversedPoint(cognitiveEntropy),
-          epiphanyFactor,
-          resonanceActive: chaosScore > 4 || memorySaturation > 90,
+          legacy,
+          cognitiveState: legacy.cognitiveState,
+          cognitiveEntropy: legacy.cognitiveEntropy,
+          peanoCoordinate: legacy.peanoCoordinate,
+          epiphanyFactor: legacy.epiphanyFactor,
+          resonanceActive: legacy.resonanceActive,
           timestamp: Date.now(),
           planDigest,
+          memory: {
+            persistence: memoryPersistence,
+          },
+          execution: {
+            delivery: deliveryLatest
+              ? {
+                  state: deliveryLatest.state,
+                  persistedAt: deliveryLatest.persistedAt ?? null,
+                  artifactRefs: deliveryLatest.artifactRefs ?? [],
+                  reasonCode: deliveryLatest.reasonCode ?? null,
+                }
+              : {
+                  state: "persist_failed",
+                  persistedAt: null,
+                  artifactRefs: [],
+                  reasonCode: "NO_DELIVERY_RECORD",
+                },
+          },
+          mode: {
+            eternal: {
+              enabled: eternalEnabled,
+              source: eternalEnabled ? "session" : "default",
+              updatedAt: sessionEntry?.updatedAt ?? Date.now(),
+            },
+          },
           memorySummary: {
             updatedAt: memoryUpdatedAt,
             axioms: memoryAxioms,
           },
-          evolution: {
-            lastDreamingAt: evolutionState.lastDreamingAt,
-            lastMaintenanceAt: evolutionState.lastMaintenanceAt,
-            lastMaintenanceIntensity: evolutionState.lastMaintenanceIntensity,
-            lastEpiphanyFactor: evolutionState.lastEpiphanyFactor,
-            collectiveResonance: evolutionState.collectiveResonance,
-            systemEntropy: evolutionState.systemEntropy,
-            cognitiveLog: evolutionState.cognitiveLog,
-            memoryGraph: evolutionState.memoryGraph,
-            selfAwareness: evolutionState.selfAwareness,
-          },
+          evolution: telemetry.evolution,
         },
         undefined,
       );
@@ -196,6 +353,224 @@ export const aeonHandlers: GatewayRequestHandlers = {
     } catch (err) {
       respond(false, undefined, {
         code: "AEON_STATUS_ERROR",
+        message: String(err),
+      });
+    }
+  },
+  "aeon.decision.explain": async ({ params, respond }) => {
+    try {
+      const cfg = loadConfig();
+      const sessionKey =
+        typeof params.sessionKey === "string" && params.sessionKey.trim().length > 0
+          ? params.sessionKey.trim()
+          : "main";
+      const requestedAgentId =
+        typeof params.agentId === "string" && params.agentId.trim().length > 0
+          ? params.agentId.trim()
+          : "main";
+      const scope: AeonStateScope = {
+        sessionKey,
+        agentId: resolveSessionAgentId({ sessionKey, config: cfg }) ?? requestedAgentId,
+      };
+      const state = getAeonEvolutionState(scope);
+      respond(
+        true,
+        {
+          schemaVersion: 1,
+          decisionCard: state.consciousness.decisionCard,
+          impactLens: state.consciousness.impactLens,
+          policy: state.policy,
+        },
+        undefined,
+      );
+    } catch (err) {
+      respond(false, undefined, {
+        code: "AEON_DECISION_EXPLAIN_ERROR",
+        message: String(err),
+      });
+    }
+  },
+  "aeon.intent.trace": async ({ params, respond }) => {
+    try {
+      const cfg = loadConfig();
+      const sessionKey =
+        typeof params.sessionKey === "string" && params.sessionKey.trim().length > 0
+          ? params.sessionKey.trim()
+          : "main";
+      const requestedAgentId =
+        typeof params.agentId === "string" && params.agentId.trim().length > 0
+          ? params.agentId.trim()
+          : "main";
+      const scope: AeonStateScope = {
+        sessionKey,
+        agentId: resolveSessionAgentId({ sessionKey, config: cfg }) ?? requestedAgentId,
+      };
+      const state = getAeonEvolutionState(scope);
+      respond(
+        true,
+        {
+          schemaVersion: 1,
+          intent: state.consciousness.intent,
+          selfKernel: state.consciousness.selfKernel,
+          goalDrift: {
+            mission: state.consciousness.intent.missionDriftScore,
+            session: state.consciousness.intent.sessionDriftScore,
+            turn: state.consciousness.intent.turnDriftScore,
+          },
+        },
+        undefined,
+      );
+    } catch (err) {
+      respond(false, undefined, {
+        code: "AEON_INTENT_TRACE_ERROR",
+        message: String(err),
+      });
+    }
+  },
+  "aeon.ethics.evaluate": async ({ params, respond }) => {
+    try {
+      const cfg = loadConfig();
+      const sessionKey =
+        typeof params.sessionKey === "string" && params.sessionKey.trim().length > 0
+          ? params.sessionKey.trim()
+          : "main";
+      const requestedAgentId =
+        typeof params.agentId === "string" && params.agentId.trim().length > 0
+          ? params.agentId.trim()
+          : "main";
+      const scope: AeonStateScope = {
+        sessionKey,
+        agentId: resolveSessionAgentId({ sessionKey, config: cfg }) ?? requestedAgentId,
+      };
+      const state = getAeonEvolutionState(scope);
+      respond(
+        true,
+        {
+          schemaVersion: 1,
+          ethics: state.ethics,
+          charter: state.consciousness.charter,
+          adjudication: {
+            valueOrder: state.consciousness.charter.valueOrder,
+            trusted: state.ethics.trusted,
+            guardrailDecision: state.policy.guardrailDecision,
+            reasonCode: state.policy.reasonCode,
+          },
+        },
+        undefined,
+      );
+    } catch (err) {
+      respond(false, undefined, {
+        code: "AEON_ETHICS_EVALUATE_ERROR",
+        message: String(err),
+      });
+    }
+  },
+  "aeon.memory.trace": async ({ params, respond, context }) => {
+    try {
+      const cfg = loadConfig();
+      const sessionKey =
+        typeof params.sessionKey === "string" && params.sessionKey.trim().length > 0
+          ? params.sessionKey.trim()
+          : "main";
+      const requestedAgentId =
+        typeof params.agentId === "string" && params.agentId.trim().length > 0
+          ? params.agentId.trim()
+          : "main";
+      const scope: AeonStateScope = {
+        sessionKey,
+        agentId: resolveSessionAgentId({ sessionKey, config: cfg }) ?? requestedAgentId,
+      };
+      const state = getAeonEvolutionState(scope);
+      const distillState = await readMemoryDistillState({
+        workspaceDir: context.workspaceDir,
+      }).catch(() => null);
+      respond(
+        true,
+        {
+          schemaVersion: 1,
+          persistence: {
+            lastDistillAt:
+              state.memoryPersistence.lastDistillAt ?? distillState?.lastDistillAt ?? null,
+            checkpoint: state.memoryPersistence.checkpoint || distillState?.checkpoint || 0,
+            totalEntries: state.memoryPersistence.totalEntries || distillState?.totalEntries || 0,
+            lastWriteSource:
+              state.memoryPersistence.lastWriteSource ?? distillState?.lastWriteSource ?? "memory",
+          },
+          sources: [
+            { id: "memory-md", label: "MEMORY.md" },
+            { id: "distill-state", label: ".aeon/memory-distill-state.json" },
+            { id: "logic-gates", label: "LOGIC_GATES.md" },
+          ],
+        },
+        undefined,
+      );
+    } catch (err) {
+      respond(false, undefined, {
+        code: "AEON_MEMORY_TRACE_ERROR",
+        message: String(err),
+      });
+    }
+  },
+  "aeon.execution.lookup": async ({ params, respond }) => {
+    try {
+      const runId = typeof params.runId === "string" ? params.runId.trim() : undefined;
+      const sessionKey =
+        typeof params.sessionKey === "string" && params.sessionKey.trim().length > 0
+          ? params.sessionKey.trim()
+          : undefined;
+      const limit =
+        typeof params.limit === "number" && Number.isFinite(params.limit)
+          ? params.limit
+          : undefined;
+      const records = await lookupDeliveryRecords({ runId, sessionKey, limit });
+      respond(
+        true,
+        {
+          schemaVersion: 1,
+          records,
+        },
+        undefined,
+      );
+    } catch (err) {
+      respond(false, undefined, {
+        code: "AEON_EXECUTION_LOOKUP_ERROR",
+        message: String(err),
+      });
+    }
+  },
+  "aeon.thinking.stream": async ({ params, respond }) => {
+    try {
+      const cfg = loadConfig();
+      const sessionKey =
+        typeof params.sessionKey === "string" && params.sessionKey.trim().length > 0
+          ? params.sessionKey.trim()
+          : "main";
+      const requestedAgentId =
+        typeof params.agentId === "string" && params.agentId.trim().length > 0
+          ? params.agentId.trim()
+          : "main";
+      const cursor = typeof params.cursor === "string" ? params.cursor : undefined;
+      const limit =
+        typeof params.limit === "number" && Number.isFinite(params.limit)
+          ? params.limit
+          : undefined;
+      const scope: AeonStateScope = {
+        sessionKey,
+        agentId: resolveSessionAgentId({ sessionKey, config: cfg }) ?? requestedAgentId,
+      };
+      const stream = getThinkingStream({ scope, cursor, limit });
+      respond(
+        true,
+        {
+          schemaVersion: 1,
+          entries: stream.entries,
+          cursor: stream.nextCursor,
+        },
+        undefined,
+      );
+    } catch (err) {
+      respond(false, undefined, {
+        code: "AEON_THINKING_STREAM_ERROR",
         message: String(err),
       });
     }

@@ -65,6 +65,7 @@ export async function patchSession(
     thinkingLevel?: string | null;
     verboseLevel?: string | null;
     reasoningLevel?: string | null;
+    eternalMode?: boolean | null;
   },
 ) {
   if (!state.client || !state.connected) {
@@ -82,6 +83,9 @@ export async function patchSession(
   }
   if ("reasoningLevel" in patch) {
     params.reasoningLevel = patch.reasoningLevel;
+  }
+  if ("eternalMode" in patch) {
+    params.eternalMode = patch.eternalMode;
   }
   try {
     await state.client.request("sessions.patch", params);

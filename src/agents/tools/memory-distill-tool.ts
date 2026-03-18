@@ -14,8 +14,67 @@ export type DistillationResult = {
   axiomsExtracted?: number;
   memorySizeBefore?: number;
   memorySizeAfter?: number;
+  checkpoint?: number;
+  totalEntries?: number;
+  lastDistillAt?: number;
+  lastWriteSource?: "memory" | "logic-gates" | "maintenance";
   error?: string;
 };
+
+export type MemoryDistillState = {
+  checkpoint: number;
+  totalEntries: number;
+  lastDistillAt: number | null;
+  lastWriteSource: "memory" | "logic-gates" | "maintenance";
+};
+
+const DEFAULT_MEMORY_DISTILL_STATE: MemoryDistillState = {
+  checkpoint: 0,
+  totalEntries: 0,
+  lastDistillAt: null,
+  lastWriteSource: "memory",
+};
+
+function getDistillStatePath(workspaceRoot: string): string {
+  return path.join(workspaceRoot, ".aeon", "memory-distill-state.json");
+}
+
+export async function readMemoryDistillState(
+  options: { workspaceDir?: string } = {},
+): Promise<MemoryDistillState> {
+  try {
+    const cfg = loadConfig();
+    const workspaceRoot =
+      options.workspaceDir || resolveWorkspaceRoot(cfg.agents?.defaults?.workspace);
+    const statePath = getDistillStatePath(workspaceRoot);
+    const raw = await fs.readFile(statePath, "utf-8");
+    const parsed = JSON.parse(raw) as Partial<MemoryDistillState>;
+    const checkpoint = Math.max(0, Number(parsed.checkpoint) || 0);
+    const totalEntries = Math.max(0, Number(parsed.totalEntries) || 0);
+    const lastDistillAt = Number(parsed.lastDistillAt);
+    const source =
+      parsed.lastWriteSource === "logic-gates" || parsed.lastWriteSource === "maintenance"
+        ? parsed.lastWriteSource
+        : "memory";
+    return {
+      checkpoint,
+      totalEntries,
+      lastDistillAt: Number.isFinite(lastDistillAt) ? lastDistillAt : null,
+      lastWriteSource: source,
+    };
+  } catch {
+    return { ...DEFAULT_MEMORY_DISTILL_STATE };
+  }
+}
+
+async function writeMemoryDistillState(
+  workspaceRoot: string,
+  state: MemoryDistillState,
+): Promise<void> {
+  const statePath = getDistillStatePath(workspaceRoot);
+  await fs.mkdir(path.dirname(statePath), { recursive: true });
+  await fs.writeFile(statePath, JSON.stringify(state, null, 2) + "\n", "utf-8");
+}
 
 /**
  * AEON PROPHET: Memory Distillation Tool
@@ -33,10 +92,14 @@ export async function distillMemory(
   try {
     const memoryContent = await fs.readFile(memoryPath, "utf-8");
     const stats = await fs.stat(memoryPath);
+    const initialState = await readMemoryDistillState({ workspaceDir: workspaceRoot });
+    const startOffset =
+      initialState.checkpoint > stats.size ? 0 : Math.max(0, initialState.checkpoint);
+    const incrementalContent = memoryContent.slice(startOffset);
 
     // Extraction Logic: Look for lines marked with [AXIOM], [VERIFIED], or [TRUTH]
     // Handles various bracket styles and spacing.
-    const lines = memoryContent.split("\n");
+    const lines = incrementalContent.split("\n");
     const axioms = lines.filter((line) => /\[(AXIOM|VERIFIED|TRUTH)\]/i.test(line));
     const retractions = lines
       .filter((line) => /\[RETRACT\]/i.test(line))
@@ -44,7 +107,22 @@ export async function distillMemory(
       .filter(Boolean);
 
     if (axioms.length === 0 && retractions.length === 0) {
-      return { status: "no-change", memorySizeBefore: stats.size };
+      if (startOffset !== stats.size) {
+        await writeMemoryDistillState(workspaceRoot, {
+          checkpoint: stats.size,
+          totalEntries: initialState.totalEntries,
+          lastDistillAt: initialState.lastDistillAt,
+          lastWriteSource: initialState.lastWriteSource,
+        });
+      }
+      return {
+        status: "no-change",
+        memorySizeBefore: stats.size,
+        checkpoint: stats.size,
+        totalEntries: initialState.totalEntries,
+        lastDistillAt: initialState.lastDistillAt ?? undefined,
+        lastWriteSource: initialState.lastWriteSource,
+      };
     }
 
     // Load existing gates and filter out retractions
@@ -146,19 +224,40 @@ export async function distillMemory(
     const finalGates = sortedAxioms.join("\n");
     await fs.writeFile(logicGatesPath, finalGates + "\n");
 
-    // Archive old memory (rename to MEMORY.bak.[timestamp])
+    // Archive snapshot so long-running sessions still have historical recovery points.
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     await fs.writeFile(path.join(workspaceRoot, `MEMORY.bak.${timestamp}.md`), memoryContent);
 
-    // Reset MEMORY.md with a fresh header
-    const freshHeader = `# MEMORY (Evolutionary Ledger)\n\n*Reset at ${new Date().toLocaleString()} after distillation.*\n\n`;
-    await fs.writeFile(memoryPath, freshHeader);
+    // Keep MEMORY.md durable: append a distillation checkpoint instead of wiping content.
+    // This preserves overnight work and keeps conversational recall discoverable.
+    const checkpoint = [
+      "",
+      `## DISTILLATION_CHECKPOINT ${new Date().toISOString()}`,
+      `- extracted_axioms: ${newGatesWithMetadata.length}`,
+      `- retractions_applied: ${retractions.length}`,
+      `- memory_size_before: ${stats.size}`,
+      `- logic_gates_total: ${sortedAxioms.length}`,
+      "",
+    ].join("\n");
+    await fs.appendFile(memoryPath, checkpoint, "utf-8");
+    const memoryAfterStats = await fs.stat(memoryPath).catch(() => null);
+    const nextState: MemoryDistillState = {
+      checkpoint: memoryAfterStats?.size ?? stats.size,
+      totalEntries: sortedAxioms.length,
+      lastDistillAt: now,
+      lastWriteSource: "maintenance",
+    };
+    await writeMemoryDistillState(workspaceRoot, nextState);
 
     return {
       status: "success",
       axiomsExtracted: newGatesWithMetadata.length,
       memorySizeBefore: stats.size,
-      memorySizeAfter: freshHeader.length,
+      memorySizeAfter: memoryAfterStats?.size ?? stats.size,
+      checkpoint: nextState.checkpoint,
+      totalEntries: nextState.totalEntries,
+      lastDistillAt: nextState.lastDistillAt ?? undefined,
+      lastWriteSource: nextState.lastWriteSource,
     };
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : String(err);

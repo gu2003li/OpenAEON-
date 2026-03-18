@@ -97,6 +97,7 @@ import { renderSkills } from "./views/skills.ts";
 
 const AVATAR_DATA_RE = /^data:/i;
 const AVATAR_HTTP_RE = /^https?:\/\//i;
+const chatDraftCache = new WeakMap<object, Map<string, string>>();
 const CRON_THINKING_SUGGESTIONS = ["off", "minimal", "low", "medium", "high"];
 const CRON_TIMEZONE_SUGGESTIONS = [
   "UTC",
@@ -149,6 +150,31 @@ function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
     return candidate;
   }
   return identity?.avatarUrl;
+}
+
+function cacheDraft(state: AppViewState, sessionKey: string, draft: string) {
+  const key = sessionKey.trim();
+  if (!key) {
+    return;
+  }
+  let perSession = chatDraftCache.get(state);
+  if (!perSession) {
+    perSession = new Map<string, string>();
+    chatDraftCache.set(state, perSession);
+  }
+  perSession.set(key, draft);
+}
+
+function restoreDraft(state: AppViewState, sessionKey: string): string {
+  const key = sessionKey.trim();
+  if (!key) {
+    return "";
+  }
+  const perSession = chatDraftCache.get(state);
+  if (!perSession) {
+    return "";
+  }
+  return perSession.get(key) ?? "";
 }
 
 export function renderApp(state: AppViewState) {
@@ -242,6 +268,93 @@ export function renderApp(state: AppViewState) {
     state.aeonSystemStatus?.epiphanyFactor ?? 0,
     state.chatEpiphanyFactor,
   );
+  const switchChatSession = (next: string) => {
+    cacheDraft(state, state.sessionKey, state.chatMessage);
+    state.sessionKey = next;
+    state.chatMessage = restoreDraft(state, next);
+    state.chatAttachments = [];
+    state.chatStream = null;
+    state.chatStreamStartedAt = null;
+    state.chatRunId = null;
+    state.chatQueue = [];
+    state.resetToolStream();
+    state.resetChatScroll();
+    state.sandboxTaskPlan = null;
+    state.sandboxTaskPlanLoading = false;
+    state.sandboxTaskPlanError = null;
+    state.sandboxChatEvents = {};
+    state.aeonThinkingCursor = null;
+    state.aeonThinkingEvents = [];
+    state.aeonEternalHydratedSessionKey = null;
+    state.applySettings({
+      ...state.settings,
+      sessionKey: next,
+      lastActiveSessionKey: next,
+    });
+    void state.loadAssistantIdentity();
+    void loadChatHistory(state);
+    void refreshChatAvatar(state);
+  };
+  const handleQuickCommand = (input: { name: string; args: string[]; raw: string }) => {
+    const name = input.name.trim().toLowerCase();
+    const arg = input.args[0]?.trim().toLowerCase() ?? "";
+    if (name === "new") {
+      void state.handleSendChat("/new", { restoreDraft: true });
+      return;
+    }
+    if (name === "main") {
+      if (state.sessionKey !== "main") {
+        switchChatSession("main");
+      }
+      return;
+    }
+    if (name === "sandbox") {
+      state.setTab("sandbox");
+      return;
+    }
+    if (name === "aeon") {
+      state.setTab("aeon");
+      return;
+    }
+    if (name === "focus") {
+      if (state.onboarding) {
+        return;
+      }
+      state.applySettings({
+        ...state.settings,
+        chatFocusMode: !state.settings.chatFocusMode,
+      });
+      return;
+    }
+    if (name === "thinking") {
+      if (state.onboarding) {
+        return;
+      }
+      state.applySettings({
+        ...state.settings,
+        chatShowThinking: !state.settings.chatShowThinking,
+      });
+      return;
+    }
+    if (name === "eternal") {
+      const next = arg === "on" ? true : arg === "off" ? false : !state.aeonEternalMode;
+      void state.handleToggleEternalMode(next, "local");
+      return;
+    }
+    if (name === "web") {
+      const next = arg === "on" ? true : arg === "off" ? false : !state.chatWebSearchEnabled;
+      state.handleToggleWebSearch(next);
+      return;
+    }
+    if (name === "refresh") {
+      state.resetToolStream();
+      void Promise.all([loadChatHistory(state), refreshChatAvatar(state)]);
+      return;
+    }
+    if (name === "clear") {
+      state.chatMessage = "";
+    }
+  };
 
   return html`
     <div class="aeon-cosmos-core" style="${resonanceActive ? "filter: saturate(1.5) contrast(1.1);" : ""} --aeon-chaos: ${chaosScore}; --aeon-epiphany: ${epiphanyFactor};">
@@ -380,36 +493,6 @@ export function renderApp(state: AppViewState) {
             ${renderThemeToggle(state)}
           </div>
         </header>
-
-        ${
-          state.chatManualVisible
-            ? html`
-                <div class="aeon-manual-overlay" @click=${() => state.handleToggleChatManual(false)}>
-                  <div class="aeon-manual-content" @click=${(e: Event) => e.stopPropagation()}>
-                    <header class="aeon-manual-header">
-                      <div class="aeon-manual-title">${t("chat.manualTitle")}</div>
-                      <div class="aeon-manual-subtitle">${t("chat.manualSubtitle")}</div>
-                      <button class="aeon-manual-close" @click=${() => state.handleToggleChatManual(false)}>×</button>
-                    </header>
-                    <div class="aeon-manual-body">
-                      <div class="aeon-manual-section">
-                        <div class="aeon-manual-section-title">指令 (Commands)</div>
-                        <ul>
-                          <li>${t("chat.manualCmdAudit")}</li>
-                          <li>${t("chat.manualCmdDistill")}</li>
-                          <li>${t("chat.manualCmdRefine")}</li>
-                        </ul>
-                      </div>
-                      <div class="aeon-manual-section">
-                        <div class="aeon-manual-section-title">状态 (Status)</div>
-                        <p>${t("chat.manualResonance")}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `
-            : nothing
-        }
 
         <main class="content ${isChat ? "content--chat" : ""}">
           ${
@@ -558,20 +641,39 @@ export function renderApp(state: AppViewState) {
                 taskPlan: state.sandboxTaskPlan ?? null,
                 agentIdentityById: state.agentIdentityById,
                 recruitModalOpen: state.sandboxRecruitModalOpen,
-                nodes: state.nodes as any,
+                nodes: state.nodes,
                 health: state.debugHealth,
                 channels: state.channelsSnapshot,
                 usage: state.usageCostSummary,
                 approvalsCount: state.execApprovalQueue?.length ?? 0,
+                evolution: state.aeonSystemStatus?.evolution,
+                consciousness: state.aeonSystemStatus?.consciousness,
+                telemetry: state.aeonSystemStatus?.telemetry,
+                legacy: state.aeonSystemStatus?.legacy,
+                timestamp: state.aeonSystemStatus?.timestamp,
+                memoryPersistence: state.aeonSystemStatus?.memory?.persistence,
+                executionDelivery: state.aeonSystemStatus?.execution?.delivery,
+                eternalMode: state.aeonSystemStatus?.mode?.eternal,
+                onToggleEternalMode: () =>
+                  void state.handleToggleEternalMode(!state.aeonEternalMode, "local"),
                 onRefresh: async () => {
                   await loadSessions(state);
                   await loadSandboxTaskPlan(state);
+                  await state.handleAeonLogicRefresh();
                 },
                 onForceRestart: () => {
                   void state.handleSendChat("/new", { restoreDraft: true });
                 },
                 onSessionFocus: (next) => {
                   state.sessionKey = next;
+                  state.aeonThinkingCursor = null;
+                  state.aeonThinkingEvents = [];
+                  state.aeonEternalHydratedSessionKey = null;
+                  state.applySettings({
+                    ...state.settings,
+                    sessionKey: next,
+                    lastActiveSessionKey: next,
+                  });
                   void loadSandboxTaskPlan(state);
                 },
                 onRecruitAgent: () => state.handleRecruitModalOpen(),
@@ -597,6 +699,7 @@ export function renderApp(state: AppViewState) {
                 onDraftChange: (next) => state.setChatMessage(next),
                 onToggleManual: (visible) => state.handleToggleAeonManual(visible),
                 cognitiveLog: state.aeonSystemStatus?.evolution?.cognitiveLog,
+                liveThinking: state.chatStreamThinking,
                 activeTab: state.aeonActiveTab,
                 onTabChange: (tab) => state.handleAeonTabChange(tab),
               })
@@ -1236,29 +1339,7 @@ export function renderApp(state: AppViewState) {
           state.tab === "chat"
             ? renderChat({
                 sessionKey: state.sessionKey,
-                onSessionKeyChange: (next) => {
-                  state.sessionKey = next;
-                  state.chatMessage = "";
-                  state.chatAttachments = [];
-                  state.chatStream = null;
-                  state.chatStreamStartedAt = null;
-                  state.chatRunId = null;
-                  state.chatQueue = [];
-                  state.resetToolStream();
-                  state.resetChatScroll();
-                  state.sandboxTaskPlan = null;
-                  state.sandboxTaskPlanLoading = false;
-                  state.sandboxTaskPlanError = null;
-                  state.sandboxChatEvents = {};
-                  state.applySettings({
-                    ...state.settings,
-                    sessionKey: next,
-                    lastActiveSessionKey: next,
-                  });
-                  void state.loadAssistantIdentity();
-                  void loadChatHistory(state);
-                  void refreshChatAvatar(state);
-                },
+                onSessionKeyChange: (next) => switchChatSession(next),
                 thinkingLevel: state.chatThinkingLevel,
                 showThinking,
                 loading: state.chatLoading,
@@ -1294,7 +1375,10 @@ export function renderApp(state: AppViewState) {
                   });
                 },
                 onChatScroll: (event) => state.handleChatScroll(event),
-                onDraftChange: (next) => (state.chatMessage = next),
+                onDraftChange: (next) => {
+                  state.chatMessage = next;
+                  cacheDraft(state, state.sessionKey, next);
+                },
                 attachments: state.chatAttachments,
                 onAttachmentsChange: (next) => (state.chatAttachments = next),
                 onSend: () => state.handleSendChat(),
@@ -1302,6 +1386,63 @@ export function renderApp(state: AppViewState) {
                 onAbort: () => void state.handleAbortChat(),
                 onQueueRemove: (id) => state.removeQueuedMessage(id),
                 onNewSession: () => state.handleSendChat("/new", { restoreDraft: true }),
+                onOpenSandbox: () => state.setTab("sandbox"),
+                onOpenAeon: () => state.setTab("aeon"),
+                eternalMode: state.aeonEternalMode,
+                onToggleEternalMode: () =>
+                  void state.handleToggleEternalMode(!state.aeonEternalMode, "local"),
+                manualState: {
+                  visible: state.chatManualVisible,
+                  mode: state.chatManualMode,
+                  activeSection: state.chatManualSection,
+                  lastOpenedAt: state.chatManualLastOpenedAt,
+                  dismissedHints: state.chatManualDismissedHints,
+                },
+                onManualToggle: (visible, options) =>
+                  state.handleToggleChatManual(visible, options),
+                onManualModeChange: (mode) => state.handleToggleChatManual(true, { mode }),
+                onManualSectionChange: (section) => state.handleToggleChatManual(true, { section }),
+                manualRuntime: {
+                  delivery: {
+                    state: state.aeonSystemStatus?.execution?.delivery?.state ?? "persist_failed",
+                    persistedAt: state.aeonSystemStatus?.execution?.delivery?.persistedAt ?? null,
+                  },
+                  eternalMode: {
+                    enabled: state.aeonEternalMode,
+                    source: state.aeonEternalModeSource,
+                  },
+                  chaosScore: state.chatChaosScore,
+                  epiphanyFactor: state.chatEpiphanyFactor,
+                  fractalState: {
+                    depthLevel: (1 +
+                      Math.round(
+                        Math.max(0, Math.min(1, state.chatChaosScore / 10)) * 0.65 * 3 +
+                          Math.max(0, Math.min(1, state.chatEpiphanyFactor)) * 0.35 * 3,
+                      )) as 1 | 2 | 3 | 4,
+                    resonanceLevel: Math.max(0, Math.min(1, state.chatEpiphanyFactor)),
+                    formulaPhase:
+                      state.aeonSystemStatus?.execution?.delivery?.state === "persist_failed"
+                        ? "error"
+                        : state.chatStream
+                          ? "active"
+                          : "idle",
+                    noiseLevel: Math.max(
+                      0.08,
+                      Math.min(
+                        0.9,
+                        0.15 + Math.max(0, Math.min(1, state.chatChaosScore / 10)) * 0.55,
+                      ),
+                    ),
+                    deliveryBand:
+                      state.aeonSystemStatus?.execution?.delivery?.state === "persist_failed"
+                        ? "warn"
+                        : state.aeonSystemStatus?.execution?.delivery?.state === "persisted" ||
+                            state.aeonSystemStatus?.execution?.delivery?.state === "acknowledged"
+                          ? "safe"
+                          : "pending",
+                  },
+                },
+                onQuickCommand: handleQuickCommand,
                 showNewMessages: state.chatNewMessagesBelow && !state.chatManualRefreshInFlight,
                 onScrollToBottom: () => state.scrollToBottom(),
                 // Sidebar props for tool output viewing
@@ -1326,6 +1467,35 @@ export function renderApp(state: AppViewState) {
                 cognitiveLog: state.aeonSystemStatus?.evolution?.cognitiveLog,
                 chaosScore: state.chatChaosScore,
                 epiphanyFactor: state.chatEpiphanyFactor,
+                executionDelivery: state.aeonSystemStatus?.execution?.delivery,
+                fractalState: {
+                  depthLevel: (1 +
+                    Math.round(
+                      Math.max(0, Math.min(1, state.chatChaosScore / 10)) * 0.65 * 3 +
+                        Math.max(0, Math.min(1, state.chatEpiphanyFactor)) * 0.35 * 3,
+                    )) as 1 | 2 | 3 | 4,
+                  resonanceLevel: Math.max(0, Math.min(1, state.chatEpiphanyFactor)),
+                  formulaPhase:
+                    state.aeonSystemStatus?.execution?.delivery?.state === "persist_failed"
+                      ? "error"
+                      : state.chatStream
+                        ? "active"
+                        : "idle",
+                  noiseLevel: Math.max(
+                    0.08,
+                    Math.min(
+                      0.9,
+                      0.15 + Math.max(0, Math.min(1, state.chatChaosScore / 10)) * 0.55,
+                    ),
+                  ),
+                  deliveryBand:
+                    state.aeonSystemStatus?.execution?.delivery?.state === "persist_failed"
+                      ? "warn"
+                      : state.aeonSystemStatus?.execution?.delivery?.state === "persisted" ||
+                          state.aeonSystemStatus?.execution?.delivery?.state === "acknowledged"
+                        ? "safe"
+                        : "pending",
+                },
               })
             : nothing
         }

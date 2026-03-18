@@ -312,6 +312,11 @@ export const baseStyles = html`
 
     /* ─── Agent Card ─── */
     .sandbox-wrap .agent-card {
+      appearance: none;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
       background: rgba(15, 23, 42, 0.4);
       backdrop-filter: blur(15px);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -330,6 +335,10 @@ export const baseStyles = html`
       background: rgba(30, 41, 59, 0.5);
       transform: translateY(-4px) scale(1.02);
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+    .sandbox-wrap .agent-card:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.85);
+      outline-offset: 2px;
     }
     .sandbox-wrap .agent-card::before {
       content: "";
@@ -630,6 +639,79 @@ export const baseStyles = html`
       font-weight: 900;
       color: #fff;
       text-shadow: 0 0 15px var(--nexus-secondary);
+    }
+
+    .sandbox-wrap .consciousness-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .sandbox-wrap .consciousness-card {
+      background: rgba(15, 23, 42, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .sandbox-wrap .consciousness-card__title {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.58);
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+    .sandbox-wrap .section-meta {
+      margin: 4px 0 10px;
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.55);
+      letter-spacing: 0.02em;
+    }
+
+    .sandbox-wrap .sparkline {
+      width: 100%;
+      height: 24px;
+      margin-bottom: 10px;
+      opacity: 0.95;
+    }
+
+    .sandbox-wrap .sparkline-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 24px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .sandbox-wrap .consciousness-card__row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.75);
+      padding: 4px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sandbox-wrap .consciousness-card__row:first-of-type {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .sandbox-wrap .consciousness-card__row b {
+      font-size: 0.78rem;
+      color: #f8fafc;
+      letter-spacing: 0.04em;
     }
   </style>
 `;

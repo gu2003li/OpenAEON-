@@ -44,6 +44,11 @@ import {
   resolveSessionModelRef,
 } from "../session-utils.js";
 import { formatForLog } from "../ws-log.js";
+import {
+  extractArtifactRefs,
+  recoverIncompleteDeliveries,
+  recordDeliveryTransition,
+} from "../aeon-delivery-log.js";
 import { injectTimestamp, timestampOptsFromConfig } from "./agent-timestamp.js";
 import { normalizeRpcAttachmentsToChatAttachments } from "./attachment-normalize.js";
 import { appendInjectedAssistantMessageToTranscript } from "./chat-transcript-inject.js";
@@ -69,6 +74,7 @@ const CHAT_HISTORY_TEXT_MAX_CHARS = 12_000;
 const CHAT_HISTORY_MAX_SINGLE_MESSAGE_BYTES = 128 * 1024;
 const CHAT_HISTORY_OVERSIZED_PLACEHOLDER = "[chat.history omitted: message too large]";
 let chatHistoryPlaceholderEmitCount = 0;
+void recoverIncompleteDeliveries().catch(() => {});
 
 function stripDisallowedChatControlChars(message: string): string {
   let output = "";
@@ -796,6 +802,12 @@ export const chatHandlers: GatewayRequestHandlers = {
         startedAtMs: now,
         expiresAtMs: resolveChatRunExpiresAtMs({ now, timeoutMs }),
       });
+      void recordDeliveryTransition({
+        runId: clientRunId,
+        sessionKey: rawSessionKey,
+        state: "running",
+        taskGoal: parsedMessage.trim() || undefined,
+      }).catch(() => {});
       const ackPayload = {
         runId: clientRunId,
         status: "started" as const,
@@ -907,6 +919,11 @@ export const chatHandlers: GatewayRequestHandlers = {
         },
       })
         .then(() => {
+          void recordDeliveryTransition({
+            runId: clientRunId,
+            sessionKey: rawSessionKey,
+            state: "finalizing",
+          }).catch(() => {});
           if (!agentRunStarted) {
             const combinedReply = finalReplyParts
               .map((part) => part.trim())
@@ -928,10 +945,24 @@ export const chatHandlers: GatewayRequestHandlers = {
               });
               if (appended.ok) {
                 message = appended.message;
+                void recordDeliveryTransition({
+                  runId: clientRunId,
+                  sessionKey: rawSessionKey,
+                  state: "persisted",
+                  persistedAt: Date.now(),
+                  summary: combinedReply.slice(0, 600),
+                  artifactRefs: extractArtifactRefs(combinedReply),
+                }).catch(() => {});
               } else {
                 context.logGateway.warn(
                   `webchat transcript append failed: ${appended.error ?? "unknown error"}`,
                 );
+                void recordDeliveryTransition({
+                  runId: clientRunId,
+                  sessionKey: rawSessionKey,
+                  state: "persist_failed",
+                  reasonCode: "TRANSCRIPT_APPEND_FAILED",
+                }).catch(() => {});
                 const now = Date.now();
                 message = {
                   role: "assistant",
@@ -950,6 +981,11 @@ export const chatHandlers: GatewayRequestHandlers = {
               sessionKey: rawSessionKey,
               message,
             });
+            void recordDeliveryTransition({
+              runId: clientRunId,
+              sessionKey: rawSessionKey,
+              state: "acknowledged",
+            }).catch(() => {});
           }
           context.dedupe.set(`chat:${clientRunId}`, {
             ts: Date.now(),
@@ -958,6 +994,13 @@ export const chatHandlers: GatewayRequestHandlers = {
           });
         })
         .catch((err) => {
+          void recordDeliveryTransition({
+            runId: clientRunId,
+            sessionKey: rawSessionKey,
+            state: "persist_failed",
+            reasonCode: "RUN_ERROR",
+            summary: String(err).slice(0, 300),
+          }).catch(() => {});
           const error = errorShape(ErrorCodes.UNAVAILABLE, String(err));
           context.dedupe.set(`chat:${clientRunId}`, {
             ts: Date.now(),
@@ -980,6 +1023,13 @@ export const chatHandlers: GatewayRequestHandlers = {
           context.chatAbortControllers.delete(clientRunId);
         });
     } catch (err) {
+      void recordDeliveryTransition({
+        runId: clientRunId,
+        sessionKey: rawSessionKey,
+        state: "persist_failed",
+        reasonCode: "START_ERROR",
+        summary: String(err).slice(0, 300),
+      }).catch(() => {});
       const error = errorShape(ErrorCodes.UNAVAILABLE, String(err));
       const payload = {
         runId: clientRunId,

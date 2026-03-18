@@ -106,6 +106,27 @@ Cron jobs panel notes:
   - Gateway persists aborted partial assistant text into transcript history when buffered output exists
   - Persisted entries include abort metadata so transcript consumers can tell abort partials from normal completion output
 
+### Chat manual (in-page)
+
+The Chat page includes an in-page manual with two modes:
+
+- **Quick Reference**: command recipes, shortcut tips, and one-click draft insertion
+- **Guided Walkthrough**: step-by-step flow from session start to persisted output verification
+
+Open it from the Chat controls (book icon). The panel is state-aware and can map your current runtime to explanations.
+
+### Visual semantics (fractal UI)
+
+The fractal/“silicon life” visuals in Chat are state-driven, not decorative-only:
+
+- Delivery state (`running`, `persisted`, `persist_failed`) influences warning/safe bands
+- Resonance values (`chaosScore`, `epiphanyFactor`) influence depth and pulse intensity
+- Formula phase (`idle`, `active`, `error`) controls recursive rail emphasis
+
+This mapping is intended to help operators read execution state at a glance while preserving readability and reduced-motion support.
+
+For the underlying runtime contract behind these visuals, see [AEON Logic Model](/aeon/logic-model).
+
 ## Tailnet access (recommended)
 
 ### Integrated Tailscale Serve (preferred)

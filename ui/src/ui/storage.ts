@@ -3,6 +3,7 @@ const KEY = "openaeon.control.settings.v2";
 import { isSupportedLocale } from "../i18n/index.ts";
 import { inferBasePathFromPathname, normalizeBasePath } from "./navigation.ts";
 import type { ThemeMode } from "./theme.ts";
+import type { Tab } from "./navigation.ts";
 
 export type UiSettings = {
   gatewayUrl: string;
@@ -17,6 +18,8 @@ export type UiSettings = {
   navGroupsCollapsed: Record<string, boolean>; // Which nav groups are collapsed
   locale?: string;
   chatWebSearchEnabled?: boolean;
+  aeonEternalMode?: boolean;
+  lastTab?: Tab;
 };
 
 export function loadSettings(): UiSettings {
@@ -44,6 +47,8 @@ export function loadSettings(): UiSettings {
     navCollapsed: false,
     navGroupsCollapsed: {},
     chatWebSearchEnabled: true,
+    aeonEternalMode: false,
+    lastTab: "chat",
   };
 
   try {
@@ -93,7 +98,29 @@ export function loadSettings(): UiSettings {
         typeof parsed.chatWebSearchEnabled === "boolean"
           ? parsed.chatWebSearchEnabled
           : defaults.chatWebSearchEnabled,
+      aeonEternalMode:
+        typeof parsed.aeonEternalMode === "boolean"
+          ? parsed.aeonEternalMode
+          : defaults.aeonEternalMode,
       locale: isSupportedLocale(parsed.locale) ? parsed.locale : undefined,
+      lastTab:
+        parsed.lastTab === "agents" ||
+        parsed.lastTab === "overview" ||
+        parsed.lastTab === "channels" ||
+        parsed.lastTab === "instances" ||
+        parsed.lastTab === "sessions" ||
+        parsed.lastTab === "usage" ||
+        parsed.lastTab === "cron" ||
+        parsed.lastTab === "skills" ||
+        parsed.lastTab === "nodes" ||
+        parsed.lastTab === "chat" ||
+        parsed.lastTab === "config" ||
+        parsed.lastTab === "debug" ||
+        parsed.lastTab === "sandbox" ||
+        parsed.lastTab === "logs" ||
+        parsed.lastTab === "aeon"
+          ? parsed.lastTab
+          : defaults.lastTab,
     };
   } catch {
     return defaults;

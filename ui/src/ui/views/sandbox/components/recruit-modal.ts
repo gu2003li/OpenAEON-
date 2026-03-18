@@ -1,5 +1,14 @@
 import { html, nothing } from "lit";
 import { AVATAR_CHARACTERS, renderAgentFigure } from "./figure.ts";
+import type { GatewaySessionRow } from "../../../types.ts";
+
+const previewRow: GatewaySessionRow = {
+  key: "preview",
+  kind: "direct",
+  role: "worker",
+  updatedAt: null,
+  outputTokens: 100,
+};
 
 export function renderAgentRecruitmentModal(
   isOpen: boolean,
@@ -23,21 +32,27 @@ export function renderAgentRecruitmentModal(
           </div>
           <button class="sandbox-recruit-close" @click=${onClose}>&times;</button>
         </div>
-        <div class="sandbox-recruit-tabs">
-          <div class="sandbox-recruit-tab sandbox-recruit-tab--active">Recruiting</div>
-          <div class="sandbox-recruit-tab">Customizations</div>
+        <div class="sandbox-recruit-tabs" role="tablist" aria-label="Recruit options">
+          <button type="button" class="sandbox-recruit-tab sandbox-recruit-tab--active" role="tab" aria-selected="true">Recruiting</button>
+          <button type="button" class="sandbox-recruit-tab" role="tab" aria-selected="false">Customizations</button>
         </div>
         <div class="sandbox-recruit-grid">
           ${AVATAR_CHARACTERS.map(
             (char) => html`
-              <div class="recruit-card" data-id="${char.id}" @click=${() => onSelect(char.id)}>
+              <button
+                type="button"
+                class="recruit-card"
+                data-id="${char.id}"
+                aria-label="Recruit ${char.name}"
+                @click=${() => onSelect(char.id)}
+              >
                 <div class="recruit-card__preview">
-                  ${renderAgentFigure({ key: "preview", role: "worker", outputTokens: 100 } as any, char.id)}
+                  ${renderAgentFigure(previewRow, char.id)}
                 </div>
                 <div class="recruit-card__name">${char.name}</div>
                 <div class="recruit-card__role">${char.role}</div>
-                <button class="recruit-card__btn">Recruit</button>
-              </div>
+                <span class="recruit-card__btn">Recruit</span>
+              </button>
             `,
           )}
         </div>

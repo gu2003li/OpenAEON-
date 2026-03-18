@@ -174,6 +174,9 @@ Example:
 ## Learn more
 
 <Columns>
+  <Card title="AEON logic model" href="/aeon/logic-model" icon="brain">
+    Safety-first cognition loop, persistence semantics, and traceability APIs.
+  </Card>
   <Card title="Full feature list" href="/concepts/features" icon="list">
     Complete channel, routing, and media capabilities.
   </Card>

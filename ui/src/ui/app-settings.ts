@@ -62,6 +62,10 @@ type SettingsHost = {
   pendingGatewayUrl?: string | null;
   sandboxPollTimer?: ReturnType<typeof setInterval> | null;
   client?: unknown;
+  aeonEternalMode?: boolean;
+  aeonEternalModeSource?: "url" | "session" | "local" | "default";
+  aeonEternalHydratedSessionKey?: string | null;
+  handleToggleEternalMode?: (next: boolean, source?: "local" | "url") => Promise<void> | void;
 };
 
 export function applySettings(host: SettingsHost, next: UiSettings) {
@@ -101,6 +105,7 @@ export function applySettingsFromUrl(host: SettingsHost) {
   const passwordRaw = params.get("password") ?? hashParams.get("password");
   const sessionRaw = params.get("session") ?? hashParams.get("session");
   const gatewayUrlRaw = params.get("gatewayUrl") ?? hashParams.get("gatewayUrl");
+  const eternalRaw = params.get("eternal") ?? hashParams.get("eternal");
   let shouldCleanUrl = false;
 
   if (tokenRaw != null) {
@@ -140,6 +145,17 @@ export function applySettingsFromUrl(host: SettingsHost) {
     params.delete("gatewayUrl");
     hashParams.delete("gatewayUrl");
     shouldCleanUrl = true;
+  }
+
+  if (eternalRaw != null) {
+    const normalized = eternalRaw.trim().toLowerCase();
+    const next =
+      normalized === "1" || normalized === "true" || normalized === "on" || normalized === "yes";
+    host.aeonEternalMode = next;
+    host.aeonEternalModeSource = "url";
+    host.aeonEternalHydratedSessionKey = host.sessionKey;
+    applySettings(host, { ...host.settings, aeonEternalMode: next });
+    void host.handleToggleEternalMode?.(next, "url");
   }
 
   if (!shouldCleanUrl) {
@@ -194,6 +210,9 @@ export function setTab(host: SettingsHost, next: Tab) {
     startSandboxPolling(host);
   } else {
     stopSandboxPolling(host);
+  }
+  if (host.settings.lastTab !== next) {
+    applySettings(host, { ...host.settings, lastTab: next });
   }
   void refreshActiveTab(host);
   syncUrlWithTab(host, next, false);
@@ -354,7 +373,12 @@ export function syncTabWithLocation(host: SettingsHost, replace: boolean) {
   if (typeof window === "undefined") {
     return;
   }
-  const resolved = tabFromPath(window.location.pathname, host.basePath) ?? "chat";
+  const fromPath = tabFromPath(window.location.pathname, host.basePath);
+  const isRootPath =
+    normalizePath(window.location.pathname) === normalizePath(host.basePath || "/");
+  const resolved = isRootPath
+    ? (host.settings.lastTab ?? fromPath ?? "chat")
+    : (fromPath ?? "chat");
   setTabFromRoute(host, resolved);
   syncUrlWithTab(host, resolved, replace);
 }
@@ -370,12 +394,23 @@ export function onPopState(host: SettingsHost) {
 
   const url = new URL(window.location.href);
   const session = url.searchParams.get("session")?.trim();
+  const eternal = url.searchParams.get("eternal")?.trim().toLowerCase();
   if (session) {
     host.sessionKey = session;
     applySettings(host, {
       ...host.settings,
       sessionKey: session,
       lastActiveSessionKey: session,
+    });
+  }
+  if (eternal != null && eternal.length > 0) {
+    const next = eternal === "1" || eternal === "true" || eternal === "on" || eternal === "yes";
+    host.aeonEternalMode = next;
+    host.aeonEternalModeSource = "url";
+    host.aeonEternalHydratedSessionKey = host.sessionKey;
+    applySettings(host, {
+      ...host.settings,
+      aeonEternalMode: next,
     });
   }
 
@@ -419,8 +454,14 @@ export function syncUrlWithTab(host: SettingsHost, tab: Tab, replace: boolean) {
 
   if ((tab === "chat" || tab === "sandbox") && host.sessionKey) {
     url.searchParams.set("session", host.sessionKey);
+    if (host.aeonEternalMode) {
+      url.searchParams.set("eternal", "1");
+    } else {
+      url.searchParams.delete("eternal");
+    }
   } else {
     url.searchParams.delete("session");
+    url.searchParams.delete("eternal");
   }
 
   if (currentPath !== targetPath) {

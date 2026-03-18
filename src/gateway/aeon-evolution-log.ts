@@ -49,3 +49,34 @@ ${details.map((d) => `- ${d}`).join("\n")}
     console.error(`Failed to write to evolution log: ${String(err)}`);
   }
 }
+
+export type EvolutionDecisionEvent = {
+  type: "AUTONOMOUS" | "HUMAN_LED" | "SYSTEM_MAINTENANCE" | "SINGULARITY";
+  title: string;
+  policyId: string;
+  decision: "ALLOW" | "SOFT_WARN" | "BLOCK";
+  reasonCode: string;
+  inputs: Record<string, string | number | boolean | null>;
+  thresholds: Record<string, string | number | boolean | null>;
+  actionTaken: string;
+  rollbackHint?: string;
+  scopeKey?: string;
+  heartbeat?: boolean;
+  details?: string[];
+};
+
+export async function logEvolutionDecisionEvent(event: EvolutionDecisionEvent): Promise<void> {
+  const details = [
+    `Policy ID: ${event.policyId}`,
+    `Decision: ${event.decision}`,
+    `Reason Code: ${event.reasonCode}`,
+    `Action Taken: ${event.actionTaken}`,
+    ...(event.scopeKey ? [`Scope: ${event.scopeKey}`] : []),
+    ...(event.heartbeat ? ["Heartbeat: true"] : []),
+    ...(event.rollbackHint ? [`Rollback Hint: ${event.rollbackHint}`] : []),
+    `Inputs: ${JSON.stringify(event.inputs)}`,
+    `Thresholds: ${JSON.stringify(event.thresholds)}`,
+    ...(event.details ?? []),
+  ];
+  await logEvolutionEvent(event.type, event.title, details);
+}

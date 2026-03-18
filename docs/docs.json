@@ -944,6 +944,7 @@
                 "pages": [
                   "pi",
                   "concepts/architecture",
+                  "aeon/logic-model",
                   "concepts/agent",
                   "concepts/agent-loop",
                   "concepts/system-prompt",

@@ -32,12 +32,61 @@
 
 ---
 
+## 🖼 UI Screenshots (Dark Mode, UI)
+
+### Chat (`/chat?session=main`, UI)
+
+![OpenAEON Chat Dark](docs/images/ui-chat-main-dark.png)
+
+### Sandbox (`/sandbox?session=main`, UI)
+
+![OpenAEON Sandbox Dark](docs/images/ui-sandbox-dark.png)
+
+### AEON (`/aeon`, UI)
+
+![OpenAEON AEON Dark](docs/images/ui-aeon-dark.png)
+
+---
+
 ## 🧬 What is OpenAEON
 
 **OpenAEON** (formerly OpenClaw) is an experimental **AI cognition architecture** designed to evolve beyond traditional agent frameworks. It transforms code from a static execution system into a **self-evolving logic organism**.
 
 > [!TIP]
 > Instead of operating as `Input → Process → Output`, OpenAEON operates as `Conflict → Resolution → Evolution`.
+
+**OpenAEON = Open + Eternal Evolution**
+
+- **Open**: extensible, inspectable, and collaborative by design.
+- **Eternal Evolution**: a continuously adaptive loop for long-running intelligence systems.
+- **AEON (Eon)**: from Greek **αἰών (aiōn)**, conveying eternity, epoch, and existence at a cosmic time scale.
+
+### Current Logic Model (Implemented)
+
+OpenAEON currently runs as a verifiable cognition loop:
+
+1. **Perceive**: ingest session/runtime telemetry, context, and task intent.
+2. **Adjudicate**: evaluate guardrails, policy intensity, and epistemic confidence.
+3. **Act**: execute agent/tool work under policy constraints.
+4. **Persist**: write delivery outcomes (`persisted` / `persist_failed`) and memory checkpoints.
+5. **Trace**: expose structured inspection via `aeon.status`, `aeon.memory.trace`, `aeon.execution.lookup`, and `aeon.thinking.stream`.
+
+This keeps OpenAEON grounded in a practical principle: **continuous evolution must remain auditable, reversible, and user-outcome oriented**.
+
+### Memory Logic (Implemented)
+
+AEON memory is implemented as a layered model for durability and retrieval:
+
+1. **Working memory (in-process)**  
+   Recent cognitive events stay in memory for fast UI/runtime feedback.
+2. **Persistent stream (state-dir JSONL)**  
+   Cognitive/thinking events are appended to a per-session/per-agent persisted stream for replay and audit.
+3. **Distillation checkpointing**  
+   Distillation advances a checkpoint and appends markers instead of wiping `MEMORY.md`, preserving continuity.
+4. **Runtime memory telemetry**  
+   `lastDistillAt`, `checkpoint`, `totalEntries`, and `lastWriteSource` are exposed through `aeon.status` and `aeon.memory.trace`.
+
+This design makes memory both operational (fast) and accountable (durable + traceable).
 
 ---
 
@@ -139,6 +188,92 @@ OpenAEON uses a sophisticated idle-time evolutionary cycle known as **Dreaming**
 
 ---
 
+## ✅ Current Implemented Capabilities
+
+The following capabilities are now implemented in the current OpenAEON stack and UI:
+
+### 1) Safety-first execution and policy telemetry
+
+- Guardrail-aware policy outputs are surfaced end-to-end (`maintenanceDecision`, `guardrailDecision`, `reasonCode`).
+- Decision semantics are exposed through structured blocks (`decisionCard`, `impactLens`, `selfKernel`, `epistemicLabel`).
+- Policy and consciousness data are available to both Chat and Sandbox views with typed UI models.
+
+### 2) Versioned AEON status contract (with compatibility)
+
+- `aeon.status` supports `schemaVersion: 3` with a structured `telemetry` block.
+- Compatibility mirrors are still present for transitional consumers.
+- Added stable read APIs for traceability:
+  - `aeon.memory.trace`
+  - `aeon.execution.lookup`
+  - `aeon.thinking.stream`
+
+### 3) Reliability and persistence improvements
+
+- Delivery pipeline explicitly tracks persistence outcomes (`persisted` / `persist_failed`) and exposes timestamps/reason codes.
+- Evolution logging supports fallback when repo paths are not writable (state-dir fallback path).
+- Thinking/cognitive stream entries are persisted and can be replayed through the gateway API.
+
+### 4) Long-running session operability
+
+- Eternal mode is session-aware and wired through UI state + session patching.
+- AEON status includes runtime memory persistence metadata (`lastDistillAt`, `checkpoint`, `totalEntries`, `lastWriteSource`).
+- Cognitive log uses in-memory tail + persisted stream to avoid losing overnight traces.
+- Chat and Sandbox can display persistence-oriented runtime status, not only decorative visuals.
+
+### 5) Chat experience upgrades (fractal + operator usability)
+
+- Introduced fractal runtime state (`depthLevel`, `resonanceLevel`, `formulaPhase`, `noiseLevel`, `deliveryBand`) to drive visual behavior.
+- Added structured Chat Manual (Quick Reference + Guided Walkthrough), bound to real runtime fields.
+- Added formula rail / pulse visualization mapped to execution state.
+- Added i18n coverage for the new Chat manual + AEON interaction language (EN + zh-CN keys).
+- Reduced high-frequency visual effects under reduced-motion and stabilized flicker-prone animation paths.
+
+### 6) Sandbox redesign and layout hardening
+
+- Sandbox v2 now acts as a typed operational console for:
+  - Session focus and timeline
+  - Active agent tiles
+  - System snapshot
+  - Consciousness telemetry
+  - Policy/decision/impact panels
+- Layout and style isolation were hardened by scoping view-local classes (to avoid global shell/topbar collisions).
+- Recent fixes include overlap/stacking cleanup for left rail, top action row, and telemetry panel consistency.
+
+### 7) Test-backed implementation checkpoints
+
+- Compaction and history integrity:
+  - `src/agents/history-compactor.test.ts`
+  - `src/agents/pi-embedded-runner.sanitize-session-history.test.ts`
+  - `src/agents/pi-embedded-runner/run/attempt.test.ts`
+- Evolution logging fallback:
+  - `src/gateway/aeon-evolution-log.test.ts`
+- AEON status contract and schema coverage:
+  - `src/gateway/server-methods/aeon.test.ts`
+
+---
+
+## 🛰 Runtime Surfaces (Today)
+
+OpenAEON currently ships as a coordinated multi-surface system:
+
+- **CLI (`openaeon`)**: onboarding, config, channels, sessions, diagnostics, and operations.
+- **Gateway**: WebSocket control plane + channel bridge + agent execution runtime.
+- **Control UI**: browser operations console for Chat, Sandbox, AEON telemetry, sessions, and config.
+- **Mobile/Desktop nodes**: paired clients for multi-device interaction and orchestration.
+
+### AEON Runtime APIs (Control Plane)
+
+Core read/inspection methods currently available:
+
+- `aeon.status` (schema v3 + compatibility mirrors)
+- `aeon.memory.trace`
+- `aeon.execution.lookup`
+- `aeon.thinking.stream`
+
+These are used by Chat, Sandbox, and AEON views to render real runtime state instead of static decorations.
+
+---
+
 ## 🛠 Installation
 
 ### ⚡ Quick Start (CLI)
@@ -192,6 +327,47 @@ iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.ps1 |
 
 ---
 
+## ⚙️ Local Runbook
+
+### Run Gateway + Control UI
+
+```bash
+# Start gateway (default local control UI on :18789)
+openaeon gateway
+```
+
+Open:
+
+- [http://127.0.0.1:18789/](http://127.0.0.1:18789/)
+
+### UI development mode
+
+```bash
+pnpm ui:dev
+```
+
+### Common developer commands
+
+```bash
+# install
+pnpm install
+
+# type/build
+pnpm build
+pnpm tsgo
+
+# lint/format
+pnpm check
+pnpm format:fix
+
+# tests
+pnpm test
+pnpm test:coverage
+pnpm test:ui
+```
+
+---
+
 ## 🧹 Maintenance
 
 <details>
@@ -231,7 +407,16 @@ OpenAEON supports deep synchronization with mobile nodes (Android/iOS).
 
 Explore the mathematical and philosophical foundations of the project.
 
-👉 **[Deep-Dive: PRINCIPLES.md](/docs/concepts/principles.md)**
+👉 **[Deep-Dive: Principles](https://docs.openaeon.ai/concepts/principles)**
+
+## 📚 Docs Map
+
+- [Getting started](https://docs.openaeon.ai/start/getting-started)
+- [Control UI](https://docs.openaeon.ai/web/control-ui)
+- [Gateway configuration](https://docs.openaeon.ai/gateway/configuration)
+- [Channels](https://docs.openaeon.ai/channels/telegram)
+- [Testing](https://docs.openaeon.ai/help/testing)
+- [Troubleshooting](https://docs.openaeon.ai/gateway/troubleshooting)
 
 ---
 

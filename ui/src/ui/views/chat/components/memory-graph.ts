@@ -9,8 +9,15 @@ export interface MemoryGraphProps {
 }
 
 export function renderMemoryGraph(props: MemoryGraphProps) {
-  if (!props.active || !props.graph || props.graph.nodes.length === 0) {
+  if (!props.active) {
     return nothing;
+  }
+  if (!props.graph || props.graph.nodes.length === 0) {
+    return html`
+      <div class="memory-graph-container aeon-glass aeon-entry-anim" style="display:flex;align-items:center;justify-content:center;">
+        <div class="mono" style="opacity:0.7;">${t("sandbox.consciousness.emptyTrend") || "NO DATA"}</div>
+      </div>
+    `;
   }
 
   const nodes = props.graph.nodes;

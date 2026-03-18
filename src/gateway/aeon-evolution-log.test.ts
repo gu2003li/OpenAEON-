@@ -17,7 +17,7 @@ vi.mock("../config/paths.js", () => ({
   resolveStateDir: () => "/tmp/openaeon-state",
 }));
 
-import { logEvolutionEvent } from "./aeon-evolution-log.js";
+import { logEvolutionDecisionEvent, logEvolutionEvent } from "./aeon-evolution-log.js";
 
 describe("logEvolutionEvent", () => {
   beforeEach(() => {
@@ -42,5 +42,33 @@ describe("logEvolutionEvent", () => {
 
     warnSpy.mockRestore();
     errorSpy.mockRestore();
+  });
+
+  it("serializes structured policy decision details", async () => {
+    appendFileMock.mockResolvedValueOnce(undefined);
+
+    await logEvolutionDecisionEvent({
+      type: "AUTONOMOUS",
+      title: "Maintenance Policy Decision",
+      policyId: "AEON_MAINTENANCE_GUARDRAIL_V1",
+      decision: "BLOCK",
+      reasonCode: "MINIMUM_NOT_READY",
+      inputs: {
+        epiphanyFactor: 0.3,
+        memorySaturation: 82,
+        idleTimeMs: 1234,
+        resonanceTrigger: false,
+      },
+      thresholds: { redlineBreachRisk: 0.65, minimumReady: true },
+      actionTaken: "downgrade:high->low",
+      rollbackHint: "set soft mode",
+      scopeKey: "session:main|agent:main",
+    });
+
+    const entry = String(appendFileMock.mock.calls[0]?.[1] ?? "");
+    expect(entry).toContain("Policy ID: AEON_MAINTENANCE_GUARDRAIL_V1");
+    expect(entry).toContain("Decision: BLOCK");
+    expect(entry).toContain("Reason Code: MINIMUM_NOT_READY");
+    expect(entry).toContain("Action Taken: downgrade:high->low");
   });
 });

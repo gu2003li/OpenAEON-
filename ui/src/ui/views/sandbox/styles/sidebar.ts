@@ -366,6 +366,12 @@ export const sidebarStyles = html`
 
     /* ─── Office Roster ─── */
     .sandbox-wrap .roster-item {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
       padding: 10px 14px;
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.05);
@@ -375,6 +381,10 @@ export const sidebarStyles = html`
     }
     .sandbox-wrap .roster-item:hover {
       background: rgba(255, 255, 255, 0.04);
+    }
+    .sandbox-wrap .roster-item:focus-visible {
+      outline: 2px solid rgba(34, 211, 238, 0.85);
+      outline-offset: 2px;
     }
     .sandbox-wrap .roster-item__header {
       display: flex;

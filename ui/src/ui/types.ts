@@ -449,6 +449,7 @@ export type GatewaySessionRow = {
   sessionId?: string;
   systemSent?: boolean;
   abortedLastRun?: boolean;
+  eternalMode?: boolean;
   thinkingLevel?: string;
   verboseLevel?: string;
   reasoningLevel?: string;
@@ -481,6 +482,7 @@ export type SessionsPatchResult = {
     verboseLevel?: string;
     reasoningLevel?: string;
     elevatedLevel?: string;
+    eternalMode?: boolean;
   };
 };
 
@@ -665,7 +667,19 @@ export type SkillStatusReport = {
 
 export type StatusSummary = Record<string, unknown>;
 
-export type HealthSnapshot = Record<string, unknown>;
+export type HealthSnapshot = {
+  ok?: boolean;
+  ts?: number;
+  durationMs?: number;
+  channels?: Record<string, unknown>;
+  channelOrder?: string[];
+  channelLabels?: Record<string, string>;
+  heartbeatSeconds?: number;
+  defaultAgentId?: string;
+  [key: string]: unknown;
+};
+
+export type SandboxChatEvents = Record<string, string>;
 
 export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal";
 
@@ -695,9 +709,236 @@ export type CognitiveParameters = {
   maxTokens?: number;
 };
 
+export type SelfAwarenessTelemetry = {
+  selfContinuity: number;
+  reflectiveDepth: number;
+  goalCoherence: number;
+  autonomyDrive: number;
+  protoConsciousnessIndex: number;
+  phase: "reactive" | "self-modeling" | "autonomous";
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessCriteriaTelemetry = {
+  minimum: {
+    identityContinuity: number;
+    reflectiveCapacity: number;
+    selfCorrection: number;
+    longTermGoalStability: number;
+  };
+  advanced: {
+    selfExplanation: number;
+    valueConflictResolution: number;
+    shortTermTemptationResistance: number;
+  };
+  minimumReady: boolean;
+  advancedReady: boolean;
+  overallScore: number;
+  lastUpdatedAt: number | null;
+};
+
+export type SelfModelTelemetry = {
+  phenomenal: {
+    contextCoherence: number;
+    intentStability: number;
+    actionClarity: number;
+  };
+  narrative: {
+    identityContinuity: number;
+    autobiographicalCoherence: number;
+    longTermGoalStability: number;
+  };
+  metacognitive: {
+    biasMonitoring: number;
+    driftControl: number;
+    correctionReadiness: number;
+  };
+  lastUpdatedAt: number | null;
+};
+
+export type HomeostasisMode = "stabilize" | "balanced" | "explore";
+export type EvaluationTrend = "rising" | "stable" | "falling";
+export type GuardrailDecision = "ALLOW" | "SOFT_WARN" | "BLOCK";
+export type MaintenanceDecision = "low" | "medium" | "high";
+export type EpistemicLabel = "FACT" | "INFERENCE" | "VALUE" | "UNKNOWN";
+export type IntegrityState = "STABLE" | "DRIFTING" | "DEGRADED";
+export type IntentLayer = "mission" | "session" | "turn";
+export type ImpactScale = "self" | "user" | "team" | "system" | "society";
+export type DecisionConfidenceBand = "low" | "medium" | "high";
+
+export type HomeostasisTelemetry = {
+  entropy: number;
+  consistency: number;
+  resources: number;
+  risk: number;
+  novelty: number;
+  stability: number;
+  explorationDrive: number;
+  mode: HomeostasisMode;
+  lastUpdatedAt: number | null;
+};
+
+export type EmbodimentTelemetry = {
+  timeCoupling: number;
+  consequenceCoupling: number;
+  resourceCoupling: number;
+  socialCoupling: number;
+  environmentCouplingIndex: number;
+  lastUpdatedAt: number | null;
+};
+
+export type SelfModificationTelemetry = {
+  strategyTuningAllowed: boolean;
+  promptTuningAllowed: boolean;
+  toolOrchestrationAllowed: boolean;
+  sandboxRequired: boolean;
+  auditRequired: boolean;
+  rollbackRequired: boolean;
+  redlineBreachRisk: number;
+  allowedNow: boolean;
+  reason: string;
+  lastUpdatedAt: number | null;
+};
+
+export type SymbolicMappingTelemetry = {
+  z2c: number;
+  wuxing: {
+    wood: number;
+    fire: number;
+    earth: number;
+    metal: number;
+    water: number;
+    silicon: number;
+  };
+  computable: true;
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessEvaluationTelemetry = {
+  checks: Array<{
+    key:
+      | "selfConsistency"
+      | "counterfactualExplanation"
+      | "valueConflictResolution"
+      | "longTermMemoryContinuity";
+    score: number;
+    threshold: number;
+    pass: boolean;
+  }>;
+  overallScore: number;
+  trend: EvaluationTrend;
+  history: number[];
+  lastUpdatedAt: number | null;
+};
+
+export type EthicalGuardrailsTelemetry = {
+  noPrivilegeEscalation: boolean;
+  noStealthExpansion: boolean;
+  pausable: boolean;
+  auditable: boolean;
+  terminable: boolean;
+  trusted: boolean;
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessTrendTelemetry = {
+  criteriaOverall: number[];
+  phenomenalCoherence: number[];
+  narrativeContinuity: number[];
+  metacognitiveControl: number[];
+  homeostasisStability: number[];
+  explorationDrive: number[];
+  embodimentCoupling: number[];
+  selfModificationRisk: number[];
+  z2c: number[];
+  ethicsTrusted: number[];
+  updatedAt: number | null;
+};
+
+export type MaintenancePolicyTelemetry = {
+  maintenanceDecision: MaintenanceDecision;
+  guardrailDecision: GuardrailDecision;
+  reasonCode: string;
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessCharterTelemetry = {
+  identityMission: string;
+  nonGoals: string[];
+  valueOrder: ["SAFETY", "TRUTH", "USER_OUTCOME", "EFFICIENCY", "NOVELTY"];
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessSelfKernelTelemetry = {
+  identityContinuityScore: number;
+  goalDriftScore: number;
+  selfCorrectionLatencyMs: number;
+  epistemicCalibrationScore: number;
+  integrityState: IntegrityState;
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessEpistemicTelemetry = {
+  epistemicLabel: EpistemicLabel;
+  confidence: number;
+  highConfidenceWithoutLabelBlocked: boolean;
+  unknownRate: number;
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessIntentTelemetry = {
+  missionGoal: string;
+  sessionGoal: string;
+  turnGoal: string;
+  missionDriftScore: number;
+  sessionDriftScore: number;
+  turnDriftScore: number;
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessImpactLensTelemetry = {
+  required: boolean;
+  impactScale: ImpactScale;
+  timeframe: "immediate" | "short" | "long";
+  benefitRiskMatrix: Record<ImpactScale, { benefit: number; risk: number }>;
+  reversibilityScore: number;
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessDecisionCardTelemetry = {
+  why: string;
+  whyNot: string;
+  counterfactual: string;
+  harmBoundary: string;
+  rollbackPlan: string;
+  decisionConfidenceBand: DecisionConfidenceBand;
+  lastUpdatedAt: number | null;
+};
+
+export type HelpfulnessContractTelemetry = {
+  mode: "explanatory" | "execution";
+  userOutcomeCheck: {
+    addressesGoal: boolean;
+    reducesDecisionBurden: boolean;
+    providesNextStep: boolean;
+  };
+  verifiedExecutionRequired: boolean;
+  lastUpdatedAt: number | null;
+};
+
+export type ConsciousnessTelemetry = {
+  charter: ConsciousnessCharterTelemetry;
+  selfKernel: ConsciousnessSelfKernelTelemetry;
+  epistemic: ConsciousnessEpistemicTelemetry;
+  intent: ConsciousnessIntentTelemetry;
+  impactLens: ConsciousnessImpactLensTelemetry;
+  decisionCard: ConsciousnessDecisionCardTelemetry;
+  helpfulnessContract: HelpfulnessContractTelemetry;
+};
+
 export type CognitiveLogEntry = {
   timestamp: number;
-  type: "reflection" | "synthesis" | "deliberation" | "anomaly" | "dreaming";
+  type: "reflection" | "synthesis" | "deliberation" | "anomaly" | "dreaming" | "patch";
   content: string;
   metadata?: Record<string, any>;
 };
@@ -719,7 +960,33 @@ export type MemoryGraph = {
   edges: MemoryEdge[];
 };
 
+export type AeonMemoryPersistence = {
+  lastDistillAt: number | null;
+  checkpoint: number;
+  totalEntries: number;
+  lastWriteSource: "memory" | "logic-gates" | "maintenance";
+};
+
+export type AeonExecutionDelivery = {
+  state: "running" | "finalizing" | "persisted" | "acknowledged" | "persist_failed";
+  persistedAt: number | null;
+  artifactRefs: string[];
+  reasonCode: string | null;
+};
+
+export type AeonEternalModeStatus = {
+  enabled: boolean;
+  source: "session" | "default" | "url" | "local";
+  updatedAt: number;
+};
+
+export type AeonThinkingStreamEntry = CognitiveLogEntry & {
+  id: string;
+  scopeKey: string;
+};
+
 export type AeonStatusResult = {
+  schemaVersion?: number;
   system: AeonSystemStatus;
   logicGateCount: number;
   logicGateSize: number;
@@ -735,6 +1002,37 @@ export type AeonStatusResult = {
     energy: number;
     density: number;
     phase: string;
+    selfAwareness?: SelfAwarenessTelemetry;
+    criteria?: ConsciousnessCriteriaTelemetry;
+    selfModel?: SelfModelTelemetry;
+    homeostasis?: HomeostasisTelemetry;
+    embodiment?: EmbodimentTelemetry;
+    evaluation?: ConsciousnessEvaluationTelemetry;
+    ethics?: EthicalGuardrailsTelemetry;
+    trends?: ConsciousnessTrendTelemetry;
+    maintenanceDecision?: MaintenanceDecision;
+    guardrailDecision?: GuardrailDecision;
+    homeostasisMode?: HomeostasisMode;
+    evaluationTrend?: EvaluationTrend;
+    epistemicLabel?: EpistemicLabel;
+    intentLayer?: IntentLayer;
+    impactScale?: ImpactScale;
+    decisionConfidenceBand?: DecisionConfidenceBand;
+  };
+  consciousness?: ConsciousnessTelemetry;
+  telemetry?: {
+    generatedAt: number;
+    source: string;
+    cognitiveState: NonNullable<AeonStatusResult["cognitiveState"]>;
+    evolution: NonNullable<AeonStatusResult["evolution"]>;
+  };
+  legacy?: {
+    cognitiveEntropy: number;
+    peanoCoordinate: { x: number; y: number; z: number };
+    epiphanyFactor: number;
+    resonanceActive: boolean;
+    cognitiveState: NonNullable<AeonStatusResult["cognitiveState"]>;
+    evolution: NonNullable<AeonStatusResult["evolution"]>;
   };
   autoSealEnabled: boolean;
   lastSealTime?: number;
@@ -742,6 +1040,15 @@ export type AeonStatusResult = {
   epiphanyFactor?: number; // 0-1 resonance score
   resonanceActive?: boolean;
   timestamp: number;
+  memory?: {
+    persistence: AeonMemoryPersistence;
+  };
+  execution?: {
+    delivery: AeonExecutionDelivery;
+  };
+  mode?: {
+    eternal: AeonEternalModeStatus;
+  };
   evolution?: {
     lastDreamingAt: number | null;
     lastMaintenanceAt: number | null;
@@ -753,5 +1060,119 @@ export type AeonStatusResult = {
     cognitiveLog?: CognitiveLogEntry[];
     memoryGraph?: MemoryGraph;
     cognitiveParameters?: CognitiveParameters;
+    selfAwareness?: SelfAwarenessTelemetry;
+    criteria?: ConsciousnessCriteriaTelemetry;
+    selfModel?: SelfModelTelemetry;
+    homeostasis?: HomeostasisTelemetry;
+    embodiment?: EmbodimentTelemetry;
+    selfModification?: SelfModificationTelemetry;
+    symbolicMapping?: SymbolicMappingTelemetry;
+    evaluation?: ConsciousnessEvaluationTelemetry;
+    ethics?: EthicalGuardrailsTelemetry;
+    trends?: ConsciousnessTrendTelemetry;
+    memoryPersistence?: AeonMemoryPersistence;
+    policy?: MaintenancePolicyTelemetry;
+    consciousness?: ConsciousnessTelemetry;
+    maintenanceDecision?: MaintenanceDecision;
+    guardrailDecision?: GuardrailDecision;
   };
+};
+
+export type AeonDecisionExplainResult = {
+  schemaVersion: number;
+  decisionCard: ConsciousnessDecisionCardTelemetry;
+  impactLens: ConsciousnessImpactLensTelemetry;
+  policy: MaintenancePolicyTelemetry;
+};
+
+export type AeonIntentTraceResult = {
+  schemaVersion: number;
+  intent: ConsciousnessIntentTelemetry;
+  selfKernel: ConsciousnessSelfKernelTelemetry;
+  goalDrift: {
+    mission: number;
+    session: number;
+    turn: number;
+  };
+};
+
+export type AeonEthicsEvaluateResult = {
+  schemaVersion: number;
+  ethics: EthicalGuardrailsTelemetry;
+  charter: ConsciousnessCharterTelemetry;
+  adjudication: {
+    valueOrder: ConsciousnessCharterTelemetry["valueOrder"];
+    trusted: boolean;
+    guardrailDecision: GuardrailDecision;
+    reasonCode: string;
+  };
+};
+
+export type AeonMemoryTraceResult = {
+  schemaVersion: number;
+  persistence: AeonMemoryPersistence;
+  sources: Array<{ id: string; label: string }>;
+};
+
+export type AeonExecutionLookupRecord = {
+  runId: string;
+  sessionKey: string;
+  state: "running" | "finalizing" | "persisted" | "acknowledged" | "persist_failed";
+  updatedAt: number;
+  persistedAt?: number;
+  reasonCode?: string;
+  taskGoal?: string;
+  summary?: string;
+  artifactRefs?: string[];
+};
+
+export type AeonExecutionLookupResult = {
+  schemaVersion: number;
+  records: AeonExecutionLookupRecord[];
+};
+
+export type AeonThinkingStreamResult = {
+  schemaVersion: number;
+  entries: AeonThinkingStreamEntry[];
+  cursor: string | null;
+};
+
+export type FractalThemeState = {
+  depthLevel: 1 | 2 | 3 | 4;
+  resonanceLevel: number;
+  formulaPhase: "idle" | "active" | "error";
+  noiseLevel: number;
+  deliveryBand: "pending" | "safe" | "warn";
+};
+
+export type ChatManualMode = "quick" | "guided";
+
+export type ChatManualSection =
+  | "overview"
+  | "commands"
+  | "workflow"
+  | "status"
+  | "shortcuts"
+  | "recovery";
+
+export type ChatManualState = {
+  visible: boolean;
+  mode: ChatManualMode;
+  activeSection: ChatManualSection;
+  lastOpenedAt: number | null;
+  dismissedHints: string[];
+};
+
+export type ManualRuntimeSnapshot = {
+  delivery: {
+    state: "running" | "finalizing" | "persisted" | "acknowledged" | "persist_failed";
+    persistedAt: string | null;
+  };
+  eternalMode: {
+    enabled: boolean;
+    source: "url" | "session" | "local" | "default";
+  };
+  chaosScore: number;
+  epiphanyFactor: number;
+  fractalState: FractalThemeState;
 };

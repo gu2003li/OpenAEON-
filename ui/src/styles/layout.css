@@ -29,6 +29,11 @@
 }
 
 .shell--chat {
+  --life-flow-speed: 28s;
+  --life-pulse-speed: 11s;
+  --life-cyan: rgba(56, 189, 248, 0.22);
+  --life-mint: rgba(45, 212, 191, 0.2);
+  --life-violet: rgba(129, 140, 248, 0.18);
   min-height: 100vh;
   height: 100vh;
   overflow: hidden;
@@ -102,6 +107,40 @@
 .shell--chat .page-header {
   background: transparent;
   border-bottom: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.shell--chat .page-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(2, 6, 23, 0.28), rgba(2, 6, 23, 0.04)),
+    radial-gradient(circle at 8% 50%, var(--life-mint), transparent 26%),
+    radial-gradient(circle at 92% 50%, var(--life-violet), transparent 28%);
+  opacity: 0.82;
+}
+
+.shell--chat .page-header::after {
+  content: "";
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--life-cyan) 18%,
+    rgba(125, 211, 252, 0.36) 50%,
+    var(--life-mint) 82%,
+    transparent 100%
+  );
+  animation: none;
+  opacity: 0.64;
 }
 
 .header-left,
@@ -216,12 +255,30 @@
 }
 
 .header-right .pill {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.56), rgba(15, 23, 42, 0.2));
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.08);
   padding: 6px 10px;
   gap: 6px;
   font-size: 12px;
   font-weight: 500;
   height: 32px;
   box-sizing: border-box;
+}
+
+.header-right .pill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 48%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.22), transparent);
+  animation: none;
+  opacity: 0.3;
 }
 
 .header-right .pill .mono {
@@ -268,11 +325,47 @@
     opacity var(--shell-focus-duration) var(--shell-focus-ease);
   min-height: 0;
   z-index: 50;
+  position: relative;
 }
 
 .nav::-webkit-scrollbar {
   display: none;
   /* Chrome/Safari */
+}
+
+.shell--chat .nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.34), rgba(2, 6, 23, 0.16)),
+    repeating-linear-gradient(
+      180deg,
+      rgba(56, 189, 248, 0.05) 0 1px,
+      transparent 1px 26px
+    );
+  opacity: 0.7;
+}
+
+.shell--chat .nav::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.24) 18%,
+    rgba(125, 211, 252, 0.42) 50%,
+    rgba(45, 212, 191, 0.24) 82%,
+    transparent 100%
+  );
+  animation: none;
+  opacity: 0.5;
 }
 
 .shell--chat-focus .nav {
@@ -496,7 +589,20 @@
     inset 0 0 12px rgba(0, 242, 255, 0.1),
     0 0 20px rgba(0, 242, 255, 0.05);
   border: 1px solid rgba(0, 242, 255, 0.3);
-  animation: aeon-fractal-breathing 5s infinite ease-in-out;
+  animation: none;
+}
+
+.shell--chat .nav-item.active::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 2px;
+  height: 1px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.7), transparent);
+  animation: none;
+  opacity: 0.72;
 }
 
 .nav-item.active .nav-item__icon {
@@ -588,6 +694,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-height: 58px;
+  padding: 8px 12px;
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.68), rgba(15, 23, 42, 0.5));
+  box-shadow:
+    inset 0 0 0 1px rgba(56, 189, 248, 0.08),
+    0 8px 24px rgba(2, 6, 23, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .content--chat .content-header > div:first-child {
@@ -600,6 +716,74 @@
 
 .content--chat .chat-controls {
   flex-shrink: 0;
+}
+
+.shell--chat .chat-controls .btn {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(56, 189, 248, 0.28);
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.58), rgba(15, 23, 42, 0.24));
+}
+
+.shell--chat .chat-controls .btn::after {
+  content: "";
+  position: absolute;
+  left: -70%;
+  top: 0;
+  width: 52%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.24), transparent);
+  animation: none;
+  opacity: 0.22;
+}
+
+@keyframes chat-topline-flow {
+  0% {
+    transform: translateX(-10%);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(10%);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(32%);
+    opacity: 0.5;
+  }
+}
+
+@keyframes chat-pill-scan {
+  0% {
+    left: -60%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+@keyframes chat-nav-spine {
+  0%,
+  100% {
+    opacity: 0.35;
+    filter: blur(0px);
+  }
+  50% {
+    opacity: 0.86;
+    filter: blur(0.2px);
+  }
+}
+
+@keyframes chat-active-item-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleX(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
 }
 
 /* ===========================================
@@ -717,4 +901,20 @@
   .list-item {
     grid-template-columns: 1fr;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell--chat .page-header::after,
+  .header-right .pill::after,
+  .shell--chat .nav::after,
+  .shell--chat .nav-item.active::after,
+  .shell--chat .chat-controls .btn::after {
+    animation: none !important;
+  }
+}
+
+.shell--chat .page-header,
+.shell--chat .content--chat .content-header {
+  transform: translateZ(0);
+  will-change: auto;
 }

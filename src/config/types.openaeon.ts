@@ -27,6 +27,36 @@ import type { SecretsConfig } from "./types.secrets.js";
 import type { SkillsConfig } from "./types.skills.js";
 import type { ToolsConfig } from "./types.tools.js";
 
+export type AeonGuardrailsConfig = {
+  enforcementMode?: "hard" | "soft";
+  allowHighIntensityWhenUntrusted?: boolean;
+  auditThrottleSeconds?: number;
+};
+
+export type AeonConsciousnessCharterConfig = {
+  identityMission?: string;
+  nonGoals?: string[];
+  valueOrder?: ["SAFETY", "TRUTH", "USER_OUTCOME", "EFFICIENCY", "NOVELTY"];
+};
+
+export type AeonEpistemicsConfig = {
+  requireLabelForHighConfidence?: boolean;
+  unknownConfidenceThreshold?: number;
+};
+
+export type AeonImpactConfig = {
+  enabled?: boolean;
+  requireDecisionCardForHighImpact?: boolean;
+  highImpactThreshold?: number;
+};
+
+export type AeonConfig = {
+  guardrails?: AeonGuardrailsConfig;
+  consciousnessCharter?: AeonConsciousnessCharterConfig;
+  epistemics?: AeonEpistemicsConfig;
+  impact?: AeonImpactConfig;
+};
+
 export type OPENAEONConfig = {
   meta?: {
     /** Last OPENAEON version that wrote this config. */
@@ -112,6 +142,7 @@ export type OPENAEONConfig = {
   talk?: TalkConfig;
   gateway?: GatewayConfig;
   memory?: MemoryConfig;
+  aeon?: AeonConfig;
 };
 
 export type ConfigValidationIssue = {

@@ -359,6 +359,15 @@ export async function applySessionsPatchToStore(params: {
     }
   }
 
+  if ("eternalMode" in patch) {
+    const raw = patch.eternalMode;
+    if (raw === null) {
+      delete next.eternalMode;
+    } else if (raw !== undefined) {
+      next.eternalMode = raw === true;
+    }
+  }
+
   store[storeKey] = next;
   return { ok: true, entry: next };
 }

@@ -21,7 +21,7 @@ export type SandboxProps = {
   /** Live task plan from the main agent's planner file. Optional. */
   taskPlan?: TaskPlanSnapshot | null;
   /** Live chat messages sent by agents */
-  sandboxChatEvents?: Record<string, unknown>;
+  sandboxChatEvents?: import("../../types.ts").SandboxChatEvents;
   /** Map of agent IDs to their identity metadata (for avatars) */
   agentIdentityById?: Record<string, import("../../types.ts").AgentIdentityResult>;
   /** Whether the recruit agent modal is open */
@@ -33,7 +33,7 @@ export type SandboxProps = {
   /** Callback to change an agent's avatar */
   onAvatarSelect?: (agentId: string, avatar: string) => void;
   /** Nodes/Host machines */
-  nodes?: Array<Record<string, any>>;
+  nodes?: Array<Record<string, unknown>>;
   /** System health */
   health?: import("../../types.ts").HealthSnapshot | null;
   /** Active channels */
@@ -44,4 +44,12 @@ export type SandboxProps = {
   approvalsCount?: number;
   /** Evolution & Tribal metadata */
   evolution?: import("../../types.ts").AeonStatusResult["evolution"];
+  consciousness?: import("../../types.ts").AeonStatusResult["consciousness"];
+  telemetry?: import("../../types.ts").AeonStatusResult["telemetry"];
+  legacy?: import("../../types.ts").AeonStatusResult["legacy"];
+  timestamp?: number;
+  memoryPersistence?: import("../../types.ts").AeonMemoryPersistence;
+  executionDelivery?: import("../../types.ts").AeonExecutionDelivery;
+  eternalMode?: import("../../types.ts").AeonEternalModeStatus;
+  onToggleEternalMode?: () => void;
 };

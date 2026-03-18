@@ -97,7 +97,19 @@ export function startAeonPolling(host: PollingHost) {
     return;
   }
   host.aeonPollInterval = window.setInterval(() => {
-    if (host.tab !== "aeon") {
+    if (host.tab !== "aeon" && host.tab !== "chat") {
+      return;
+    }
+    const sessionKey =
+      typeof (host as { sessionKey?: unknown }).sessionKey === "string"
+        ? ((host as { sessionKey: string }).sessionKey || "").trim()
+        : "";
+    const shouldPollForChat =
+      host.tab !== "chat" ||
+      sessionKey === "" ||
+      sessionKey === "main" ||
+      sessionKey === "agent:main:main";
+    if (!shouldPollForChat) {
       return;
     }
     void loadAeonLogic(host as unknown as OPENAEONApp);

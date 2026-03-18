@@ -36,8 +36,12 @@ import {
 import { GatewayBrowserClient } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import type { UiSettings } from "./storage.ts";
+import { extractText } from "./chat/message-extract.ts";
 import type {
   AgentsListResult,
+  SandboxChatEvents,
+  AeonStatusResult,
+  CognitiveLogEntry,
   PresenceEntry,
   HealthSnapshot,
   StatusSummary,
@@ -75,11 +79,49 @@ type GatewayHost = {
   chatChaosScore: number;
   chatEpiphanyFactor: number;
   refreshSessionsAfterChat: Set<string>;
-  sandboxChatEvents: Record<string, unknown>;
+  sandboxChatEvents: SandboxChatEvents;
   execApprovalQueue: ExecApprovalRequest[];
   execApprovalError: string | null;
   updateAvailable: UpdateAvailable | null;
+  aeonSystemStatus?: AeonStatusResult | null;
 };
+
+function appendLocalCognitiveLog(host: GatewayHost, payload: ChatEventPayload | undefined): void {
+  if (!payload) return;
+  const evolution = host.aeonSystemStatus?.evolution;
+  if (!evolution) return;
+  const existing = Array.isArray(evolution.cognitiveLog) ? evolution.cognitiveLog : [];
+  const text = payload.message ? extractText(payload.message) : "";
+  const messageObj =
+    payload.message && typeof payload.message === "object"
+      ? (payload.message as Record<string, unknown>)
+      : null;
+  const thinkingText = Array.isArray(messageObj?.content)
+    ? messageObj.content
+        .map((part) =>
+          part && typeof part === "object" && (part as { type?: unknown }).type === "thinking"
+            ? (part as { thinking?: unknown }).thinking
+            : null,
+        )
+        .filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+        .join("\n")
+    : "";
+  const content = thinkingText || text || "";
+  if (!content.trim()) return;
+
+  const next: CognitiveLogEntry = {
+    timestamp: Date.now(),
+    type:
+      payload.state === "error"
+        ? "anomaly"
+        : payload.state === "final"
+          ? "synthesis"
+          : "deliberation",
+    content: content.length > 400 ? `${content.slice(0, 400)}...` : content,
+    metadata: { focus: payload.sessionKey },
+  };
+  evolution.cognitiveLog = [...existing, next].slice(-500);
+}
 
 type SessionDefaultsSnapshot = {
   defaultAgentId?: string;
@@ -288,11 +330,13 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
   if (evt.event === "chat") {
     const payload = evt.payload as ChatEventPayload | undefined;
     if (payload?.sessionKey && payload.message) {
+      const preview = extractText(payload.message);
       host.sandboxChatEvents = {
         ...host.sandboxChatEvents,
-        [payload.sessionKey]: payload.message,
+        [payload.sessionKey]: preview,
       };
     }
+    appendLocalCognitiveLog(host, payload);
     handleChatGatewayEvent(host, payload);
     return;
   }

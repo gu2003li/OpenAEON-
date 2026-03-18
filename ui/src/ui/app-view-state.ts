@@ -46,6 +46,8 @@ import type {
   ToolsCatalogResult,
   StatusSummary,
   AeonStatusResult,
+  ChatManualMode,
+  ChatManualSection,
 } from "./types.ts";
 import type { ChatAttachment, ChatQueueItem, CronFormState } from "./ui-types.ts";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
@@ -179,14 +181,23 @@ export type AppViewState = {
   aeonLogicError: string | null;
   aeonLogicContent: string | null;
   aeonSystemStatus: AeonStatusResult | null;
+  aeonThinkingCursor: string | null;
+  aeonThinkingEvents: import("./types.ts").AeonThinkingStreamEntry[];
+  aeonEternalMode: boolean;
+  aeonEternalModeSource: "url" | "session" | "local" | "default";
+  aeonEternalHydratedSessionKey: string | null;
   aeonActiveTab: "logic" | "memory";
   aeonManualVisible: boolean;
   chatManualVisible: boolean;
+  chatManualMode: ChatManualMode;
+  chatManualSection: ChatManualSection;
+  chatManualLastOpenedAt: number | null;
+  chatManualDismissedHints: string[];
   sandboxTaskPlan: import("./views/sandbox.js").TaskPlanSnapshot | null;
   sandboxTaskPlanLoading: boolean;
   sandboxTaskPlanError: string | null;
   sandboxPollTimer: ReturnType<typeof setInterval> | null;
-  sandboxChatEvents: Record<string, unknown>;
+  sandboxChatEvents: import("./types.ts").SandboxChatEvents;
   sessionsLoading: boolean;
   sessionsResult: SessionsListResult | null;
   sessionsError: string | null;
@@ -346,6 +357,7 @@ export type AppViewState = {
   setSessionKey: (next: string) => void;
   setChatMessage: (next: string) => void;
   handleSendChat: (messageOverride?: string, opts?: { restoreDraft?: boolean }) => Promise<void>;
+  handleToggleEternalMode: (next: boolean, source?: "local" | "url") => Promise<void>;
   handleAbortChat: () => Promise<void>;
   removeQueuedMessage: (id: string) => void;
   handleChatScroll: (event: Event) => void;
@@ -365,5 +377,8 @@ export type AppViewState = {
   handleAeonLogicCompaction: () => Promise<void>;
   handleAeonTabChange: (tab: "logic" | "memory") => void;
   handleToggleAeonManual: (visible: boolean) => void;
-  handleToggleChatManual: (visible: boolean) => void;
+  handleToggleChatManual: (
+    visible: boolean,
+    options?: { mode?: ChatManualMode; section?: ChatManualSection },
+  ) => void;
 };

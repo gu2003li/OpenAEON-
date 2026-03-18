@@ -166,6 +166,7 @@ export type SessionEntry = {
   acp?: SessionAcpMeta;
   needsHelp?: boolean;
   role?: string;
+  eternalMode?: boolean;
 };
 
 function normalizeRuntimeField(value: string | undefined): string | undefined {

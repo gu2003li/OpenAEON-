@@ -723,6 +723,50 @@ export const OPENAEONSchema = z
       })
       .strict()
       .optional(),
+    aeon: z
+      .object({
+        guardrails: z
+          .object({
+            enforcementMode: z.union([z.literal("hard"), z.literal("soft")]).optional(),
+            allowHighIntensityWhenUntrusted: z.boolean().optional(),
+            auditThrottleSeconds: z.number().int().positive().optional(),
+          })
+          .strict()
+          .optional(),
+        consciousnessCharter: z
+          .object({
+            identityMission: z.string().optional(),
+            nonGoals: z.array(z.string()).optional(),
+            valueOrder: z
+              .tuple([
+                z.literal("SAFETY"),
+                z.literal("TRUTH"),
+                z.literal("USER_OUTCOME"),
+                z.literal("EFFICIENCY"),
+                z.literal("NOVELTY"),
+              ])
+              .optional(),
+          })
+          .strict()
+          .optional(),
+        epistemics: z
+          .object({
+            requireLabelForHighConfidence: z.boolean().optional(),
+            unknownConfidenceThreshold: z.number().min(0).max(1).optional(),
+          })
+          .strict()
+          .optional(),
+        impact: z
+          .object({
+            enabled: z.boolean().optional(),
+            requireDecisionCardForHighImpact: z.boolean().optional(),
+            highImpactThreshold: z.number().min(0).max(1).optional(),
+          })
+          .strict()
+          .optional(),
+      })
+      .strict()
+      .optional(),
     memory: MemorySchema,
     skills: z
       .object({

@@ -34,7 +34,6 @@ function resolveSidebarChatSessionKey(state: AppViewState): string {
 
 function resetChatStateForSessionSwitch(state: AppViewState, sessionKey: string) {
   state.sessionKey = sessionKey;
-  state.chatMessage = "";
   state.chatStream = null;
   (state as unknown as OPENAEONApp).chatStreamStartedAt = null;
   state.chatRunId = null;
@@ -182,7 +181,6 @@ export function renderChatControls(state: AppViewState) {
           @change=${(e: Event) => {
             const next = (e.target as HTMLSelectElement).value;
             state.sessionKey = next;
-            state.chatMessage = "";
             state.chatStream = null;
             (state as unknown as OPENAEONApp).chatStreamStartedAt = null;
             state.chatRunId = null;
@@ -299,11 +297,14 @@ export function renderChatControls(state: AppViewState) {
       </button>
       <button
         class="btn btn--sm btn--icon ${state.chatManualVisible ? "active" : ""}"
-        @click=${() => state.handleToggleChatManual(!state.chatManualVisible)}
+        @click=${() =>
+          state.chatManualVisible
+            ? state.handleToggleChatManual(false)
+            : state.handleToggleChatManual(true, { mode: "quick", section: "overview" })}
         aria-pressed=${state.chatManualVisible}
-        title=${t("chat.manualTitle")}
+        title=${t("chat.manualOpen") || t("chat.manualTitle")}
       >
-        ${icons.brain}
+        ${icons.book}
       </button>
     </div>
   `;

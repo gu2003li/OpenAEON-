@@ -9,6 +9,8 @@ import { loadSessionEntry } from "./session-utils.js";
 import { formatForLog } from "./ws-log.js";
 import { extractLatestProgress } from "../utils/progress-extractor.js";
 import { callGateway } from "./call.js";
+import { addCognitiveLog } from "./aeon-state.js";
+import { extractArtifactRefs, recordDeliveryTransition } from "./aeon-delivery-log.js";
 
 function resolveHeartbeatAckMaxChars(): number {
   try {
@@ -280,6 +282,7 @@ export function createAgentEventHandler({
   toolEventRecipients,
 }: AgentEventHandlerOptions) {
   const lastProgressUpdateByRunId = new Map<string, { text: string; ts: number }>();
+  const lastCognitiveLogByRunId = new Map<string, { text: string; ts: number }>();
 
   const emitChatDelta = (
     sessionKey: string,
@@ -296,6 +299,23 @@ export function createAgentEventHandler({
       return;
     }
     chatRunState.buffers.set(clientRunId, cleaned);
+    const cognitiveNow = Date.now();
+    const lastCognitive = lastCognitiveLogByRunId.get(clientRunId);
+    if (
+      !lastCognitive ||
+      (lastCognitive.text !== cleaned && cognitiveNow - lastCognitive.ts > 1000)
+    ) {
+      lastCognitiveLogByRunId.set(clientRunId, { text: cleaned, ts: cognitiveNow });
+      addCognitiveLog(
+        {
+          timestamp: cognitiveNow,
+          type: "deliberation",
+          content: cleaned.length > 420 ? `${cleaned.slice(0, 420)}...` : cleaned,
+          metadata: { focus: sessionKey, runId: clientRunId, phase: "delta", seq },
+        },
+        { sessionKey, agentId: "main" },
+      );
+    }
 
     // Real-time progress monitoring for Sandbox
     const progress = extractLatestProgress(cleaned);
@@ -357,6 +377,7 @@ export function createAgentEventHandler({
       normalizedHeartbeatText.suppress || isSilentReplyText(text, SILENT_REPLY_TOKEN);
     chatRunState.buffers.delete(clientRunId);
     chatRunState.deltaSentAt.delete(clientRunId);
+    lastCognitiveLogByRunId.delete(clientRunId);
     if (jobState === "done") {
       const payload = {
         runId: clientRunId,
@@ -374,6 +395,32 @@ export function createAgentEventHandler({
       };
       broadcast("chat", payload);
       nodeSendToSession(sessionKey, "chat", payload);
+      if (text && !shouldSuppressSilent) {
+        void recordDeliveryTransition({
+          runId: clientRunId,
+          sessionKey,
+          state: "persisted",
+          persistedAt: Date.now(),
+          summary: text.slice(0, 600),
+          artifactRefs: extractArtifactRefs(text),
+        }).catch(() => {});
+      }
+      void recordDeliveryTransition({
+        runId: clientRunId,
+        sessionKey,
+        state: "acknowledged",
+      }).catch(() => {});
+      if (text) {
+        addCognitiveLog(
+          {
+            timestamp: Date.now(),
+            type: "synthesis",
+            content: text.length > 420 ? `${text.slice(0, 420)}...` : text,
+            metadata: { focus: sessionKey, runId: clientRunId, phase: "final", seq },
+          },
+          { sessionKey, agentId: "main" },
+        );
+      }
       return;
     }
     const payload = {
@@ -385,6 +432,22 @@ export function createAgentEventHandler({
     };
     broadcast("chat", payload);
     nodeSendToSession(sessionKey, "chat", payload);
+    void recordDeliveryTransition({
+      runId: clientRunId,
+      sessionKey,
+      state: "persist_failed",
+      reasonCode: "AGENT_EVENT_ERROR",
+      summary: payload.errorMessage?.slice(0, 300),
+    }).catch(() => {});
+    addCognitiveLog(
+      {
+        timestamp: Date.now(),
+        type: "anomaly",
+        content: payload.errorMessage ?? "chat run failed",
+        metadata: { focus: sessionKey, runId: clientRunId, phase: "error", seq },
+      },
+      { sessionKey, agentId: "main" },
+    );
   };
 
   const resolveToolVerboseLevel = (runId: string, sessionKey?: string) => {

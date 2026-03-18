@@ -102,6 +102,12 @@ const BASE_METHODS = [
   "chat.abort",
   "chat.send",
   "aeon.status",
+  "aeon.decision.explain",
+  "aeon.intent.trace",
+  "aeon.ethics.evaluate",
+  "aeon.memory.trace",
+  "aeon.execution.lookup",
+  "aeon.thinking.stream",
 ];
 
 export function listGatewayMethods(): string[] {

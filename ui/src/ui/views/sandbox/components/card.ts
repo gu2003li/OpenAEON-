@@ -2,6 +2,7 @@ import { html, nothing } from "lit";
 import { t } from "../../../../i18n/index.ts";
 import { extractToolCards } from "../../../chat/tool-cards.ts";
 import type { GatewaySessionRow } from "../../../types.ts";
+import type { SandboxChatEvents } from "../../../types.ts";
 import type { TaskPlanSnapshot, TaskTodo } from "../types.ts";
 
 /** ─── Task status helpers ────────────────────────────────────────────────────── */
@@ -52,7 +53,7 @@ export function sessionStatusColor(row: GatewaySessionRow, isWorking: boolean): 
 export function renderTaskCard(
   row: GatewaySessionRow,
   index: number,
-  sandboxChatEvents?: Record<string, unknown>,
+  sandboxChatEvents?: SandboxChatEvents,
   taskPlan?: TaskPlanSnapshot | null,
 ) {
   const progress = tokenProgress(row);
