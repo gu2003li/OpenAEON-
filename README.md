@@ -29,19 +29,6 @@
 </p>
 
 </div>
-# 克隆仓库
-git clone https://github.com/openaeon/OpenAEON.git
-cd OpenAEON
-
-# 安装项目依赖
-pnpm install
-
-# 编译项目 (首次运行将自动构建 UI 前端工程)
-pnpm build
-pnpm ui:build
-
-# 启动全中文沉浸式配置向导，注册基础设置并安装后台守护进程
-pnpm openaeon onboard --install-daemon
 
 ---
 
