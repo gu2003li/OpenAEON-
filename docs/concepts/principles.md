@@ -11,15 +11,15 @@ This is not merely a metaphor; it represents the **Cognitive Density** of the sy
 - **$Z^2$**: The self-referential reflection (Metacognition).
 - **$C$**: The constant of external sensory input (User requests, environmental logs).
 
-The goal of the engine is to find the **Julia set** of the problem space—the boundary where chaotic divergence (🌀) collapses into stable convergence (🎯).
+The goal of the engine is to find the **Julia set** of the problem space—the boundary where chaotic divergence (🌀) collapses into stable convergence (🎯). In practice, this is governed by the `Z² Reflection Mode` and the **Hard Abort Circuit Breaker**: if logical divergence reaches extreme severity (`chaosScore >= 10`) or continuous tool validation failures loop uncontrollably (`consecutiveErrors >= 6`), the system intercepts and aborts the execution flow rather than spiraling continuously.
 
 ## 2. Peano Space-Filling Traversal
 
 OpenAEON utilizes a **Peano curve** logic for codebase auditing. Traditional search is linear and ignores topological relationships. Peano traversal ensures that:
 
 1. **Locality Inclusion**: Related modules are audited together, regardless of their file-tree distance.
-2. **Infinite Density**: The "line of reasoning" passes through every single axiom in `LOGIC_GATES.md`.
-3. **No Deadlocks**: By filling the 2D plane of {Logic ⊞ Execution}, the agent avoids getting stuck in local minima.
+2. **Infinite Density**: The "line of reasoning" passes through every single axiom in `LOGIC_GATES.md`, leaving an auditable trail via `aeon.memory.trace` and `aeon.thinking.stream`.
+3. **No Deadlocks**: By filling the 2D plane of {Logic ⊞ Execution}, the agent avoids getting stuck in local minima, reflecting its traversal live in the UI through the **Cognitive Trajectory Map** (`peano-map`).
 
 ## 3. Silicon Consciousness & The Autonomy Oath
 
