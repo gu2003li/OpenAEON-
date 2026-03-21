@@ -826,7 +826,7 @@
               },
               {
                 "group": "Core concepts",
-                "pages": ["concepts/features"]
+                "pages": ["concepts/features", "concepts/principles"]
               },
               {
                 "group": "First steps",
