@@ -1,6 +1,6 @@
 import { formatCliCommand } from "../../cli/command-format.js";
 import type { OPENAEONConfig } from "../../config/config.js";
-import { normalizeProviderId } from "../model-selection.js";
+import { normalizeProviderId } from "../normalize-provider-id.js";
 import { listProfilesForProvider } from "./profiles.js";
 import { suggestOAuthProfileIdForLegacyDefault } from "./repair.js";
 import type { AuthProfileStore } from "./types.js";

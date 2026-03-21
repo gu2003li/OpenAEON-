@@ -8,7 +8,18 @@
 import type { WorkspaceBootstrapFile } from "../agents/workspace.js";
 import type { CliDeps } from "../cli/deps.js";
 import type { OPENAEONConfig } from "../config/config.js";
-import { createSubsystemLogger } from "../logging/subsystem.js";
+import type { SubsystemLogger } from "../logging/subsystem.js";
+
+let hookErrorLogger: SubsystemLogger | undefined;
+
+/** Dynamic import avoids a subsystem ↔ plugins/registry ↔ internal-hooks cycle during static module init. */
+async function getHookErrorLogger(): Promise<SubsystemLogger> {
+  if (!hookErrorLogger) {
+    const { createSubsystemLogger } = await import("../logging/subsystem.js");
+    hookErrorLogger = createSubsystemLogger("internal-hooks");
+  }
+  return hookErrorLogger;
+}
 
 export type InternalHookEventType = "command" | "session" | "agent" | "gateway" | "message";
 
@@ -112,7 +123,6 @@ export type InternalHookHandler = (event: InternalHookEvent) => Promise<void> | 
 
 /** Registry of hook handlers by event key */
 const handlers = new Map<string, InternalHookHandler[]>();
-const log = createSubsystemLogger("internal-hooks");
 
 /**
  * Register a hook handler for a specific event type or event:action combination
@@ -204,7 +214,12 @@ export async function triggerInternalHook(event: InternalHookEvent): Promise<voi
       await handler(event);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      log.error(`Hook error [${event.type}:${event.action}]: ${message}`);
+      const line = `Hook error [${event.type}:${event.action}]: ${message}`;
+      try {
+        (await getHookErrorLogger()).error(line);
+      } catch {
+        console.error(line);
+      }
     }
   }
 }

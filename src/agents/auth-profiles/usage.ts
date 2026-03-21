@@ -1,5 +1,5 @@
 import type { OPENAEONConfig } from "../../config/config.js";
-import { normalizeProviderId } from "../model-selection.js";
+import { normalizeProviderId } from "../normalize-provider-id.js";
 import { saveAuthProfileStore, updateAuthProfileStoreWithLock } from "./store.js";
 import type { AuthProfileFailureReason, AuthProfileStore, ProfileUsageStats } from "./types.js";
 
