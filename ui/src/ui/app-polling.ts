@@ -107,9 +107,7 @@ async function runEternalPlanningAutodrive(host: SandboxWatchdogHost): Promise<v
 }
 
 function digestTaskPlan(plan: TaskPlanSnapshot): string {
-  const parts = (plan.todos ?? [])
-    .map((todo) => `${todo.id}:${todo.status}`)
-    .sort();
+  const parts = (plan.todos ?? []).map((todo) => `${todo.id}:${todo.status}`).sort();
   return `${plan.phase ?? "planning"}|${parts.join("|")}`;
 }
 
@@ -126,7 +124,12 @@ function mirrorWatchdogToTelemetry(host: SandboxWatchdogHost) {
 
 async function runExecutionWatchdog(host: SandboxWatchdogHost) {
   const plan = host.sandboxTaskPlan;
-  if (!plan || plan.phase !== "execution" || !Array.isArray(plan.todos) || plan.todos.length === 0) {
+  if (
+    !plan ||
+    plan.phase !== "execution" ||
+    !Array.isArray(plan.todos) ||
+    plan.todos.length === 0
+  ) {
     if (host.executionWatchdog.active || host.executionWatchdog.degraded) {
       host.executionWatchdog = {
         active: false,

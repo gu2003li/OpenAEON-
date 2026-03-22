@@ -69,7 +69,9 @@ function overlapScore(tokensA: string[], tokensB: string[]): number {
 }
 
 function isPlaceholderText(title: string, detail: string): boolean {
-  return includesAny(title, PLACEHOLDER_TITLE_PATTERNS) || includesAny(detail, PLACEHOLDER_HINT_PATTERNS);
+  return (
+    includesAny(title, PLACEHOLDER_TITLE_PATTERNS) || includesAny(detail, PLACEHOLDER_HINT_PATTERNS)
+  );
 }
 
 export function isPlaceholderPlanTodo(todo: { title?: string; result?: string }): boolean {
@@ -228,11 +230,11 @@ function resolveSessionForTodoWithStrategy(params: {
   const owner = resolveOwnerAlias(todo.ownerAgent ?? "");
   const hasOwnerBoundChoice = Boolean(
     owner &&
-      sessions.some((row) => {
-        const key = normalize(row.key).toLowerCase();
-        const label = `${normalize(row.label)} ${normalize(row.displayName)}`.toLowerCase();
-        return key === owner || key.includes(owner) || label.includes(owner);
-      }),
+    sessions.some((row) => {
+      const key = normalize(row.key).toLowerCase();
+      const label = `${normalize(row.label)} ${normalize(row.displayName)}`.toLowerCase();
+      return key === owner || key.includes(owner) || label.includes(owner);
+    }),
   );
   let best: GatewaySessionRow | undefined;
   let bestScore = Number.NEGATIVE_INFINITY;
@@ -316,34 +318,34 @@ export function buildSubagentViewModel(params: {
     return ai - bi;
   });
 
-    const depthMemo = new Map<string, number>();
-    const models = sortedTodos.map((todo) => {
-      const session = resolveSessionForTodoWithStrategy({
-        todo,
-        sessions,
-        matchMode,
-        usedSessionKeys,
-        events,
-      });
-      if (session) {
-        usedSessionKeys.add(session.key);
-      }
-      const lastEvent = session ? events[session.key] : undefined;
-      const depthRaw = calculateTodoDepth(todo.id, blockedBy, depthMemo, new Set());
-      const depthLevel = Math.max(1, Math.min(4, depthRaw)) as 1 | 2 | 3 | 4;
-      return {
-        todoId: todo.id,
-        ownerAgent: todo.ownerAgent,
-        title: todo.title,
-        status: resolveTodoStatus({ todo, readySet, blockedSet, lastEvent }),
-        blockedBy: blockedBy[todo.id] ?? [],
-        lastEvent,
-        updatedAt: session?.updatedAt ?? null,
-        model: session?.model,
-        tokenUsage: (session?.totalTokens ?? session?.outputTokens) ?? undefined,
-        depthLevel,
-      } satisfies SubagentViewModel;
+  const depthMemo = new Map<string, number>();
+  const models = sortedTodos.map((todo) => {
+    const session = resolveSessionForTodoWithStrategy({
+      todo,
+      sessions,
+      matchMode,
+      usedSessionKeys,
+      events,
     });
+    if (session) {
+      usedSessionKeys.add(session.key);
+    }
+    const lastEvent = session ? events[session.key] : undefined;
+    const depthRaw = calculateTodoDepth(todo.id, blockedBy, depthMemo, new Set());
+    const depthLevel = Math.max(1, Math.min(4, depthRaw)) as 1 | 2 | 3 | 4;
+    return {
+      todoId: todo.id,
+      ownerAgent: todo.ownerAgent,
+      title: todo.title,
+      status: resolveTodoStatus({ todo, readySet, blockedSet, lastEvent }),
+      blockedBy: blockedBy[todo.id] ?? [],
+      lastEvent,
+      updatedAt: session?.updatedAt ?? null,
+      model: session?.model,
+      tokenUsage: session?.totalTokens ?? session?.outputTokens ?? undefined,
+      depthLevel,
+    } satisfies SubagentViewModel;
+  });
 
   if (shouldDebugSubagentModel()) {
     const fingerprint = JSON.stringify({

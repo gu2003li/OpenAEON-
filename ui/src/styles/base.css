@@ -113,7 +113,6 @@
   color-scheme: light;
 }
 
-
 :root[data-theme="dark"] {
   --bg: #03030b;
   --bg-accent: #0a0a20;

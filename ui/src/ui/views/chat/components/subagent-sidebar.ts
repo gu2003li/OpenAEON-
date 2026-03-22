@@ -6,7 +6,8 @@ import { renderPlanExecutionLayer } from "./plan-sidebar.ts";
 import { buildSubagentViewModel, getVisiblePlanTodos } from "./subagent-view-model.ts";
 
 function renderSubagentCard(entry: SubagentViewModel) {
-  const statusClass = entry.status === "in_progress" ? "subagent-card--active" : "subagent-card--idle";
+  const statusClass =
+    entry.status === "in_progress" ? "subagent-card--active" : "subagent-card--idle";
   const statusText =
     entry.status === "done"
       ? t("chat.sidebarStatusDone")

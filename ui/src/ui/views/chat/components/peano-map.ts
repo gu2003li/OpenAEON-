@@ -14,7 +14,7 @@ export function renderPeanoMap(props: PeanoMapProps) {
   }
 
   const trajectory = props.trajectory ?? [];
-  
+
   if (trajectory.length === 0) {
     return html`
       <div class="peano-map-container aeon-glass aeon-entry-anim" style="display:flex;align-items:center;justify-content:center;height:300px;">
@@ -25,14 +25,14 @@ export function renderPeanoMap(props: PeanoMapProps) {
 
   const width = 600;
   const height = 400;
-  
+
   // Scale trajectory to fit SVG viewBox
-  const points = trajectory.map(p => ({
+  const points = trajectory.map((p) => ({
     x: p.x * width,
-    y: p.y * height
+    y: p.y * height,
   }));
 
-  const polylinePath = points.map(p => `${p.x},${p.y}`).join(" ");
+  const polylinePath = points.map((p) => `${p.x},${p.y}`).join(" ");
   const lastPoint = points[points.length - 1];
 
   return html`
@@ -83,7 +83,7 @@ export function renderPeanoMap(props: PeanoMapProps) {
               >
                 <title>T-${points.length - 1 - i}</title>
               </circle>
-            `
+            `,
           )}
 
           <!-- Current Position Marker -->

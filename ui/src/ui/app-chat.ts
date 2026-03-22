@@ -31,8 +31,7 @@ const CHAT_RESET_MARKER_KEY = "openaeon.chat.reset.v1";
 function writeSessionResetMarker(sessionKey: string, at: number): void {
   try {
     const raw = localStorage.getItem(CHAT_RESET_MARKER_KEY);
-    const parsed =
-      raw && raw.trim().length > 0 ? (JSON.parse(raw) as Record<string, unknown>) : {};
+    const parsed = raw && raw.trim().length > 0 ? (JSON.parse(raw) as Record<string, unknown>) : {};
     parsed[sessionKey] = at;
     localStorage.setItem(CHAT_RESET_MARKER_KEY, JSON.stringify(parsed));
   } catch {

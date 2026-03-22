@@ -350,14 +350,14 @@ function buildFormulaMetrics(params: {
   depthLevel: number;
   sessionWorking: boolean;
 }) {
-  const chaos    = Number.isFinite(params.chaosScore)    ? params.chaosScore    : 0;
-  const resonance= Number.isFinite(params.epiphanyFactor)? params.epiphanyFactor: 0;
-  const phase    = params.sessionWorking ? "active" : "idle";
+  const chaos = Number.isFinite(params.chaosScore) ? params.chaosScore : 0;
+  const resonance = Number.isFinite(params.epiphanyFactor) ? params.epiphanyFactor : 0;
+  const phase = params.sessionWorking ? "active" : "idle";
 
   // Delivery display
   const ds = params.deliveryState;
-  const deliveryLabel   = ds === null ? "—" : ds;
-  const deliveryState   = ds === "persist_failed" ? "error" : ds === null ? "muted" : "ok";
+  const deliveryLabel = ds === null ? "—" : ds;
+  const deliveryState = ds === "persist_failed" ? "error" : ds === null ? "muted" : "ok";
 
   return {
     phase,

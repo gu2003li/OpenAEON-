@@ -100,11 +100,15 @@ function renderIdentityTimeline(log: import("../types.ts").CognitiveLogEntry[] |
     <div class="aeon-life-timeline">
       ${timeline.map((entry) => {
         const typeIcon =
-          entry.type === "anomaly" ? "⚠" :
-          entry.type === "dreaming" ? "⌬" :
-          entry.type === "reflection" ? "∿" :
-          entry.type === "synthesis" ? "❖" :
-          "⚬";
+          entry.type === "anomaly"
+            ? "⚠"
+            : entry.type === "dreaming"
+              ? "⌬"
+              : entry.type === "reflection"
+                ? "∿"
+                : entry.type === "synthesis"
+                  ? "❖"
+                  : "⚬";
         return html`
           <article class="aeon-life-timeline__item">
             <div class="aeon-life-timeline__dot"></div>
@@ -642,9 +646,10 @@ export function renderAeonLogic(params: AeonLogicOptions) {
                 : viewMode === "evidence"
                   ? html`
                     <section class="aeon-life-evidence">
-                      ${renderPeanoMap({ 
-                        trajectory: status?.telemetry?.evolution?.peanoTrajectory ?? status?.peanoTrajectory, 
-                        active: true 
+                      ${renderPeanoMap({
+                        trajectory:
+                          status?.telemetry?.evolution?.peanoTrajectory ?? status?.peanoTrajectory,
+                        active: true,
                       })}
                       <article class="aeon-life-evidence-block">
                         <h4 style="margin:0 0 8px;">telemetry.v4.evidence</h4>
@@ -754,11 +759,12 @@ export function renderAeonLogic(params: AeonLogicOptions) {
             ${renderIdentityTimeline(streamLog)}
           </article>
 
-          ${renderConsciousnessStream({ 
-            log: streamLog, 
+          ${renderConsciousnessStream({
+            log: streamLog,
             active: true,
             onBacktrack: params.onBacktrack,
-            epiphanyFactor: telemetryV4?.inference.riskScore != null ? status?.epiphanyFactor : undefined, // Check if we have systemStatus
+            epiphanyFactor:
+              telemetryV4?.inference.riskScore != null ? status?.epiphanyFactor : undefined, // Check if we have systemStatus
             memorySaturation: status?.memorySaturation,
             riskScore: telemetryV4?.inference.riskScore,
           })}

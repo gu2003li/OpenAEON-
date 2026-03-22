@@ -23,9 +23,7 @@ import type { ChatAttachment, ChatQueueItem } from "../ui-types.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import "../components/resizable-divider.ts";
 import "./chat-layout.ts";
-import {
-  buildSubagentViewModel,
-} from "./chat/components/subagent-view-model.ts";
+import { buildSubagentViewModel } from "./chat/components/subagent-view-model.ts";
 
 export type CompactionIndicatorStatus = {
   active: boolean;

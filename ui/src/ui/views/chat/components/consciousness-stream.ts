@@ -82,11 +82,15 @@ export function renderConsciousnessStream(props: ConsciousnessStreamProps) {
       (entry) => `${entry.timestamp}:${entry.type}:${entry.normalizedContent}`,
       (entry) => {
         const typeIcon =
-          entry.type === "anomaly" ? "⚠" :
-          entry.type === "dreaming" ? "⌬" :
-          entry.type === "reflection" ? "∿" :
-          entry.type === "synthesis" ? "❖" :
-          "⚬";
+          entry.type === "anomaly"
+            ? "⚠"
+            : entry.type === "dreaming"
+              ? "⌬"
+              : entry.type === "reflection"
+                ? "∿"
+                : entry.type === "synthesis"
+                  ? "❖"
+                  : "⚬";
         const timeStr = new Date(entry.timestamp).toLocaleTimeString([], {
           hour12: false,
           hour: "2-digit",
@@ -102,17 +106,24 @@ export function renderConsciousnessStream(props: ConsciousnessStreamProps) {
             <span class="consciousness-content ${entry.content?.trim() ? "" : "consciousness-content--placeholder"}"
               >${entry.normalizedContent}</span
             >
-            ${entry.metadata?.focus
-              ? html`<div class="consciousness-focus">⌗ ${entry.metadata.focus}</div>`
-              : nothing}
-            ${entry.metadata && typeof entry.metadata.eventId === "string"
-              ? html`<div class="consciousness-focus">⇢ ${entry.metadata.eventId}</div>`
-              : nothing}
-            ${entry.metadata?.pivot
-              ? html`<div class="consciousness-pivot">⇢ ${entry.metadata.pivot}</div>`
-              : nothing}
-            ${entry.type === "anomaly" && entry.metadata?.runId
-              ? html`
+            ${
+              entry.metadata?.focus
+                ? html`<div class="consciousness-focus">⌗ ${entry.metadata.focus}</div>`
+                : nothing
+            }
+            ${
+              entry.metadata && typeof entry.metadata.eventId === "string"
+                ? html`<div class="consciousness-focus">⇢ ${entry.metadata.eventId}</div>`
+                : nothing
+            }
+            ${
+              entry.metadata?.pivot
+                ? html`<div class="consciousness-pivot">⇢ ${entry.metadata.pivot}</div>`
+                : nothing
+            }
+            ${
+              entry.type === "anomaly" && entry.metadata?.runId
+                ? html`
                   <div class="consciousness-entry-actions">
                     <button
                       class="aeon-button aeon-button-mini aeon-button--warning"
@@ -122,7 +133,8 @@ export function renderConsciousnessStream(props: ConsciousnessStreamProps) {
                     </button>
                   </div>
                 `
-              : nothing}
+                : nothing
+            }
           </div>
         `;
       },

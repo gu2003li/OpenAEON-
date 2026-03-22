@@ -139,8 +139,7 @@ function uniquePreserveOrder(values: string[]): string[] {
 function resolveChatPerformanceMode(state: AppViewState): "performance" | "balanced" | "visual" {
   const config = state.configForm ?? state.configSnapshot?.config ?? null;
   const ui = config && typeof config === "object" ? (config as Record<string, unknown>).ui : null;
-  const chat =
-    ui && typeof ui === "object" ? (ui as Record<string, unknown>).chat : null;
+  const chat = ui && typeof ui === "object" ? (ui as Record<string, unknown>).chat : null;
   const mode =
     chat && typeof chat === "object"
       ? (chat as Record<string, unknown>).performanceMode
@@ -151,8 +150,7 @@ function resolveChatPerformanceMode(state: AppViewState): "performance" | "balan
 function resolveSubagentMatchMode(state: AppViewState): "owner_first" | "balanced" | "fuzzy" {
   const config = state.configForm ?? state.configSnapshot?.config ?? null;
   const ui = config && typeof config === "object" ? (config as Record<string, unknown>).ui : null;
-  const chat =
-    ui && typeof ui === "object" ? (ui as Record<string, unknown>).chat : null;
+  const chat = ui && typeof ui === "object" ? (ui as Record<string, unknown>).chat : null;
   const mode =
     chat && typeof chat === "object"
       ? (chat as Record<string, unknown>).subagentMatchMode
@@ -1561,8 +1559,7 @@ export function renderApp(state: AppViewState) {
                     }
                     // Legacy fallback for gateways without execution trigger broadcast support.
                     if (!changedToExecution && state.sandboxTaskPlan?.phase === "execution") {
-                      state.chatMessage =
-                        "继续执行当前 execution 阶段任务，逐项完成并回填结果。";
+                      state.chatMessage = "继续执行当前 execution 阶段任务，逐项完成并回填结果。";
                       if (state.chatSending || Boolean(state.chatStream?.trim())) {
                         state.executionAutoQueued = true;
                         return;

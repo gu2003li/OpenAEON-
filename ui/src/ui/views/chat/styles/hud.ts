@@ -13,7 +13,9 @@ export const hudStyles = css`
     padding: 10px 12px 8px;
     border: 1px solid rgba(56, 189, 248, 0.18);
     background: linear-gradient(165deg, rgba(8, 14, 30, 0.84), rgba(2, 6, 23, 0.94));
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(56, 189, 248, 0.04);
+    box-shadow:
+      0 6px 24px rgba(0, 0, 0, 0.5),
+      inset 0 0 12px rgba(56, 189, 248, 0.04);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     overflow: hidden;
@@ -166,8 +168,6 @@ export const hudStyles = css`
     color: rgba(148, 163, 184, 0.25);
   }
 
-
-
   /* ────────────────────────────────────────────────
      COGNITIVE DASHBOARD  –  3 mini metric pills
   ──────────────────────────────────────────────── */
@@ -225,9 +225,15 @@ export const hudStyles = css`
     border-radius: 1px;
   }
 
-  .cognitive-bar--epiphany { background: var(--hud-epiphany-active); }
-  .cognitive-bar--memory   { background: var(--hud-memory-saturated); }
-  .cognitive-bar--risk     { background: var(--hud-redline-risk); }
+  .cognitive-bar--epiphany {
+    background: var(--hud-epiphany-active);
+  }
+  .cognitive-bar--memory {
+    background: var(--hud-memory-saturated);
+  }
+  .cognitive-bar--risk {
+    background: var(--hud-redline-risk);
+  }
 
   /* ────────────────────────────────────────────────
      CONSCIOUSNESS STREAM  –  compact log list
@@ -250,7 +256,9 @@ export const hudStyles = css`
 
   .consciousness-stream.resonance-active {
     border-color: var(--hud-epiphany-active);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 12px var(--hud-epiphany-active);
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.45),
+      0 0 12px var(--hud-epiphany-active);
   }
 
   .consciousness-stream-header {
@@ -295,7 +303,10 @@ export const hudStyles = css`
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease;
   }
 
   .consciousness-scroll-btn:hover {
@@ -309,8 +320,6 @@ export const hudStyles = css`
     transform: scale(0.92);
   }
 
-
-
   .consciousness-stream-body {
     flex: 1;
     min-height: 0;
@@ -323,7 +332,9 @@ export const hudStyles = css`
     scrollbar-color: rgba(0, 242, 255, 0.2) transparent;
   }
 
-  .consciousness-stream-body::-webkit-scrollbar { width: 3px; }
+  .consciousness-stream-body::-webkit-scrollbar {
+    width: 3px;
+  }
   .consciousness-stream-body::-webkit-scrollbar-thumb {
     background: rgba(0, 242, 255, 0.2);
     border-radius: 2px;
@@ -339,7 +350,9 @@ export const hudStyles = css`
     background: rgba(15, 23, 42, 0.3);
     border-radius: 5px;
     overflow: hidden;
-    transition: background 0.15s ease, border-left-color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      border-left-color 0.15s ease;
     cursor: default;
     min-width: 0;
   }
@@ -350,11 +363,22 @@ export const hudStyles = css`
   }
 
   /* Type color bands */
-  .consciousness-entry.reflection  { border-left-color: rgba(34, 211, 238, 0.5); }
-  .consciousness-entry.synthesis   { border-left-color: rgba(251, 146, 60, 0.5); }
-  .consciousness-entry.deliberation{ border-left-color: rgba(192, 132, 252, 0.5); }
-  .consciousness-entry.anomaly     { border-left-color: rgba(244, 63, 94, 0.7); background: rgba(244, 63, 94, 0.04); }
-  .consciousness-entry.dreaming    { border-left-color: rgba(148, 163, 184, 0.3); }
+  .consciousness-entry.reflection {
+    border-left-color: rgba(34, 211, 238, 0.5);
+  }
+  .consciousness-entry.synthesis {
+    border-left-color: rgba(251, 146, 60, 0.5);
+  }
+  .consciousness-entry.deliberation {
+    border-left-color: rgba(192, 132, 252, 0.5);
+  }
+  .consciousness-entry.anomaly {
+    border-left-color: rgba(244, 63, 94, 0.7);
+    background: rgba(244, 63, 94, 0.04);
+  }
+  .consciousness-entry.dreaming {
+    border-left-color: rgba(148, 163, 184, 0.3);
+  }
 
   /* Meta row: type icon + time — inline */
   .consciousness-entry-meta {
@@ -425,8 +449,12 @@ export const hudStyles = css`
     text-overflow: ellipsis;
   }
 
-  .consciousness-entry:hover .consciousness-focus { color: var(--aeon-cyan, #22d3ee); }
-  .consciousness-entry:hover .consciousness-pivot  { color: var(--aeon-orange, #fb923c); }
+  .consciousness-entry:hover .consciousness-focus {
+    color: var(--aeon-cyan, #22d3ee);
+  }
+  .consciousness-entry:hover .consciousness-pivot {
+    color: var(--aeon-orange, #fb923c);
+  }
 
   .consciousness-entry-actions {
     margin-top: 4px;
@@ -469,9 +497,15 @@ export const hudStyles = css`
   }
 
   @keyframes pulse-red {
-    0%   { background: rgba(244, 63, 94, 0.1); }
-    50%  { background: rgba(244, 63, 94, 0.25); }
-    100% { background: rgba(244, 63, 94, 0.1); }
+    0% {
+      background: rgba(244, 63, 94, 0.1);
+    }
+    50% {
+      background: rgba(244, 63, 94, 0.25);
+    }
+    100% {
+      background: rgba(244, 63, 94, 0.1);
+    }
   }
 
   /* ────────────────────────────────────────────────
@@ -482,7 +516,7 @@ export const hudStyles = css`
   :host-context([data-theme="light"]) .consciousness-stream {
     background: linear-gradient(165deg, rgba(255, 255, 255, 0.94), rgba(248, 249, 255, 0.96));
     border-color: var(--border);
-    box-shadow: 
+    box-shadow:
       0 8px 32px rgba(99, 102, 241, 0.05),
       inset 0 1px 0 rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
@@ -585,13 +619,28 @@ export const hudStyles = css`
     background: rgba(255, 255, 255, 0.7);
   }
 
-  :host-context([data-theme="light"]) .consciousness-entry.reflection  { border-left-color: #06b6d4; }
-  :host-context([data-theme="light"]) .consciousness-entry.synthesis   { border-left-color: #f97316; }
-  :host-context([data-theme="light"]) .consciousness-entry.deliberation{ border-left-color: #8b5cf6; }
-  :host-context([data-theme="light"]) .consciousness-entry.anomaly     { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.03); }
+  :host-context([data-theme="light"]) .consciousness-entry.reflection {
+    border-left-color: #06b6d4;
+  }
+  :host-context([data-theme="light"]) .consciousness-entry.synthesis {
+    border-left-color: #f97316;
+  }
+  :host-context([data-theme="light"]) .consciousness-entry.deliberation {
+    border-left-color: #8b5cf6;
+  }
+  :host-context([data-theme="light"]) .consciousness-entry.anomaly {
+    border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.03);
+  }
 
-  :host-context([data-theme="light"]) .consciousness-type { color: var(--muted); font-weight: 500; }
-  :host-context([data-theme="light"]) .consciousness-time { color: var(--muted); opacity: 0.6; }
+  :host-context([data-theme="light"]) .consciousness-type {
+    color: var(--muted);
+    font-weight: 500;
+  }
+  :host-context([data-theme="light"]) .consciousness-time {
+    color: var(--muted);
+    opacity: 0.6;
+  }
 
   :host-context([data-theme="light"]) .consciousness-content {
     color: var(--text);
@@ -601,5 +650,3 @@ export const hudStyles = css`
     background: var(--border);
   }
 `;
-
-

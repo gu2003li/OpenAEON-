@@ -403,7 +403,7 @@ export const chatEmptyStateStyles = css`
     background:
       radial-gradient(120% 70% at 50% 0%, rgba(99, 102, 241, 0.14), transparent 60%),
       radial-gradient(80% 60% at 0% 100%, rgba(14, 165, 233, 0.12), transparent 60%),
-      radial-gradient(80% 60% at 100% 90%, rgba(45, 212, 191, 0.10), transparent 55%),
+      radial-gradient(80% 60% at 100% 90%, rgba(45, 212, 191, 0.1), transparent 55%),
       rgba(255, 255, 255, 0.82);
     border-color: rgba(99, 102, 241, 0.22);
     box-shadow:
