@@ -175,7 +175,8 @@ Common `agentTurn` fields:
 
 - `message`: required text prompt.
 - `model` / `thinking`: optional overrides (see below).
-- `timeoutSeconds`: optional timeout override.
+- `timeoutSeconds`: optional timeout override. Omit or blank = 60-minute default ceiling.
+  Use `0` for no timeout (up to 2 hours). Use a positive value (e.g. `7200`) for explicit seconds.
 
 Delivery config:
 

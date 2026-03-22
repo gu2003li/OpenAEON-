@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { DEFAULT_CRON_FORM } from "../app-defaults.ts";
 import {
   addCronJob,
+  buildCronPayload,
   cancelCronEdit,
   loadCronJobsPage,
   loadCronRuns,
@@ -501,7 +502,7 @@ describe("cron controller", () => {
       cronExpr: "",
       payloadKind: "agentTurn",
       payloadText: "",
-      timeoutSeconds: "0",
+      timeoutSeconds: "-1",
       deliveryMode: "webhook",
       deliveryTo: "ftp://bad",
     });
@@ -510,6 +511,30 @@ describe("cron controller", () => {
     expect(errors.payloadText).toBe("cron.errors.agentMessageRequired");
     expect(errors.timeoutSeconds).toBe("cron.errors.timeoutInvalid");
     expect(errors.deliveryTo).toBe("cron.errors.webhookUrlInvalid");
+  });
+
+  it("accepts timeoutSeconds 0 for long-running tasks", () => {
+    const errors = validateCronForm({
+      ...DEFAULT_CRON_FORM,
+      name: "Long task",
+      scheduleKind: "cron",
+      cronExpr: "0 9 * * *",
+      payloadKind: "agentTurn",
+      payloadText: "Run research",
+      timeoutSeconds: "0",
+    });
+    expect(errors.timeoutSeconds).toBeUndefined();
+  });
+
+  it("includes timeoutSeconds 0 in payload for long-running tasks", () => {
+    const payload = buildCronPayload({
+      ...DEFAULT_CRON_FORM,
+      payloadKind: "agentTurn",
+      payloadText: "Run research",
+      timeoutSeconds: "0",
+    });
+    expect(payload.kind).toBe("agentTurn");
+    expect(payload.timeoutSeconds).toBe(0);
   });
 
   it("blocks add/update submit when validation errors exist", async () => {

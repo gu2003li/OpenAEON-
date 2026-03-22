@@ -227,7 +227,9 @@ extension CronJobEditor {
         var payload: [String: Any] = ["kind": "agentTurn", "message": msg]
         let thinking = self.thinking.trimmingCharacters(in: .whitespacesAndNewlines)
         if !thinking.isEmpty { payload["thinking"] = thinking }
-        if let n = Int(self.timeoutSeconds), n > 0 { payload["timeoutSeconds"] = n }
+        if !self.timeoutSeconds.isEmpty, let n = Int(self.timeoutSeconds), n >= 0 {
+          payload["timeoutSeconds"] = n
+        }
         return payload
     }
 

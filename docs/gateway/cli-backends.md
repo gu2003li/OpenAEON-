@@ -223,3 +223,42 @@ Override only if needed (common: absolute `command` path).
 - **No session continuity**: ensure `sessionArg` is set and `sessionMode` is not
   `none` (Codex CLI currently cannot resume with JSON output).
 - **Images ignored**: set `imageArg` (and verify CLI supports file paths).
+- **Timeout when AI runs long tools** (e.g. `pnpm install`, `brew install`): the
+  no-output watchdog can fire when the CLI waits for a tool with little stdout.
+  Increase `agents.defaults.timeoutSeconds` and/or extend the watchdog via
+  `reliability.watchdog.resume.noOutputTimeoutMs` or
+  `reliability.watchdog.fresh.noOutputTimeoutMs`. To disable the watchdog,
+  set `noOutputTimeoutMs: 0` under `fresh` or `resume` as needed.
+
+## Long-running tasks (2+ hours)
+
+For fully automated long runs (e.g. multi-hour research or batch jobs):
+
+1. **Global timeout**: Set `agents.defaults.timeoutSeconds: 0` for no timeout (up to 2 hours
+   per run), or a larger value (e.g. `7200`).
+2. **CLI watchdog**: If the CLI produces little stdout during tool execution, extend or disable
+   the no-output watchdog per backend:
+
+```json5
+{
+  agents: {
+    defaults: {
+      timeoutSeconds: 0,
+      cliBackends: {
+        "claude-cli": {
+          command: "/opt/homebrew/bin/claude",
+          reliability: {
+            watchdog: {
+              fresh: { noOutputTimeoutMs: 900_000 },
+              resume: { noOutputTimeoutMs: 900_000 },
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+3. **Cron jobs**: Use `timeoutSeconds: 0` or `7200` in the job payload. Without it, agent turns
+   default to a 60-minute ceiling.
