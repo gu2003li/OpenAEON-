@@ -34,10 +34,13 @@ title: "OpenAEON"
 OpenAEON is a **multi-channel gateway** and an **Autonomous Cognitive Engine**. It is powered by the **FCA Core (Fractal Cognitive Adapter)**, a multi-layer architecture that transforms simple AI interactions into a recursive, verifiable logic loop.
 
 ### 🧠 Core Philosophy
+
 Instead of simple linear processing, OpenAEON decomposes complex problem spaces into verifiable sub-loops. It uses **Peano Space-Filling Traversal** to map complex tasks into high-density cognitive streams, ensuring no reasoning gaps are left behind.
 
 ### 🏗 9-Layer Architecture
+
 The system is built on nine specialized layers of intelligence:
+
 - **Semantic Grounding**: Mapping input to high-dimensional tokens.
 - **Topology Analytics**: Understanding context proximity.
 - **Fractal Decomposition**: Recursive goal splitting.
