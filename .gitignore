@@ -54,3 +54,4 @@ package-lock.json
 package-lock.json
 package-lock.json
 *.json
+.pnpm-store/

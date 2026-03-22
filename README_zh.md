@@ -57,11 +57,13 @@ OpenAEON 由 **FCA Core** 驱动。这是一个多层认知架构，专门处理
 > 它不再局限于单次的 `输入 → 处理 → 输出` 对话，而是将复杂任务拆解为递归的、可验证的逻辑子循环。
 
 ### 9 层认知架构
+
 FCA Core 将智能组织为九个专门层级，从 **语义锚定 (Semantic Grounding)** 到 **取证仿真 (Forensic Simulation)**。这确保了每一个行动都是可审计、可自适应且目标对齐的。
 
 👉 **[深度探索：FCA Core 架构](docs/aeon/FCA_CORE.md)**
 
 ### 当前逻辑模型 (通过 FCA 落地)
+
 OpenAEON 当前以可验证的五段闭环运行：
 
 OpenAEON 当前以可验证的五段闭环运行：
@@ -570,9 +572,10 @@ pnpm test:coverage
 pnpm test:ui
 pnpm openaeon gateway stop
 ```
+
 # 以开发者模式启动网关（支持 TypeScript 热更新）
-pnpm gateway:watch
----
+
+## pnpm gateway:watch
 
 ## 🧹 维护与卸载
 

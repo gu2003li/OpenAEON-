@@ -57,11 +57,13 @@ OpenAEON is powered by the **FCA Core**, a multi-layer cognitive architecture de
 > Instead of simple `Input → Process → Output` prompting, it decomposes tasks into recursive, verifiable sub-loops.
 
 ### The 9-Layer Cognitive Architecture
+
 FCA Core organizes intelligence into nine specialized layers, from **Semantic Grounding** to **Forensic Simulation**. This ensures every action is auditable, adaptive, and intent-aligned.
 
 👉 **[Deep-Dive: FCA Core Architecture](docs/aeon/FCA_CORE.md)**
 
 ### Current Logic Model (Implemented via FCA)
+
 OpenAEON currently runs as a verifiable 5-stage cognition loop:
 
 OpenAEON currently runs as a verifiable cognition loop:
