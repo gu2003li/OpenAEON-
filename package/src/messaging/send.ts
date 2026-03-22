@@ -28,12 +28,14 @@ export function markdownToPlainText(text: string): string {
   // Tables: remove separator rows, then strip leading/trailing pipes and convert inner pipes to spaces
   result = result.replace(/^\|[\s:|-]+\|$/gm, "");
   result = result.replace(/^\|(.+)\|$/gm, (_, inner: string) =>
-    inner.split("|").map((cell) => cell.trim()).join("  "),
+    inner
+      .split("|")
+      .map((cell) => cell.trim())
+      .join("  "),
   );
   result = stripMarkdown(result);
   return result;
 }
-
 
 /** Build a SendMessageReq containing a single text message. */
 function buildTextMessageReq(params: {
@@ -151,9 +153,7 @@ async function sendMediaItems(params: {
         body: req,
       });
     } catch (err) {
-      logger.error(
-        `${label}: failed to=${to} clientId=${lastClientId} err=${String(err)}`,
-      );
+      logger.error(`${label}: failed to=${to} clientId=${lastClientId} err=${String(err)}`);
       throw err;
     }
   }

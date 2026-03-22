@@ -24,7 +24,8 @@ export function createWeixinActionsTool(): ChannelAgentTool {
           // In bot mode, contacts are typically discovered as they message the bot.
           return jsonResult({
             ok: true,
-            message: "The current Weixin Bot API does not support proactive contact listing. Contacts are discovered via incoming messages.",
+            message:
+              "The current Weixin Bot API does not support proactive contact listing. Contacts are discovered via incoming messages.",
             contacts: [],
           });
 

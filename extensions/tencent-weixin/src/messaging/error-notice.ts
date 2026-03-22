@@ -19,11 +19,15 @@ export async function sendWeixinErrorNotice(params: {
     return;
   }
   try {
-    await sendMessageWeixin({ to: params.to, text: params.message, opts: {
-      baseUrl: params.baseUrl,
-      token: params.token,
-      contextToken: params.contextToken,
-    }});
+    await sendMessageWeixin({
+      to: params.to,
+      text: params.message,
+      opts: {
+        baseUrl: params.baseUrl,
+        token: params.token,
+        contextToken: params.contextToken,
+      },
+    });
     logger.debug(`sendWeixinErrorNotice: sent to=${params.to}`);
   } catch (err) {
     params.errLog(`[weixin] sendWeixinErrorNotice failed to=${params.to}: ${String(err)}`);

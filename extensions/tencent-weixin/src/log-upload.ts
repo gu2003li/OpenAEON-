@@ -3,7 +3,6 @@ import path from "node:path";
 
 import type { OpenAEONConfig } from "openaeon/plugin-sdk";
 
-
 /** Minimal subset of commander's Command used by registerWeixinCli. */
 type CliCommand = {
   command(name: string): CliCommand;
@@ -89,7 +88,11 @@ export function registerWeixinCli(params: { program: CliCommand; config: OpenAEO
       console.log(`[weixin] Uploading ${filePath} (${content.length} bytes) to ${uploadUrl} ...`);
 
       const formData = new FormData();
-      formData.append("file", new Blob([new Uint8Array(content)], { type: "text/plain" }), fileName);
+      formData.append(
+        "file",
+        new Blob([new Uint8Array(content)], { type: "text/plain" }),
+        fileName,
+      );
 
       let res: Response;
       try {

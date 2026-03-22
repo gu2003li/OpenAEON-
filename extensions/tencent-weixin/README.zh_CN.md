@@ -68,22 +68,22 @@ openaeon config set agents.mode per-channel-per-peer
 
 所有接口均为 `POST`，请求和响应均为 JSON。通用请求头：
 
-| Header | 说明 |
-|--------|------|
-| `Content-Type` | `application/json` |
-| `AuthorizationType` | 固定值 `ilink_bot_token` |
-| `Authorization` | `Bearer <token>`（登录后获取） |
-| `X-WECHAT-UIN` | 随机 uint32 的 base64 编码 |
+| Header              | 说明                           |
+| ------------------- | ------------------------------ |
+| `Content-Type`      | `application/json`             |
+| `AuthorizationType` | 固定值 `ilink_bot_token`       |
+| `Authorization`     | `Bearer <token>`（登录后获取） |
+| `X-WECHAT-UIN`      | 随机 uint32 的 base64 编码     |
 
 ### 接口列表
 
-| 接口 | 路径 | 说明 |
-|------|------|------|
-| getUpdates | `getupdates` | 长轮询获取新消息 |
-| sendMessage | `sendmessage` | 发送消息（文本/图片/视频/文件） |
-| getUploadUrl | `getuploadurl` | 获取 CDN 上传预签名 URL |
-| getConfig | `getconfig` | 获取账号配置（typing ticket 等） |
-| sendTyping | `sendtyping` | 发送/取消输入状态指示 |
+| 接口         | 路径           | 说明                             |
+| ------------ | -------------- | -------------------------------- |
+| getUpdates   | `getupdates`   | 长轮询获取新消息                 |
+| sendMessage  | `sendmessage`  | 发送消息（文本/图片/视频/文件）  |
+| getUploadUrl | `getuploadurl` | 获取 CDN 上传预签名 URL          |
+| getConfig    | `getconfig`    | 获取账号配置（typing ticket 等） |
+| sendTyping   | `sendtyping`   | 发送/取消输入状态指示            |
 
 ### getUpdates
 
@@ -97,8 +97,8 @@ openaeon config set agents.mode per-channel-per-peer
 }
 ```
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
+| 字段              | 类型     | 说明                                       |
+| ----------------- | -------- | ------------------------------------------ |
 | `get_updates_buf` | `string` | 上次响应返回的同步游标，首次请求传空字符串 |
 
 **响应体：**
@@ -112,14 +112,14 @@ openaeon config set agents.mode per-channel-per-peer
 }
 ```
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `ret` | `number` | 返回码，`0` = 成功 |
-| `errcode` | `number?` | 错误码（如 `-14` = 会话超时） |
-| `errmsg` | `string?` | 错误描述 |
-| `msgs` | `WeixinMessage[]` | 消息列表（结构见下方） |
-| `get_updates_buf` | `string` | 新的同步游标，下次请求时回传 |
-| `longpolling_timeout_ms` | `number?` | 服务端建议的下次长轮询超时（ms） |
+| 字段                     | 类型              | 说明                             |
+| ------------------------ | ----------------- | -------------------------------- |
+| `ret`                    | `number`          | 返回码，`0` = 成功               |
+| `errcode`                | `number?`         | 错误码（如 `-14` = 会话超时）    |
+| `errmsg`                 | `string?`         | 错误描述                         |
+| `msgs`                   | `WeixinMessage[]` | 消息列表（结构见下方）           |
+| `get_updates_buf`        | `string`          | 新的同步游标，下次请求时回传     |
+| `longpolling_timeout_ms` | `number?`         | 服务端建议的下次长轮询超时（ms） |
 
 ### sendMessage
 
@@ -162,15 +162,15 @@ openaeon config set agents.mode per-channel-per-peer
 }
 ```
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `media_type` | `number` | `1` = IMAGE, `2` = VIDEO, `3` = FILE |
-| `rawsize` | `number` | 原文件明文大小 |
-| `rawfilemd5` | `string` | 原文件明文 MD5 |
-| `filesize` | `number` | AES-128-ECB 加密后的密文大小 |
-| `thumb_rawsize` | `number?` | 缩略图明文大小（IMAGE/VIDEO 时必填） |
+| 字段               | 类型      | 说明                                 |
+| ------------------ | --------- | ------------------------------------ |
+| `media_type`       | `number`  | `1` = IMAGE, `2` = VIDEO, `3` = FILE |
+| `rawsize`          | `number`  | 原文件明文大小                       |
+| `rawfilemd5`       | `string`  | 原文件明文 MD5                       |
+| `filesize`         | `number`  | AES-128-ECB 加密后的密文大小         |
+| `thumb_rawsize`    | `number?` | 缩略图明文大小（IMAGE/VIDEO 时必填） |
 | `thumb_rawfilemd5` | `string?` | 缩略图明文 MD5（IMAGE/VIDEO 时必填） |
-| `thumb_filesize` | `number?` | 缩略图密文大小（IMAGE/VIDEO 时必填） |
+| `thumb_filesize`   | `number?` | 缩略图密文大小（IMAGE/VIDEO 时必填） |
 
 **响应体：**
 
@@ -217,47 +217,47 @@ openaeon config set agents.mode per-channel-per-peer
 }
 ```
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
+| 字段     | 类型     | 说明                           |
+| -------- | -------- | ------------------------------ |
 | `status` | `number` | `1` = 正在输入，`2` = 取消输入 |
 
 ### 消息结构
 
 #### WeixinMessage
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `seq` | `number?` | 消息序列号 |
-| `message_id` | `number?` | 消息唯一 ID |
-| `from_user_id` | `string?` | 发送者 ID |
-| `to_user_id` | `string?` | 接收者 ID |
-| `create_time_ms` | `number?` | 创建时间戳（ms） |
-| `session_id` | `string?` | 会话 ID |
-| `message_type` | `number?` | `1` = USER, `2` = BOT |
-| `message_state` | `number?` | `0` = NEW, `1` = GENERATING, `2` = FINISH |
-| `item_list` | `MessageItem[]?` | 消息内容列表 |
-| `context_token` | `string?` | 会话上下文令牌，回复时需回传 |
+| 字段             | 类型             | 说明                                      |
+| ---------------- | ---------------- | ----------------------------------------- |
+| `seq`            | `number?`        | 消息序列号                                |
+| `message_id`     | `number?`        | 消息唯一 ID                               |
+| `from_user_id`   | `string?`        | 发送者 ID                                 |
+| `to_user_id`     | `string?`        | 接收者 ID                                 |
+| `create_time_ms` | `number?`        | 创建时间戳（ms）                          |
+| `session_id`     | `string?`        | 会话 ID                                   |
+| `message_type`   | `number?`        | `1` = USER, `2` = BOT                     |
+| `message_state`  | `number?`        | `0` = NEW, `1` = GENERATING, `2` = FINISH |
+| `item_list`      | `MessageItem[]?` | 消息内容列表                              |
+| `context_token`  | `string?`        | 会话上下文令牌，回复时需回传              |
 
 #### MessageItem
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `type` | `number` | `1` TEXT, `2` IMAGE, `3` VOICE, `4` FILE, `5` VIDEO |
-| `text_item` | `{ text: string }?` | 文本内容 |
-| `image_item` | `ImageItem?` | 图片（含 CDN 引用和 AES 密钥） |
-| `voice_item` | `VoiceItem?` | 语音（SILK 编码） |
-| `file_item` | `FileItem?` | 文件附件 |
-| `video_item` | `VideoItem?` | 视频 |
-| `ref_msg` | `RefMessage?` | 引用消息 |
+| 字段         | 类型                | 说明                                                |
+| ------------ | ------------------- | --------------------------------------------------- |
+| `type`       | `number`            | `1` TEXT, `2` IMAGE, `3` VOICE, `4` FILE, `5` VIDEO |
+| `text_item`  | `{ text: string }?` | 文本内容                                            |
+| `image_item` | `ImageItem?`        | 图片（含 CDN 引用和 AES 密钥）                      |
+| `voice_item` | `VoiceItem?`        | 语音（SILK 编码）                                   |
+| `file_item`  | `FileItem?`         | 文件附件                                            |
+| `video_item` | `VideoItem?`        | 视频                                                |
+| `ref_msg`    | `RefMessage?`       | 引用消息                                            |
 
 #### CDN 媒体引用 (CDNMedia)
 
 所有媒体类型（图片/语音/文件/视频）通过 CDN 传输，使用 AES-128-ECB 加密：
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `encrypt_query_param` | `string?` | CDN 下载/上传的加密参数 |
-| `aes_key` | `string?` | base64 编码的 AES-128 密钥 |
+| 字段                  | 类型      | 说明                       |
+| --------------------- | --------- | -------------------------- |
+| `encrypt_query_param` | `string?` | CDN 下载/上传的加密参数    |
+| `aes_key`             | `string?` | base64 编码的 AES-128 密钥 |
 
 ### CDN 上传流程
 

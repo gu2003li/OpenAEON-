@@ -68,22 +68,22 @@ This plugin communicates with the backend gateway via HTTP JSON API. Developers 
 
 All endpoints use `POST` with JSON request and response bodies. Common request headers:
 
-| Header | Description |
-|--------|-------------|
-| `Content-Type` | `application/json` |
-| `AuthorizationType` | Fixed value `ilink_bot_token` |
-| `Authorization` | `Bearer <token>` (obtained after login) |
-| `X-WECHAT-UIN` | Base64-encoded random uint32 |
+| Header              | Description                             |
+| ------------------- | --------------------------------------- |
+| `Content-Type`      | `application/json`                      |
+| `AuthorizationType` | Fixed value `ilink_bot_token`           |
+| `Authorization`     | `Bearer <token>` (obtained after login) |
+| `X-WECHAT-UIN`      | Base64-encoded random uint32            |
 
 ### Endpoint List
 
-| Endpoint | Path | Description |
-|----------|------|-------------|
-| getUpdates | `getupdates` | Long-poll for new messages |
-| sendMessage | `sendmessage` | Send a message (text/image/video/file) |
-| getUploadUrl | `getuploadurl` | Get CDN upload pre-signed URL |
-| getConfig | `getconfig` | Get account config (typing ticket, etc.) |
-| sendTyping | `sendtyping` | Send/cancel typing status indicator |
+| Endpoint     | Path           | Description                              |
+| ------------ | -------------- | ---------------------------------------- |
+| getUpdates   | `getupdates`   | Long-poll for new messages               |
+| sendMessage  | `sendmessage`  | Send a message (text/image/video/file)   |
+| getUploadUrl | `getuploadurl` | Get CDN upload pre-signed URL            |
+| getConfig    | `getconfig`    | Get account config (typing ticket, etc.) |
+| sendTyping   | `sendtyping`   | Send/cancel typing status indicator      |
 
 ### getUpdates
 
@@ -97,8 +97,8 @@ Long-polling endpoint. The server responds when new messages arrive or on timeou
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Field             | Type     | Description                                                                |
+| ----------------- | -------- | -------------------------------------------------------------------------- |
 | `get_updates_buf` | `string` | Sync cursor from the previous response; empty string for the first request |
 
 **Response body:**
@@ -112,14 +112,14 @@ Long-polling endpoint. The server responds when new messages arrive or on timeou
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `ret` | `number` | Return code, `0` = success |
-| `errcode` | `number?` | Error code (e.g., `-14` = session timeout) |
-| `errmsg` | `string?` | Error description |
-| `msgs` | `WeixinMessage[]` | Message list (structure below) |
-| `get_updates_buf` | `string` | New sync cursor to pass in the next request |
-| `longpolling_timeout_ms` | `number?` | Server-suggested long-poll timeout for the next request (ms) |
+| Field                    | Type              | Description                                                  |
+| ------------------------ | ----------------- | ------------------------------------------------------------ |
+| `ret`                    | `number`          | Return code, `0` = success                                   |
+| `errcode`                | `number?`         | Error code (e.g., `-14` = session timeout)                   |
+| `errmsg`                 | `string?`         | Error description                                            |
+| `msgs`                   | `WeixinMessage[]` | Message list (structure below)                               |
+| `get_updates_buf`        | `string`          | New sync cursor to pass in the next request                  |
+| `longpolling_timeout_ms` | `number?`         | Server-suggested long-poll timeout for the next request (ms) |
 
 ### sendMessage
 
@@ -162,15 +162,15 @@ Get CDN upload pre-signed parameters. Call this endpoint before uploading a file
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `media_type` | `number` | `1` = IMAGE, `2` = VIDEO, `3` = FILE |
-| `rawsize` | `number` | Original file plaintext size |
-| `rawfilemd5` | `string` | Original file plaintext MD5 |
-| `filesize` | `number` | Ciphertext size after AES-128-ECB encryption |
-| `thumb_rawsize` | `number?` | Thumbnail plaintext size (required for IMAGE/VIDEO) |
-| `thumb_rawfilemd5` | `string?` | Thumbnail plaintext MD5 (required for IMAGE/VIDEO) |
-| `thumb_filesize` | `number?` | Thumbnail ciphertext size (required for IMAGE/VIDEO) |
+| Field              | Type      | Description                                          |
+| ------------------ | --------- | ---------------------------------------------------- |
+| `media_type`       | `number`  | `1` = IMAGE, `2` = VIDEO, `3` = FILE                 |
+| `rawsize`          | `number`  | Original file plaintext size                         |
+| `rawfilemd5`       | `string`  | Original file plaintext MD5                          |
+| `filesize`         | `number`  | Ciphertext size after AES-128-ECB encryption         |
+| `thumb_rawsize`    | `number?` | Thumbnail plaintext size (required for IMAGE/VIDEO)  |
+| `thumb_rawfilemd5` | `string?` | Thumbnail plaintext MD5 (required for IMAGE/VIDEO)   |
+| `thumb_filesize`   | `number?` | Thumbnail ciphertext size (required for IMAGE/VIDEO) |
 
 **Response body:**
 
@@ -217,47 +217,47 @@ Send or cancel the typing status indicator.
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Field    | Type     | Description                       |
+| -------- | -------- | --------------------------------- |
 | `status` | `number` | `1` = typing, `2` = cancel typing |
 
 ### Message Structure
 
 #### WeixinMessage
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `seq` | `number?` | Message sequence number |
-| `message_id` | `number?` | Unique message ID |
-| `from_user_id` | `string?` | Sender ID |
-| `to_user_id` | `string?` | Receiver ID |
-| `create_time_ms` | `number?` | Creation timestamp (ms) |
-| `session_id` | `string?` | Session ID |
-| `message_type` | `number?` | `1` = USER, `2` = BOT |
-| `message_state` | `number?` | `0` = NEW, `1` = GENERATING, `2` = FINISH |
-| `item_list` | `MessageItem[]?` | Message content list |
-| `context_token` | `string?` | Conversation context token, must be passed back when replying |
+| Field            | Type             | Description                                                   |
+| ---------------- | ---------------- | ------------------------------------------------------------- |
+| `seq`            | `number?`        | Message sequence number                                       |
+| `message_id`     | `number?`        | Unique message ID                                             |
+| `from_user_id`   | `string?`        | Sender ID                                                     |
+| `to_user_id`     | `string?`        | Receiver ID                                                   |
+| `create_time_ms` | `number?`        | Creation timestamp (ms)                                       |
+| `session_id`     | `string?`        | Session ID                                                    |
+| `message_type`   | `number?`        | `1` = USER, `2` = BOT                                         |
+| `message_state`  | `number?`        | `0` = NEW, `1` = GENERATING, `2` = FINISH                     |
+| `item_list`      | `MessageItem[]?` | Message content list                                          |
+| `context_token`  | `string?`        | Conversation context token, must be passed back when replying |
 
 #### MessageItem
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `type` | `number` | `1` TEXT, `2` IMAGE, `3` VOICE, `4` FILE, `5` VIDEO |
-| `text_item` | `{ text: string }?` | Text content |
-| `image_item` | `ImageItem?` | Image (with CDN reference and AES key) |
-| `voice_item` | `VoiceItem?` | Voice (SILK encoded) |
-| `file_item` | `FileItem?` | File attachment |
-| `video_item` | `VideoItem?` | Video |
-| `ref_msg` | `RefMessage?` | Referenced message |
+| Field        | Type                | Description                                         |
+| ------------ | ------------------- | --------------------------------------------------- |
+| `type`       | `number`            | `1` TEXT, `2` IMAGE, `3` VOICE, `4` FILE, `5` VIDEO |
+| `text_item`  | `{ text: string }?` | Text content                                        |
+| `image_item` | `ImageItem?`        | Image (with CDN reference and AES key)              |
+| `voice_item` | `VoiceItem?`        | Voice (SILK encoded)                                |
+| `file_item`  | `FileItem?`         | File attachment                                     |
+| `video_item` | `VideoItem?`        | Video                                               |
+| `ref_msg`    | `RefMessage?`       | Referenced message                                  |
 
 #### CDN Media Reference (CDNMedia)
 
 All media types (image/voice/file/video) are transferred via CDN using AES-128-ECB encryption:
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Field                 | Type      | Description                                  |
+| --------------------- | --------- | -------------------------------------------- |
 | `encrypt_query_param` | `string?` | Encrypted parameters for CDN download/upload |
-| `aes_key` | `string?` | Base64-encoded AES-128 key |
+| `aes_key`             | `string?` | Base64-encoded AES-128 key                   |
 
 ### CDN Upload Flow
 

@@ -93,14 +93,18 @@ async function pollQRStatus(apiBaseUrl: string, qrcode: string): Promise<StatusR
     const rawText = await response.text();
     logger.debug(`pollQRStatus: body=${rawText.substring(0, 200)}`);
     if (!response.ok) {
-      logger.error(`QR status poll failed: ${response.status} ${response.statusText} body=${rawText}`);
+      logger.error(
+        `QR status poll failed: ${response.status} ${response.statusText} body=${rawText}`,
+      );
       throw new Error(`Failed to poll QR status: ${response.status} ${response.statusText}`);
     }
     return JSON.parse(rawText) as StatusResponse;
   } catch (err) {
     clearTimeout(timer);
     if (err instanceof Error && err.name === "AbortError") {
-      logger.debug(`pollQRStatus: client-side timeout after ${QR_LONG_POLL_TIMEOUT_MS}ms, returning wait`);
+      logger.debug(
+        `pollQRStatus: client-side timeout after ${QR_LONG_POLL_TIMEOUT_MS}ms, returning wait`,
+      );
       return { status: "wait" };
     }
     throw err;
@@ -224,7 +228,9 @@ export async function waitForWeixinLogin(opts: {
   while (Date.now() < deadline) {
     try {
       const statusResponse = await pollQRStatus(opts.apiBaseUrl, activeLogin.qrcode);
-      logger.debug(`pollQRStatus: status=${statusResponse.status} hasBotToken=${Boolean(statusResponse.bot_token)} hasBotId=${Boolean(statusResponse.ilink_bot_id)}`);
+      logger.debug(
+        `pollQRStatus: status=${statusResponse.status} hasBotToken=${Boolean(statusResponse.bot_token)} hasBotId=${Boolean(statusResponse.ilink_bot_id)}`,
+      );
       activeLogin.status = statusResponse.status;
 
       switch (statusResponse.status) {
@@ -252,7 +258,9 @@ export async function waitForWeixinLogin(opts: {
             };
           }
 
-          process.stdout.write(`\n⏳ 二维码已过期，正在刷新...(${qrRefreshCount}/${MAX_QR_REFRESH_COUNT})\n`);
+          process.stdout.write(
+            `\n⏳ 二维码已过期，正在刷新...(${qrRefreshCount}/${MAX_QR_REFRESH_COUNT})\n`,
+          );
           logger.info(
             `waitForWeixinLogin: QR expired, refreshing (${qrRefreshCount}/${MAX_QR_REFRESH_COUNT})`,
           );
@@ -264,7 +272,9 @@ export async function waitForWeixinLogin(opts: {
             activeLogin.qrcodeUrl = qrResponse.qrcode_img_content;
             activeLogin.startedAt = Date.now();
             scannedPrinted = false;
-            logger.info(`waitForWeixinLogin: new QR code obtained qrcode=${redactToken(qrResponse.qrcode)}`);
+            logger.info(
+              `waitForWeixinLogin: new QR code obtained qrcode=${redactToken(qrResponse.qrcode)}`,
+            );
             process.stdout.write(`🔄 新二维码已生成，请重新扫描\n\n`);
             try {
               const qrterm = await import("qrcode-terminal");
@@ -309,7 +319,6 @@ export async function waitForWeixinLogin(opts: {
           };
         }
       }
-
     } catch (err) {
       logger.error(`Error polling QR status: ${String(err)}`);
       activeLogins.delete(opts.sessionKey);

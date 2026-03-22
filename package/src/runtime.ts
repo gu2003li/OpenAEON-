@@ -30,9 +30,7 @@ const DEFAULT_TIMEOUT_MS = 10_000;
 /**
  * Waits for the Weixin runtime to be initialized (async polling).
  */
-export async function waitForWeixinRuntime(
-  timeoutMs = DEFAULT_TIMEOUT_MS,
-): Promise<PluginRuntime> {
+export async function waitForWeixinRuntime(timeoutMs = DEFAULT_TIMEOUT_MS): Promise<PluginRuntime> {
   const start = Date.now();
   while (!pluginRuntime) {
     if (Date.now() - start > timeoutMs) {

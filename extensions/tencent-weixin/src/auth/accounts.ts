@@ -11,7 +11,6 @@ import { logger } from "../util/logger.js";
 export const DEFAULT_BASE_URL = "https://ilinkai.weixin.qq.com";
 export const CDN_BASE_URL = "https://novac2c.cdn.weixin.qq.com/c2c";
 
-
 // ---------------------------------------------------------------------------
 // Account ID compatibility (legacy raw ID → normalized ID)
 // ---------------------------------------------------------------------------
@@ -95,7 +94,12 @@ function resolveAccountPath(accountId: string): string {
  * Legacy single-file token: `credentials/tencent-weixin/credentials.json` (pre per-account files).
  */
 function loadLegacyToken(): string | undefined {
-  const legacyPath = path.join(resolveStateDir(), "credentials", "tencent-weixin", "credentials.json");
+  const legacyPath = path.join(
+    resolveStateDir(),
+    "credentials",
+    "tencent-weixin",
+    "credentials.json",
+  );
   try {
     if (!fs.existsSync(legacyPath)) return undefined;
     const raw = fs.readFileSync(legacyPath, "utf-8");

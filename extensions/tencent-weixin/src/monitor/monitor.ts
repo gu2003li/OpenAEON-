@@ -2,7 +2,11 @@ import type { ChannelAccountSnapshot, PluginRuntime } from "openaeon/plugin-sdk"
 
 import { getUpdates } from "../api/api.js";
 import { WeixinConfigManager } from "../api/config-cache.js";
-import { SESSION_EXPIRED_ERRCODE, pauseSession, getRemainingPauseMs } from "../api/session-guard.js";
+import {
+  SESSION_EXPIRED_ERRCODE,
+  pauseSession,
+  getRemainingPauseMs,
+} from "../api/session-guard.js";
 import { processOneMessage } from "../messaging/process-message.js";
 import { getWeixinRuntime, waitForWeixinRuntime } from "../runtime.js";
 import { getSyncBufFilePath, loadGetUpdatesBuf, saveGetUpdatesBuf } from "../storage/sync-buf.js";
@@ -193,9 +197,7 @@ export async function monitorWeixinProvider(opts: MonitorWeixinOpts): Promise<vo
         errLog(
           `weixin getUpdates: ${MAX_CONSECUTIVE_FAILURES} consecutive failures, backing off 30s`,
         );
-        aLog.error(
-          `getUpdates: ${MAX_CONSECUTIVE_FAILURES} consecutive failures, backing off 30s`,
-        );
+        aLog.error(`getUpdates: ${MAX_CONSECUTIVE_FAILURES} consecutive failures, backing off 30s`);
         consecutiveFailures = 0;
         await sleep(30_000, abortSignal);
       } else {

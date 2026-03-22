@@ -60,17 +60,23 @@ async function sendWeixinOutbound(params: {
   assertSessionActive(account.accountId);
   if (!account.configured) {
     aLog.error(`sendWeixinOutbound: account not configured`);
-    throw new Error("weixin not configured: please run `openclaw channels login --channel openclaw-weixin`");
+    throw new Error(
+      "weixin not configured: please run `openclaw channels login --channel openclaw-weixin`",
+    );
   }
   if (!params.contextToken) {
     aLog.error(`sendWeixinOutbound: contextToken missing, refusing to send to=${params.to}`);
     throw new Error("sendWeixinOutbound: contextToken is required");
   }
-  const result = await sendMessageWeixin({ to: params.to, text: params.text, opts: {
-    baseUrl: account.baseUrl,
-    token: account.token,
-    contextToken: params.contextToken,
-  }});
+  const result = await sendMessageWeixin({
+    to: params.to,
+    text: params.text,
+    opts: {
+      baseUrl: account.baseUrl,
+      token: account.token,
+      contextToken: params.contextToken,
+    },
+  });
   return { channel: "openclaw-weixin", messageId: result.messageId };
 }
 

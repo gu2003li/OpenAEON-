@@ -1,10 +1,7 @@
 import type { WeixinInboundMediaOpts } from "../messaging/inbound.js";
 import { logger } from "../util/logger.js";
 import { getMimeFromFilename } from "./mime.js";
-import {
-  downloadAndDecryptBuffer,
-  downloadPlainCdnBuffer,
-} from "../cdn/pic-decrypt.js";
+import { downloadAndDecryptBuffer, downloadPlainCdnBuffer } from "../cdn/pic-decrypt.js";
 import { silkToWav } from "./silk-transcode.js";
 import type { WeixinMessage } from "../api/types.js";
 import { MessageItemType } from "../api/types.js";

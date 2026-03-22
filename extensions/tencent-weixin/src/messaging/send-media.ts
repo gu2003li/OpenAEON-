@@ -2,8 +2,18 @@ import path from "node:path";
 import type { WeixinApiOptions } from "../api/api.js";
 import { logger } from "../util/logger.js";
 import { getMimeFromFilename } from "../media/mime.js";
-import { sendFileMessageWeixin, sendImageMessageWeixin, sendVideoMessageWeixin, sendVoiceMessageWeixin } from "./send.js";
-import { uploadFileAttachmentToWeixin, uploadFileToWeixin, uploadVideoToWeixin, uploadVoiceToWeixin } from "../cdn/upload.js";
+import {
+  sendFileMessageWeixin,
+  sendImageMessageWeixin,
+  sendVideoMessageWeixin,
+  sendVoiceMessageWeixin,
+} from "./send.js";
+import {
+  uploadFileAttachmentToWeixin,
+  uploadFileToWeixin,
+  uploadVideoToWeixin,
+  uploadVoiceToWeixin,
+} from "../cdn/upload.js";
 
 /**
  * Upload a local file and send it as a weixin message, routing by MIME type:
