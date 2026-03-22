@@ -2184,4 +2184,3 @@ export function getAeonEvolutionState(scope?: AeonStateScope): AeonEvolutionStat
     peanoTrajectory: [...ctx.peanoTrajectory],
   };
 }
-

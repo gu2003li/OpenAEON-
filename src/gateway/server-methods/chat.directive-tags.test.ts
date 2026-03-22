@@ -55,7 +55,8 @@ vi.mock("../../auto-reply/dispatch.js", () => ({
         onAgentRunStart?: (runId: string) => void;
       };
     }) => {
-      mockState.lastBodyForAgent = typeof params.ctx?.BodyForAgent === "string" ? params.ctx.BodyForAgent : "";
+      mockState.lastBodyForAgent =
+        typeof params.ctx?.BodyForAgent === "string" ? params.ctx.BodyForAgent : "";
       if (mockState.triggerAgentRunStart) {
         params.replyOptions?.onAgentRunStart?.(mockState.agentRunId);
       }

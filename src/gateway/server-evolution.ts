@@ -113,10 +113,15 @@ function resolveMaintenanceIntensity(params: {
   const baselineTemp = 0.7;
   const targetTemp = risk > 0.6 ? 0.2 : risk > 0.4 ? 0.4 : baselineTemp;
   const currentTemp = state.cognitiveParameters.temperature ?? baselineTemp;
-  
+
   if (Math.abs(currentTemp - targetTemp) > 0.05) {
-    updateAeonCognitiveParameters({ temperature: targetTemp, top_p: targetTemp + 0.3 }, params.scope);
-    log.info(`Dynamic Tuning: Adjusted temperature to ${targetTemp.toFixed(2)} due to risk=${risk.toFixed(2)}`);
+    updateAeonCognitiveParameters(
+      { temperature: targetTemp, top_p: targetTemp + 0.3 },
+      params.scope,
+    );
+    log.info(
+      `Dynamic Tuning: Adjusted temperature to ${targetTemp.toFixed(2)} due to risk=${risk.toFixed(2)}`,
+    );
   }
 
   // --- Intent Stability Calculation (Layer 2) ---
@@ -195,7 +200,10 @@ export function diagnoseCognitiveGap(scope: AeonStateScope): { gaps: string[]; s
   }
 
   // 3. Memory Gap: High resource pressure + low epiphany
-  if (state.telemetryV4.inference.selfAwarenessIndex < 0.2 && state.telemetryV4.evidence.memory.writeValidityRate < 0.5) {
+  if (
+    state.telemetryV4.inference.selfAwarenessIndex < 0.2 &&
+    state.telemetryV4.evidence.memory.writeValidityRate < 0.5
+  ) {
     gaps.push("MEMORY_ACCUMULATION_FAULT");
     severity += 0.2;
   }
@@ -362,11 +370,15 @@ export function resolveAutonomousMaintenancePolicy(params: {
 
 function resolveAutospawnPolicy() {
   const cfg = loadConfig();
-  const raw = ((cfg.aeon as Record<string, unknown> | undefined)?.autospawn ??
-    {}) as Record<string, unknown>;
+  const raw = ((cfg.aeon as Record<string, unknown> | undefined)?.autospawn ?? {}) as Record<
+    string,
+    unknown
+  >;
   return {
     enabled: raw.enabled !== false,
-    cooldownMs: Math.max(1, Number.isFinite(Number(raw.cooldownMinutes)) ? Number(raw.cooldownMinutes) : 30) * 60_000,
+    cooldownMs:
+      Math.max(1, Number.isFinite(Number(raw.cooldownMinutes)) ? Number(raw.cooldownMinutes) : 30) *
+      60_000,
     perSessionWindowMs:
       Math.max(
         1,
@@ -424,14 +436,20 @@ function resolveCouplingProfile(): CouplingProfile {
       truth: clampWeight(custom?.cVector?.truth ?? base.cVector.truth, base.cVector.truth),
       latency: clampWeight(custom?.cVector?.latency ?? base.cVector.latency, base.cVector.latency),
       cost: clampWeight(custom?.cVector?.cost ?? base.cVector.cost, base.cVector.cost),
-      learning: clampWeight(custom?.cVector?.learning ?? base.cVector.learning, base.cVector.learning),
+      learning: clampWeight(
+        custom?.cVector?.learning ?? base.cVector.learning,
+        base.cVector.learning,
+      ),
     },
     maxLlmCallsPerHour: Math.max(1, custom?.maxLlmCallsPerHour ?? base.maxLlmCallsPerHour),
     maxConcurrentPipelines: Math.max(
       1,
       custom?.maxConcurrentPipelines ?? base.maxConcurrentPipelines,
     ),
-    maxPipelineLatencyMs: Math.max(5_000, custom?.maxPipelineLatencyMs ?? base.maxPipelineLatencyMs),
+    maxPipelineLatencyMs: Math.max(
+      5_000,
+      custom?.maxPipelineLatencyMs ?? base.maxPipelineLatencyMs,
+    ),
   };
 }
 
@@ -655,16 +673,16 @@ async function runAeonMaintenance(
             scope,
           );
         } else {
-        updateAeonAutospawnTelemetry(
-          {
-            circuitOpen: true,
-            blockedByCircuitBreaker: state.autospawn.blockedByCircuitBreaker + 1,
-            degraded: true,
-            degradedReason: "circuit_breaker_open",
-          },
-          scope,
-        );
-        return;
+          updateAeonAutospawnTelemetry(
+            {
+              circuitOpen: true,
+              blockedByCircuitBreaker: state.autospawn.blockedByCircuitBreaker + 1,
+              degraded: true,
+              degradedReason: "circuit_breaker_open",
+            },
+            scope,
+          );
+          return;
         }
       }
       if (blockedByRateLimit) {
@@ -718,7 +736,10 @@ async function runAeonMaintenance(
           { agentSessionKey: sessionKey, requesterAgentIdOverride: agentId },
         );
         if (spawn.status === "accepted") {
-          recordAeonEvidenceEvent({ type: "autospawn_success", source: "evolution_monitor" }, scope);
+          recordAeonEvidenceEvent(
+            { type: "autospawn_success", source: "evolution_monitor" },
+            scope,
+          );
           const latency = Date.now() - pipelineStartedAt;
           if (latency > couplingProfile.maxPipelineLatencyMs) {
             updateAeonAutospawnTelemetry(
@@ -1132,24 +1153,22 @@ export function startEvolutionMonitor(): void {
  * Phase 3: Error Replay Simulation
  * Reconstructs a "thought trace" for a given runId to analyze failures.
  */
-export async function simulateThoughtTrace(params: {
-  runId: string;
-  sessionKey: string;
-}) {
+export async function simulateThoughtTrace(params: { runId: string; sessionKey: string }) {
   const { runId, sessionKey } = params;
   const cfg = loadConfig();
   const agentId = resolveSessionAgentId({ sessionKey, config: cfg }) || "main";
   const scope: AeonStateScope = { agentId, sessionKey };
-  
+
   const state = getAeonEvolutionState(scope);
   const logs = state.cognitiveLog || [];
-  
+
   // Filter logs relevant to this runId (if metadata exists) or recent logs around that timeframe
   // For simplicity, we'll return the recent cognitive context
-  const trace = logs.filter((l: CognitiveLogEntry) => 
-    (l.metadata?.runId === runId) || 
-    (l.metadata?.sessionId === sessionKey)
-  ).slice(-20);
+  const trace = logs
+    .filter(
+      (l: CognitiveLogEntry) => l.metadata?.runId === runId || l.metadata?.sessionId === sessionKey,
+    )
+    .slice(-20);
 
   return {
     runId,
@@ -1159,6 +1178,6 @@ export async function simulateThoughtTrace(params: {
       entropy: state.telemetryV4.curve.point.x,
       risk: state.telemetryV4.inference.riskScore,
       resonance: state.consciousness.selfKernel.identityContinuityScore,
-    }
+    },
   };
 }

@@ -124,21 +124,25 @@ export function createGatewayBroadcaster(params: {
       },
     ]),
   );
-  const laneQueued = new Map<GatewayLaneType, number>(lanePriority.map((laneType) => [laneType, 0]));
+  const laneQueued = new Map<GatewayLaneType, number>(
+    lanePriority.map((laneType) => [laneType, 0]),
+  );
 
-  function normalizeLaneConfig(config?: GatewayLaneConfig): Record<GatewayLaneType, Required<GatewayLanePolicy>> {
+  function normalizeLaneConfig(
+    config?: GatewayLaneConfig,
+  ): Record<GatewayLaneType, Required<GatewayLanePolicy>> {
     return {
       tool_lane: {
         ...laneDefaults.tool_lane,
-        ...(config?.tool_lane ?? {}),
+        ...config?.tool_lane,
       },
       agent_lane: {
         ...laneDefaults.agent_lane,
-        ...(config?.agent_lane ?? {}),
+        ...config?.agent_lane,
       },
       chat_lane: {
         ...laneDefaults.chat_lane,
-        ...(config?.chat_lane ?? {}),
+        ...config?.chat_lane,
       },
     };
   }

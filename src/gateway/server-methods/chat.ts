@@ -128,7 +128,7 @@ function buildFractalMemoryContext(): string {
   const sortedNodes = alignPointsTopologically(
     graph.nodes,
     (node) => getSemanticProxy(node.content),
-    { order: 8 }
+    { order: 8 },
   );
 
   const lines = sortedNodes.map((node) => {
@@ -826,9 +826,9 @@ export const chatHandlers: GatewayRequestHandlers = {
     const now = Date.now();
     const clientRunId = p.idempotencyKey;
 
-      const sendPolicy = resolveSendPolicy({
-        cfg,
-        entry,
+    const sendPolicy = resolveSendPolicy({
+      cfg,
+      entry,
       sessionKey,
       channel: entry?.channel,
       chatType: entry?.chatType,

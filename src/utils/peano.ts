@@ -27,9 +27,7 @@ function normalizeDimension(value: number): number {
 function seededWeight(index: number, seed: number, axis: "x" | "y"): number {
   // Deterministic pseudo-random weight in [0.1, 1.0]
   const mix =
-    (index + 1) * 1103515245 +
-    seed * (axis === "x" ? 12345 : 54321) +
-    (axis === "x" ? 97 : 193);
+    (index + 1) * 1103515245 + seed * (axis === "x" ? 12345 : 54321) + (axis === "x" ? 97 : 193);
   const normalized = ((mix >>> 0) % 10_000) / 10_000;
   return 0.1 + normalized * 0.9;
 }
@@ -121,7 +119,10 @@ export function calculatePeanoIndex(
   embedding: EmbeddingVector,
   opts: { order?: number; projectionSeed?: number } = {},
 ): number {
-  const order = Math.max(MIN_CURVE_ORDER, Math.min(MAX_CURVE_ORDER, opts.order ?? DEFAULT_CURVE_ORDER));
+  const order = Math.max(
+    MIN_CURVE_ORDER,
+    Math.min(MAX_CURVE_ORDER, opts.order ?? DEFAULT_CURVE_ORDER),
+  );
   const projected = projectEmbeddingToCurvePoint(embedding, {
     projectionSeed: opts.projectionSeed ?? DEFAULT_PROJECTION_SEED,
   });
@@ -138,7 +139,10 @@ export function calculateStrictCurvePointFromScalar(
   scalar: number,
   opts: { order?: number } = {},
 ): { x: number; y: number; index: number; order: number; curveType: "hilbert" } {
-  const order = Math.max(MIN_CURVE_ORDER, Math.min(MAX_CURVE_ORDER, opts.order ?? DEFAULT_CURVE_ORDER));
+  const order = Math.max(
+    MIN_CURVE_ORDER,
+    Math.min(MAX_CURVE_ORDER, opts.order ?? DEFAULT_CURVE_ORDER),
+  );
   const side = 1 << order;
   const maxIndex = side * side - 1;
   const normalized = clamp01(scalar);

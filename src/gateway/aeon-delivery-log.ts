@@ -99,15 +99,16 @@ function parseRecord(line: string): DeliveryRecord | null {
                 (parsed.guardrail as { decision?: unknown }).decision === "ALLOW" ||
                 (parsed.guardrail as { decision?: unknown }).decision === "SOFT_WARN" ||
                 (parsed.guardrail as { decision?: unknown }).decision === "BLOCK"
-                  ? ((parsed.guardrail as { decision: "ALLOW" | "SOFT_WARN" | "BLOCK" }).decision)
+                  ? (parsed.guardrail as { decision: "ALLOW" | "SOFT_WARN" | "BLOCK" }).decision
                   : undefined,
               severity:
                 (parsed.guardrail as { severity?: unknown }).severity === "low" ||
                 (parsed.guardrail as { severity?: unknown }).severity === "medium" ||
                 (parsed.guardrail as { severity?: unknown }).severity === "high"
-                  ? ((parsed.guardrail as { severity: "low" | "medium" | "high" }).severity)
+                  ? (parsed.guardrail as { severity: "low" | "medium" | "high" }).severity
                   : undefined,
-              requiresHuman: (parsed.guardrail as { requiresHuman?: unknown }).requiresHuman === true,
+              requiresHuman:
+                (parsed.guardrail as { requiresHuman?: unknown }).requiresHuman === true,
               triggerRule:
                 typeof (parsed.guardrail as { triggerRule?: unknown }).triggerRule === "string"
                   ? (parsed.guardrail as { triggerRule: string }).triggerRule
@@ -121,7 +122,7 @@ function parseRecord(line: string): DeliveryRecord | null {
                 (parsed.pauseRecord as { severity?: unknown }).severity === "low" ||
                 (parsed.pauseRecord as { severity?: unknown }).severity === "medium" ||
                 (parsed.pauseRecord as { severity?: unknown }).severity === "high"
-                  ? ((parsed.pauseRecord as { severity: "low" | "medium" | "high" }).severity)
+                  ? (parsed.pauseRecord as { severity: "low" | "medium" | "high" }).severity
                   : "medium",
               reason:
                 typeof (parsed.pauseRecord as { reason?: unknown }).reason === "string"
@@ -189,7 +190,8 @@ export async function recordDeliveryTransition(
     summary: record.summary?.trim() || undefined,
     artifactRefs: normalizeArtifactRefs(record.artifactRefs),
     fallback: record.fallback === true,
-    fallbackReason: record.fallbackReason?.trim() || (record.fallback ? record.reasonCode : undefined),
+    fallbackReason:
+      record.fallbackReason?.trim() || (record.fallback ? record.reasonCode : undefined),
     resumeReason: record.resumeReason?.trim() || undefined,
     guardrail: record.guardrail,
     pauseRecord: record.pauseRecord,

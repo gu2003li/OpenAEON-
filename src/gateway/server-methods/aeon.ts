@@ -638,5 +638,3 @@ export function calculatePeanoTraversedPoint(entropy: number) {
     projectionSeed: DEFAULT_PROJECTION_SEED,
   };
 }
-
-

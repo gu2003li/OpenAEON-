@@ -28,7 +28,8 @@ describe("aeon-delivery-log metadata", () => {
   });
 
   it("persists and returns execution metadata fields", async () => {
-    const { recordDeliveryTransition, lookupDeliveryRecords } = await import("./aeon-delivery-log.js");
+    const { recordDeliveryTransition, lookupDeliveryRecords } =
+      await import("./aeon-delivery-log.js");
     await recordDeliveryTransition({
       runId: "run-1",
       sessionKey: "agent:main:main",

@@ -341,12 +341,14 @@ export const handleNodeEvent = async (ctx: NodeEventContext, nodeId: string, evt
         clientRunId: `voice-${randomUUID()}`,
       });
 
-      const text = normalizeInstruction(await prefixMessageWithTaskPlan({
-        message: rawText,
-        sessionKey: canonicalKey,
-        cfg,
-        logGateway: ctx.logGateway,
-      }));
+      const text = normalizeInstruction(
+        await prefixMessageWithTaskPlan({
+          message: rawText,
+          sessionKey: canonicalKey,
+          cfg,
+          logGateway: ctx.logGateway,
+        }),
+      );
 
       void agentCommand(
         {
