@@ -2,9 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
-const agentSpy = vi.fn<(req: unknown) => Promise<{ runId: string; status: string }>>(
-  async () => ({ runId: "run-requester", status: "ok" }),
-);
+const agentSpy = vi.fn<(req: unknown) => Promise<{ runId: string; status: string }>>(async () => ({
+  runId: "run-requester",
+  status: "ok",
+}));
 const progressAnnounceSpy = vi.fn().mockResolvedValue(true);
 
 vi.mock("../gateway/call.js", () => ({

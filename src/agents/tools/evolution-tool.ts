@@ -109,7 +109,10 @@ export function createEvolutionTool(opts: { workspaceDir?: string } = {}): AnyAg
               module,
               file: entry.file,
               expectedBenefit: Math.min(1, 0.3 + entry.score / 20),
-              risk: Math.min(1, 0.25 + (dependencyRisk.find((d) => d.file === entry.file)?.depCount ?? 0) / 20),
+              risk: Math.min(
+                1,
+                0.25 + (dependencyRisk.find((d) => d.file === entry.file)?.depCount ?? 0) / 20,
+              ),
               impactModules: Array.from(
                 new Set(
                   [module].concat(

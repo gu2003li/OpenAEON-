@@ -7,10 +7,7 @@ import { distillMemory } from "../tools/memory-distill-tool.js";
 import { emitAgentEvent } from "../../infra/agent-events.js";
 import { getActiveEmbeddedRunHandle } from "./runs.js";
 import { loadConfig } from "../../config/config.js";
-import {
-  diagnoseCognitiveGap,
-  getAeonEvolutionState,
-} from "../../gateway/server-evolution.js";
+import { diagnoseCognitiveGap, getAeonEvolutionState } from "../../gateway/server-evolution.js";
 import { getGlobalHookRunner } from "../../plugins/hook-runner-global.js";
 import type { PluginHookBeforeAgentStartResult } from "../../plugins/types.js";
 import { enqueueCommandInLane } from "../../process/command-queue.js";
@@ -691,7 +688,9 @@ export async function runEmbeddedPiAgent(
             agentId: workspaceResolution.agentId,
           });
           if (evolutionState.selfModification.redlineBreachRisk > 0.8) {
-            log.warn(`[redline] critical risk detected (${evolutionState.selfModification.redlineBreachRisk}); forcing thinking level downgrade to "low"`);
+            log.warn(
+              `[redline] critical risk detected (${evolutionState.selfModification.redlineBreachRisk}); forcing thinking level downgrade to "low"`,
+            );
             thinkLevel = "low";
           }
 

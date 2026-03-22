@@ -98,20 +98,27 @@ export const FIELD_HELP: Record<string, string> = {
   "gateway.lanes.tool_lane":
     "Policy for high-priority tool and agent telemetry events. Prioritize this lane when tool progress must remain real-time.",
   "gateway.lanes.chat_lane.maxInFlight": "Maximum concurrent dispatch slots for chat lane events.",
-  "gateway.lanes.chat_lane.queueLimit": "Maximum buffered chat lane events before overload handling.",
-  "gateway.lanes.chat_lane.timeoutMs": "Dispatch timeout budget in milliseconds for chat lane events.",
+  "gateway.lanes.chat_lane.queueLimit":
+    "Maximum buffered chat lane events before overload handling.",
+  "gateway.lanes.chat_lane.timeoutMs":
+    "Dispatch timeout budget in milliseconds for chat lane events.",
   "gateway.lanes.chat_lane.retryBudget": "Retry attempts for chat lane send failures.",
   "gateway.lanes.chat_lane.dropIfSlow":
     "Drop chat lane events for slow consumers instead of back-pressuring other lanes.",
-  "gateway.lanes.agent_lane.maxInFlight": "Maximum concurrent dispatch slots for agent lane events.",
-  "gateway.lanes.agent_lane.queueLimit": "Maximum buffered agent lane events before overload handling.",
-  "gateway.lanes.agent_lane.timeoutMs": "Dispatch timeout budget in milliseconds for agent lane events.",
+  "gateway.lanes.agent_lane.maxInFlight":
+    "Maximum concurrent dispatch slots for agent lane events.",
+  "gateway.lanes.agent_lane.queueLimit":
+    "Maximum buffered agent lane events before overload handling.",
+  "gateway.lanes.agent_lane.timeoutMs":
+    "Dispatch timeout budget in milliseconds for agent lane events.",
   "gateway.lanes.agent_lane.retryBudget": "Retry attempts for agent lane send failures.",
   "gateway.lanes.agent_lane.dropIfSlow":
     "Drop agent lane events for slow consumers instead of retrying/holding back pressure.",
   "gateway.lanes.tool_lane.maxInFlight": "Maximum concurrent dispatch slots for tool lane events.",
-  "gateway.lanes.tool_lane.queueLimit": "Maximum buffered tool lane events before overload handling.",
-  "gateway.lanes.tool_lane.timeoutMs": "Dispatch timeout budget in milliseconds for tool lane events.",
+  "gateway.lanes.tool_lane.queueLimit":
+    "Maximum buffered tool lane events before overload handling.",
+  "gateway.lanes.tool_lane.timeoutMs":
+    "Dispatch timeout budget in milliseconds for tool lane events.",
   "gateway.lanes.tool_lane.retryBudget": "Retry attempts for tool lane send failures.",
   "gateway.lanes.tool_lane.dropIfSlow":
     "Drop tool lane events for slow consumers instead of retrying/holding back pressure.",
@@ -159,8 +166,7 @@ export const FIELD_HELP: Record<string, string> = {
   "gateway.remote.sshTarget":
     "Remote gateway over SSH (tunnels the gateway port to localhost). Format: user@host or user@host:port.",
   "gateway.remote.sshIdentity": "Optional SSH identity file path (passed to ssh -i).",
-  aeon:
-    "AEON cognitive runtime controls including guardrails, evidence-driven policy vectors, and autonomous synthesis limits. Use conservative defaults for production safety.",
+  aeon: "AEON cognitive runtime controls including guardrails, evidence-driven policy vectors, and autonomous synthesis limits. Use conservative defaults for production safety.",
   "aeon.autospawn":
     "Autonomous synthesis spawn policy controls for contradiction-triggered sub-agent runs. Keep limits conservative to avoid runaway recursive work.",
   "aeon.autospawn.enabled":
@@ -173,8 +179,7 @@ export const FIELD_HELP: Record<string, string> = {
     "Maximum automatic synthesis runs allowed within the per-session rolling window.",
   "aeon.autospawn.perHourLimit":
     "Maximum automatic synthesis runs allowed per hour in a session scope.",
-  "aeon.autospawn.maxConcurrent":
-    "Maximum concurrent autospawn synthesis runs per session scope.",
+  "aeon.autospawn.maxConcurrent": "Maximum concurrent autospawn synthesis runs per session scope.",
   "aeon.autospawn.failureThreshold":
     "Failure count threshold that opens the autospawn circuit breaker until recovery conditions are met.",
   "aeon.policy":
@@ -932,8 +937,7 @@ export const FIELD_HELP: Record<string, string> = {
   ui: "UI presentation settings for accenting and assistant identity shown in control surfaces. Use this for branding and readability customization without changing runtime behavior.",
   "ui.seamColor":
     "Primary accent/seam color used by UI surfaces for emphasis, badges, and visual identity cues. Use high-contrast values that remain readable across light/dark themes.",
-  "ui.chat":
-    "Chat-surface behavior and performance tuning controls.",
+  "ui.chat": "Chat-surface behavior and performance tuning controls.",
   "ui.chat.performanceMode":
     'Chat rendering performance preset: "performance", "balanced", or "visual". Use "balanced" as default for stable long sessions with moderate effects.',
   "ui.chat.subagentMatchMode":

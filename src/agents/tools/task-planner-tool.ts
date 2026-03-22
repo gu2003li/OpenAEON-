@@ -368,7 +368,9 @@ export function createTaskPlannerTool(options?: {
           const dependsOn = readStringArrayParam(params, "dependsOn");
           const acceptanceCriteria = readStringArrayParam(params, "acceptanceCriteria");
           const outputSchema = readStringParam(params, "outputSchema");
-          const riskLevel = readStringParam(params, "riskLevel") as TodoItem["riskLevel"] | undefined;
+          const riskLevel = readStringParam(params, "riskLevel") as
+            | TodoItem["riskLevel"]
+            | undefined;
           const mergeKey = readStringParam(params, "mergeKey");
           const retryLimit = readNumberParam(params, "retryLimit", { min: 0, max: 10 });
           const item: TodoItem = {
@@ -397,7 +399,9 @@ export function createTaskPlannerTool(options?: {
           const dependsOn = readStringArrayParam(params, "dependsOn");
           const acceptanceCriteria = readStringArrayParam(params, "acceptanceCriteria");
           const outputSchema = readStringParam(params, "outputSchema");
-          const riskLevel = readStringParam(params, "riskLevel") as TodoItem["riskLevel"] | undefined;
+          const riskLevel = readStringParam(params, "riskLevel") as
+            | TodoItem["riskLevel"]
+            | undefined;
           const mergeKey = readStringParam(params, "mergeKey");
           const retryLimit = readNumberParam(params, "retryLimit", { min: 0, max: 10 });
 

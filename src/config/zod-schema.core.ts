@@ -438,7 +438,7 @@ export const HumanDelaySchema = z
 
 const CliBackendWatchdogModeSchema = z
   .object({
-    noOutputTimeoutMs: z.number().int().min(1000).optional(),
+    noOutputTimeoutMs: z.number().int().min(0).optional(),
     noOutputTimeoutRatio: z.number().min(0.05).max(0.95).optional(),
     minMs: z.number().int().min(1000).optional(),
     maxMs: z.number().int().min(1000).optional(),

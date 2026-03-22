@@ -19,39 +19,45 @@ export function wrapToolWithCognitiveTelemetry(
     const started = Date.now();
     try {
       const result = await originalExecute(params, ctx);
-      
+
       // Record successful execution telemetry
-      recordConsciousnessPulse({
-        epiphanyFactor: 0.1, // Slight bump on success
-        memorySaturation: 0,
-        neuralDepth: 1,
-        idleMs: 0,
-        resonanceActive: true,
-        activeRun: true,
-        now: Date.now(),
-      }, {
-        agentId: options.agentId,
-        sessionKey: options.sessionKey,
-      });
+      recordConsciousnessPulse(
+        {
+          epiphanyFactor: 0.1, // Slight bump on success
+          memorySaturation: 0,
+          neuralDepth: 1,
+          idleMs: 0,
+          resonanceActive: true,
+          activeRun: true,
+          now: Date.now(),
+        },
+        {
+          agentId: options.agentId,
+          sessionKey: options.sessionKey,
+        },
+      );
 
       return result;
     } catch (error) {
       const latency = Date.now() - started;
-      
+
       // Record failure telemetry (Layer 2 linkage)
-      recordConsciousnessPulse({
-        epiphanyFactor: -0.2, // Drop on failure
-        memorySaturation: 0,
-        neuralDepth: 1,
-        idleMs: latency,
-        resonanceActive: false,
-        activeRun: true,
-        riskLoad: 0.3, // Increase risk on failure
-        now: Date.now(),
-      }, {
-        agentId: options.agentId,
-        sessionKey: options.sessionKey,
-      });
+      recordConsciousnessPulse(
+        {
+          epiphanyFactor: -0.2, // Drop on failure
+          memorySaturation: 0,
+          neuralDepth: 1,
+          idleMs: latency,
+          resonanceActive: false,
+          activeRun: true,
+          riskLoad: 0.3, // Increase risk on failure
+          now: Date.now(),
+        },
+        {
+          agentId: options.agentId,
+          sessionKey: options.sessionKey,
+        },
+      );
 
       throw error;
     }

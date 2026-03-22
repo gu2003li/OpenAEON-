@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildSubagentViewModel, getVisiblePlanTodos } from "../../ui/src/ui/views/chat/components/subagent-view-model.ts";
+import {
+  buildSubagentViewModel,
+  getVisiblePlanTodos,
+} from "../../ui/src/ui/views/chat/components/subagent-view-model.ts";
 
 describe("subagent view model", () => {
   it("filters placeholder todos once via shared plan cleaner", () => {

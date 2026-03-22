@@ -11,6 +11,7 @@ function pickWatchdogProfile(
   useResume: boolean,
 ): {
   noOutputTimeoutMs?: number;
+  noOutputWatchdogDisabled?: boolean;
   noOutputTimeoutRatio: number;
   minMs: number;
   maxMs: number;
@@ -19,6 +20,9 @@ function pickWatchdogProfile(
   const configured = useResume
     ? backend.reliability?.watchdog?.resume
     : backend.reliability?.watchdog?.fresh;
+
+  const noOutputWatchdogDisabled =
+    typeof configured?.noOutputTimeoutMs === "number" && configured.noOutputTimeoutMs <= 0;
 
   const ratio = (() => {
     const value = configured?.noOutputTimeoutRatio;
@@ -44,22 +48,33 @@ function pickWatchdogProfile(
 
   return {
     noOutputTimeoutMs:
+      !noOutputWatchdogDisabled &&
       typeof configured?.noOutputTimeoutMs === "number" &&
-      Number.isFinite(configured.noOutputTimeoutMs)
+      Number.isFinite(configured.noOutputTimeoutMs) &&
+      configured.noOutputTimeoutMs > 0
         ? Math.max(CLI_WATCHDOG_MIN_TIMEOUT_MS, Math.floor(configured.noOutputTimeoutMs))
         : undefined,
+    noOutputWatchdogDisabled,
     noOutputTimeoutRatio: ratio,
     minMs: Math.min(minMs, maxMs),
     maxMs: Math.max(minMs, maxMs),
   };
 }
 
+/**
+ * Resolves no-output watchdog timeout. Returns undefined to disable when configured
+ * (e.g. noOutputTimeoutMs: 0) — useful when tools (install deps, brew, etc.) run long
+ * without streaming to CLI stdout.
+ */
 export function resolveCliNoOutputTimeoutMs(params: {
   backend: CliBackendConfig;
   timeoutMs: number;
   useResume: boolean;
-}): number {
+}): number | undefined {
   const profile = pickWatchdogProfile(params.backend, params.useResume);
+  if (profile.noOutputWatchdogDisabled) {
+    return undefined;
+  }
   // Keep watchdog below global timeout in normal cases.
   const cap = Math.max(CLI_WATCHDOG_MIN_TIMEOUT_MS, params.timeoutMs - 1_000);
   if (profile.noOutputTimeoutMs !== undefined) {

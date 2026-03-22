@@ -461,7 +461,9 @@ function resolveBrowserFallbackTimeoutSeconds(
 function resolveBrowserSearchUrl(query: string, search?: WebSearchConfig): string {
   const fallback = resolveBrowserFallbackConfig(search);
   const rawEngine =
-    typeof fallback.engineUrl === "string" ? fallback.engineUrl.trim() : DEFAULT_BROWSER_SEARCH_ENGINE_URL;
+    typeof fallback.engineUrl === "string"
+      ? fallback.engineUrl.trim()
+      : DEFAULT_BROWSER_SEARCH_ENGINE_URL;
   if (!rawEngine) {
     return `${DEFAULT_BROWSER_SEARCH_ENGINE_URL}${encodeURIComponent(query)}`;
   }
@@ -583,7 +585,9 @@ async function runBrowserSearchFallback(params: {
       },
       { profile },
     );
-    const items = Array.isArray(evaluated.result) ? (evaluated.result as BrowserFallbackSearchResult[]) : [];
+    const items = Array.isArray(evaluated.result)
+      ? (evaluated.result as BrowserFallbackSearchResult[])
+      : [];
     const mapped = items
       .filter((entry) => typeof entry?.url === "string" && entry.url.length > 0)
       .slice(0, resolveSearchCount(params.count, DEFAULT_SEARCH_COUNT))
@@ -1659,7 +1663,10 @@ export function createWebSearchTool(options?: {
         });
       }
       const resolvedCount = resolveSearchCount(count, DEFAULT_SEARCH_COUNT);
-      const resolvedTimeoutSeconds = resolveTimeoutSeconds(search?.timeoutSeconds, DEFAULT_TIMEOUT_SECONDS);
+      const resolvedTimeoutSeconds = resolveTimeoutSeconds(
+        search?.timeoutSeconds,
+        DEFAULT_TIMEOUT_SECONDS,
+      );
       let result: Record<string, unknown>;
       try {
         result = await runWebSearch({

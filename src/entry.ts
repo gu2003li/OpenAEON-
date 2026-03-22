@@ -19,7 +19,10 @@ const ENTRY_WRAPPER_PAIRS = [
 
 function hasExperimentalWarningSuppressed(): boolean {
   const nodeOptions = process.env.NODE_OPTIONS ?? "";
-  if (nodeOptions.includes("--disable-warning=ExperimentalWarning") || nodeOptions.includes("--no-warnings")) {
+  if (
+    nodeOptions.includes("--disable-warning=ExperimentalWarning") ||
+    nodeOptions.includes("--no-warnings")
+  ) {
     return true;
   }
   for (const arg of process.execArgv) {
@@ -72,7 +75,6 @@ if (
     process.env.NO_COLOR = "1";
     process.env.FORCE_COLOR = "0";
   }
-
 
   function ensureExperimentalWarningSuppressed(): boolean {
     if (shouldSkipRespawnForArgv(process.argv)) {

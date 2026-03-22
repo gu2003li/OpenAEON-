@@ -301,7 +301,10 @@ export function createLogicRefinementTool(): AgentTool {
               ? 1.0
               : Math.max(
                   0,
-                  1 - contradictions.length * 0.18 - redundancies.length * 0.08 - semanticConflicts.length * 0.05,
+                  1 -
+                    contradictions.length * 0.18 -
+                    redundancies.length * 0.08 -
+                    semanticConflicts.length * 0.05,
                 );
           const healthLabel =
             healthScore > 0.9

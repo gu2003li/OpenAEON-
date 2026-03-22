@@ -565,7 +565,9 @@ describe("web_search browser fallback", () => {
 
   it("uses browser fallback for brave when API key is missing", async () => {
     vi.stubEnv("BRAVE_API_KEY", "");
-    vi.spyOn(configStore, "loadConfig").mockReturnValue({} as ReturnType<typeof configStore.loadConfig>);
+    vi.spyOn(configStore, "loadConfig").mockReturnValue(
+      {} as ReturnType<typeof configStore.loadConfig>,
+    );
     vi.spyOn(browserConfig, "resolveBrowserConfig").mockReturnValue({
       enabled: true,
       defaultProfile: "",

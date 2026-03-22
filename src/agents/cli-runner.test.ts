@@ -262,4 +262,20 @@ describe("resolveCliNoOutputTimeoutMs", () => {
     });
     expect(timeoutMs).toBe(42_000);
   });
+
+  it("returns undefined when noOutputTimeoutMs is 0 (disables watchdog for long tools)", () => {
+    const result = resolveCliNoOutputTimeoutMs({
+      backend: {
+        command: "codex",
+        reliability: {
+          watchdog: {
+            resume: { noOutputTimeoutMs: 0 },
+          },
+        },
+      },
+      timeoutMs: 120_000,
+      useResume: true,
+    });
+    expect(result).toBeUndefined();
+  });
 });
