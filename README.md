@@ -595,7 +595,7 @@ If you need to remove the background services and binary:
 curl -fsSL https://raw.githubusercontent.com/openaeon/OpenAEON/main/uninstall.sh | bash
 
 # Windows (PowerShell)
-iwr -useb https://raw.githubuserco/openaeon/OpenAEON/main/uninstall.ps1 | iex
+iwr -useb https://raw.githubusercontent/openaeon/OpenAEON/main/uninstall.ps1 | iex
 ```
 
 > [!NOTE]
