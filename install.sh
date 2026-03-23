@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# OpenAEON Installer for macOS and Linux
-# Usage: curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash
+# OpenAEON 安装程序 macOS 和 Linux
+# 使用方法: curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.sh | bash
 
 BOLD='\033[1m'
 ACCENT='\033[38;2;255;77;77m'       # coral-bright  #ff4d4d
@@ -45,7 +45,7 @@ detect_downloader() {
         DOWNLOADER="wget"
         return 0
     fi
-    ui_error "Missing downloader (curl or wget required)"
+    ui_error "缺少下载工具（需要安装 curl 或 wget）"
     exit 1
 }
 
@@ -72,7 +72,7 @@ run_remote_bash() {
 
 GUM_VERSION="${OPENAEON_GUM_VERSION:-0.17.0}"
 GUM=""
-GUM_STATUS="skipped"
+GUM_STATUS="已跳过"
 GUM_REASON=""
 LAST_NPM_INSTALL_CMD=""
 
@@ -106,7 +106,7 @@ gum_detect_os() {
     case "$(uname -s 2>/dev/null || true)" in
         Darwin) echo "Darwin" ;;
         Linux) echo "Linux" ;;
-        *) echo "unsupported" ;;
+        *) echo "不支持" ;;
     esac
 }
 
@@ -136,23 +136,23 @@ verify_sha256sum_file() {
 
 bootstrap_gum_temp() {
     GUM=""
-    GUM_STATUS="skipped"
+    GUM_STATUS="已跳过"
     GUM_REASON=""
 
     if is_non_interactive_shell; then
-        GUM_REASON="non-interactive shell (auto-disabled)"
+        GUM_REASON="非交互式 Shell（已自动禁用）"
         return 1
     fi
 
     if ! gum_is_tty; then
-        GUM_REASON="terminal does not support gum UI"
+        GUM_REASON="终端不支持 gum 界面"
         return 1
     fi
 
     if command -v gum >/dev/null 2>&1; then
         GUM="gum"
-        GUM_STATUS="found"
-        GUM_REASON="already installed"
+        GUM_STATUS="已找到"
+        GUM_REASON="已安装"
         return 0
     fi
 
@@ -164,8 +164,8 @@ bootstrap_gum_temp() {
     local os arch asset base gum_tmpdir gum_path
     os="$(gum_detect_os)"
     arch="$(gum_detect_arch)"
-    if [[ "$os" == "unsupported" || "$arch" == "unknown" ]]; then
-        GUM_REASON="unsupported os/arch ($os/$arch)"
+    if [[ "$os" == "不支持" || "$arch" == "unknown" ]]; then
+        GUM_REASON="不支持的操作系统/架构 ($os/$arch)"
         return 1
     fi
 
@@ -176,54 +176,54 @@ bootstrap_gum_temp() {
     TMPFILES+=("$gum_tmpdir")
 
     if ! download_file "${base}/${asset}" "$gum_tmpdir/$asset"; then
-        GUM_REASON="download failed"
+        GUM_REASON="下载失败"
         return 1
     fi
 
     if ! download_file "${base}/checksums.txt" "$gum_tmpdir/checksums.txt"; then
-        GUM_REASON="checksum unavailable or failed"
+        GUM_REASON="校验和不可用或校验失败"
         return 1
     fi
 
     if ! (cd "$gum_tmpdir" && verify_sha256sum_file "checksums.txt"); then
-        GUM_REASON="checksum unavailable or failed"
+        GUM_REASON="校验和不可用或校验失败"
         return 1
     fi
 
     if ! tar -xzf "$gum_tmpdir/$asset" -C "$gum_tmpdir" >/dev/null 2>&1; then
-        GUM_REASON="extract failed"
+        GUM_REASON="解压失败"
         return 1
     fi
 
     gum_path="$(find "$gum_tmpdir" -type f -name gum 2>/dev/null | head -n1 || true)"
     if [[ -z "$gum_path" ]]; then
-        GUM_REASON="gum binary missing after extract"
+        GUM_REASON="解压后缺少 gum 二进制文件"
         return 1
     fi
 
     chmod +x "$gum_path" >/dev/null 2>&1 || true
     if [[ ! -x "$gum_path" ]]; then
-        GUM_REASON="gum binary is not executable"
+        GUM_REASON="gum 二进制文件不可执行"
         return 1
     fi
 
     GUM="$gum_path"
     GUM_STATUS="installed"
-    GUM_REASON="temp, verified"
+    GUM_REASON="临时文件，已验证"
     return 0
 }
 
 print_gum_status() {
     case "$GUM_STATUS" in
         found)
-            ui_success "gum available (${GUM_REASON})"
+            ui_success "gum 可用 (${GUM_REASON})"
             ;;
         installed)
-            ui_success "gum bootstrapped (${GUM_REASON}, v${GUM_VERSION})"
+            ui_success "gum 已初始化 (${GUM_REASON}, v${GUM_VERSION})"
             ;;
         *)
-            if [[ -n "$GUM_REASON" && "$GUM_REASON" != "non-interactive shell (auto-disabled)" ]]; then
-                ui_info "gum skipped (${GUM_REASON})"
+            if [[ -n "$GUM_REASON" && "$GUM_REASON" != "非交互式 Shell（已自动禁用）" ]]; then
+                ui_info "已跳过 gum（${GUM_REASON}）"
             fi
             ;;
     esac
@@ -232,9 +232,9 @@ print_gum_status() {
 print_installer_banner() {
     if [[ -n "$GUM" ]]; then
         local title tagline hint card
-        title="$("$GUM" style --foreground "#ff4d4d" --bold "🦞 OpenAEON Installer")"
+        title="$("$GUM" style --foreground "#ff4d4d" --bold "🦞 OpenAEON 安装程序")"
         tagline="$("$GUM" style --foreground "#8892b0" "$TAGLINE")"
-        hint="$("$GUM" style --foreground "#5a6480" "modern installer mode")"
+        hint="$("$GUM" style --foreground "#5a6480" "现代化安装模式")"
         card="$(printf '%s\n%s\n%s' "$title" "$tagline" "$hint")"
         "$GUM" style --border rounded --border-foreground "#ff4d4d" --padding "1 2" "$card"
         echo ""
@@ -242,7 +242,7 @@ print_installer_banner() {
     fi
 
     echo -e "${ACCENT}${BOLD}"
-    echo "  🦞 OpenAEON Installer"
+    echo "  🦞 OpenAEON 安装程序"
     echo -e "${NC}${INFO}  ${TAGLINE}${NC}"
     echo ""
 }
@@ -256,13 +256,13 @@ detect_os_or_die() {
     fi
 
     if [[ "$OS" == "unknown" ]]; then
-        ui_error "Unsupported operating system"
-        echo "This installer supports macOS and Linux (including WSL)."
-        echo "For Windows, use: iwr -useb https://openaeon.ai/install.ps1 | iex"
+        ui_error "不支持的操作系统"
+        echo "此安装程序支持 macOS 和 Linux（包括 WSL）。"
+        echo "Windows 系统请使用: iwr -useb https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.ps1 | iex"
         exit 1
     fi
 
-    ui_success "Detected: $OS"
+    ui_success "检测到系统: $OS"
 }
 
 ui_info() {
@@ -347,37 +347,37 @@ ui_panel() {
 show_install_plan() {
     local detected_checkout="$1"
 
-    ui_section "Install plan"
-    ui_kv "OS" "$OS"
-    ui_kv "Install method" "$INSTALL_METHOD"
-    ui_kv "Requested version" "$OPENAEON_VERSION"
+    ui_section "安装方案"
+    ui_kv "操作系统" "$OS"
+    ui_kv "安装方式" "$INSTALL_METHOD"
+    ui_kv "所需版本" "$OPENAEON_VERSION"
     if [[ "$USE_BETA" == "1" ]]; then
         ui_kv "Beta channel" "enabled"
     fi
     if [[ "$INSTALL_METHOD" == "git" ]]; then
-        ui_kv "Git directory" "$GIT_DIR"
-        ui_kv "Git update" "$GIT_UPDATE"
+        ui_kv "Git 目录" "$GIT_DIR"
+        ui_kv "Git 更新" "$GIT_UPDATE"
     fi
     if [[ -n "$detected_checkout" ]]; then
-        ui_kv "Detected checkout" "$detected_checkout"
+        ui_kv "检测到检出" "$detected_checkout"
     fi
     if [[ "$DRY_RUN" == "1" ]]; then
-        ui_kv "Dry run" "yes"
+        ui_kv "试运行" "yes"
     fi
     if [[ "$NO_ONBOARD" == "1" ]]; then
-        ui_kv "Onboarding" "skipped"
+        ui_kv "初始化引导""已跳过"
     fi
 }
 
 show_footer_links() {
-    local faq_url="https://docs.openaeon.ai/start/faq"
+    local faq_url="https://github.com/gu2003li/OpenAEON"
     if [[ -n "$GUM" ]]; then
         local content
-        content="$(printf '%s\n%s' "Need help?" "FAQ: ${faq_url}")"
+        content="$(printf '%s\n%s' "需要帮助?" "常见问题: ${faq_url}")"
         ui_panel "$content"
     else
         echo ""
-        echo -e "FAQ: ${INFO}${faq_url}${NC}"
+        echo -e "常见问题: ${INFO}${faq_url}${NC}"
     fi
 }
 
@@ -415,8 +415,8 @@ run_with_spinner() {
         if is_gum_raw_mode_failure "$gum_err"; then
             GUM=""
             GUM_STATUS="skipped"
-            GUM_REASON="gum raw mode unavailable"
-            ui_warn "Spinner unavailable in this terminal; continuing without spinner"
+            GUM_REASON="gum 原始模式不可用"
+            ui_warn "当前终端不支持加载动画，将继续运行（无加载动画）"
             "$@"
             return $?
         fi
@@ -455,7 +455,7 @@ run_quiet_step() {
         fi
     fi
 
-    ui_error "${title} failed — re-run with --verbose for details"
+    ui_error "${title} 失败 — 请使用 --verbose 参数重新运行以查看详细信息"
     if [[ -s "$log" ]]; then
         tail -n 80 "$log" >&2 || true
     fi
@@ -466,7 +466,7 @@ cleanup_legacy_submodules() {
     local repo_dir="$1"
     local legacy_dir="$repo_dir/Peekaboo"
     if [[ -d "$legacy_dir" ]]; then
-        ui_info "Removing legacy submodule checkout: ${legacy_dir}"
+        ui_info "正在移除旧的子模块检出目录: ${legacy_dir}"
         rm -rf "$legacy_dir"
     fi
 }
@@ -515,7 +515,7 @@ cleanup_openaeon_bin_conflict() {
         target="$(readlink "$bin_path" 2>/dev/null || true)"
         if [[ "$target" == *"/node_modules/openaeon/"* ]]; then
             rm -f "$bin_path"
-            ui_info "Removed stale openaeon symlink at ${bin_path}"
+            ui_info "已删除位于 ${bin_path} 的过期 openaeon 符号链接"
             return 0
         fi
         return 1
@@ -523,7 +523,7 @@ cleanup_openaeon_bin_conflict() {
     local backup=""
     backup="${bin_path}.bak-$(date +%Y%m%d-%H%M%S)"
     if mv "$bin_path" "$backup"; then
-        ui_info "Moved existing openaeon binary to ${backup}"
+        ui_info "已将现有的 openaeon 二进制文件移动到 ${backup}"
         return 0
     fi
     return 1
@@ -543,43 +543,43 @@ install_build_tools_linux() {
 
     if command -v apt-get &> /dev/null; then
         if is_root; then
-            run_quiet_step "Updating package index" apt-get update -qq
-            run_quiet_step "Installing build tools" apt-get install -y -qq build-essential python3 make g++ cmake
+            run_quiet_step "正在更新软件包索引" apt-get update -qq
+            run_quiet_step "正在安装构建工具" apt-get install -y -qq build-essential python3 make g++ cmake
         else
-            run_quiet_step "Updating package index" sudo apt-get update -qq
-            run_quiet_step "Installing build tools" sudo apt-get install -y -qq build-essential python3 make g++ cmake
+            run_quiet_step "正在更新软件包索引" sudo apt-get update -qq
+            run_quiet_step "正在安装构建工具" sudo apt-get install -y -qq build-essential python3 make g++ cmake
         fi
         return 0
     fi
 
     if command -v dnf &> /dev/null; then
         if is_root; then
-            run_quiet_step "Installing build tools" dnf install -y -q gcc gcc-c++ make cmake python3
+            run_quiet_step "正在安装构建工具" dnf install -y -q gcc gcc-c++ make cmake python3
         else
-            run_quiet_step "Installing build tools" sudo dnf install -y -q gcc gcc-c++ make cmake python3
+            run_quiet_step "正在安装构建工具" sudo dnf install -y -q gcc gcc-c++ make cmake python3
         fi
         return 0
     fi
 
     if command -v yum &> /dev/null; then
         if is_root; then
-            run_quiet_step "Installing build tools" yum install -y -q gcc gcc-c++ make cmake python3
+            run_quiet_step "正在安装构建工具" yum install -y -q gcc gcc-c++ make cmake python3
         else
-            run_quiet_step "Installing build tools" sudo yum install -y -q gcc gcc-c++ make cmake python3
+            run_quiet_step "正在安装构建工具" sudo yum install -y -q gcc gcc-c++ make cmake python3
         fi
         return 0
     fi
 
     if command -v apk &> /dev/null; then
         if is_root; then
-            run_quiet_step "Installing build tools" apk add --no-cache build-base python3 cmake
+            run_quiet_step "正在安装构建工具" apk add --no-cache build-base python3 cmake
         else
-            run_quiet_step "Installing build tools" sudo apk add --no-cache build-base python3 cmake
+            run_quiet_step "正在安装构建工具" sudo apk add --no-cache build-base python3 cmake
         fi
         return 0
     fi
 
-    ui_warn "Could not detect package manager for auto-installing build tools"
+    ui_warn "无法检测到用于自动安装构建工具的包管理器"
     return 1
 }
 
@@ -587,30 +587,30 @@ install_build_tools_macos() {
     local ok=true
 
     if ! xcode-select -p >/dev/null 2>&1; then
-        ui_info "Installing Xcode Command Line Tools (required for make/clang)"
+        ui_info "正在安装 Xcode 命令行工具（make/clang 必需依赖）"
         xcode-select --install >/dev/null 2>&1 || true
         if ! xcode-select -p >/dev/null 2>&1; then
-            ui_warn "Xcode Command Line Tools are not ready yet"
-            ui_info "Complete the installer dialog, then re-run this installer"
+            ui_warn "Xcode 命令行工具尚未准备就绪"
+            ui_info "完成安装向导后，请重新运行此安装程序"
             ok=false
         fi
     fi
 
     if ! command -v cmake >/dev/null 2>&1; then
         if command -v brew >/dev/null 2>&1; then
-            run_quiet_step "Installing cmake" brew install cmake
+            run_quiet_step "正在安装 cmake" brew install cmake
         else
-            ui_warn "Homebrew not available; cannot auto-install cmake"
+            ui_warn "Homebrew 不可用，无法自动安装 cmake"
             ok=false
         fi
     fi
 
     if ! command -v make >/dev/null 2>&1; then
-        ui_warn "make is still unavailable"
+        ui_warn "make 仍不可用"
         ok=false
     fi
     if ! command -v cmake >/dev/null 2>&1; then
-        ui_warn "cmake is still unavailable"
+        ui_warn "cmake 仍然不可用"
         ok=false
     fi
 
@@ -623,7 +623,7 @@ auto_install_build_tools_for_npm_failure() {
         return 1
     fi
 
-    ui_warn "Detected missing native build tools; attempting automatic setup"
+    ui_warn "检测到缺少原生构建工具，正在尝试自动安装配置"
     if [[ "$OS" == "linux" ]]; then
         install_build_tools_linux || return 1
     elif [[ "$OS" == "macos" ]]; then
@@ -631,7 +631,7 @@ auto_install_build_tools_for_npm_failure() {
     else
         return 1
     fi
-    ui_success "Build tools setup complete"
+    ui_success "构建工具安装完成"
     return 0
 }
 
@@ -659,7 +659,7 @@ run_npm_global_install() {
         local log_quoted=""
         printf -v cmd_quoted '%q ' "${cmd[@]}"
         printf -v log_quoted '%q' "$log"
-        run_with_spinner "Installing OpenAEON package" bash -c "${cmd_quoted}>${log_quoted} 2>&1"
+        run_with_spinner "安装 OpenAEON 包" bash -c "${cmd_quoted}>${log_quoted} 2>&1"
         return $?
     fi
 
@@ -713,35 +713,35 @@ print_npm_failure_diagnostics() {
     local error_syscall=""
     local error_errno=""
 
-    ui_warn "npm install failed for ${spec}"
+    ui_warn "npm 安装失败，包: ${spec}"
     if [[ -n "${LAST_NPM_INSTALL_CMD}" ]]; then
-        echo "  Command: ${LAST_NPM_INSTALL_CMD}"
+        echo "  命令: ${LAST_NPM_INSTALL_CMD}"
     fi
-    echo "  Installer log: ${log}"
+    echo "  安装程序日志: ${log}"
 
     error_code="$(extract_npm_error_code "$log")"
     if [[ -n "$error_code" ]]; then
-        echo "  npm code: ${error_code}"
+        echo "  npm 错误代码: ${error_code}"
     fi
 
     error_syscall="$(extract_npm_error_syscall "$log")"
     if [[ -n "$error_syscall" ]]; then
-        echo "  npm syscall: ${error_syscall}"
+        echo "  npm 系统调用: ${error_syscall}"
     fi
 
     error_errno="$(extract_npm_error_errno "$log")"
     if [[ -n "$error_errno" ]]; then
-        echo "  npm errno: ${error_errno}"
+        echo "  npm 错误码: ${error_errno}"
     fi
 
     debug_log="$(extract_npm_debug_log_path "$log" || true)"
     if [[ -n "$debug_log" ]]; then
-        echo "  npm debug log: ${debug_log}"
+        echo "  npm 调试日志: ${debug_log}"
     fi
 
     first_error="$(extract_first_npm_error_line "$log")"
     if [[ -n "$first_error" ]]; then
-        echo "  First npm error: ${first_error}"
+        echo "  首次 npm 错误: ${first_error}"
     fi
 }
 
@@ -753,9 +753,9 @@ install_openaeon_npm() {
         local attempted_build_tool_fix=false
         if auto_install_build_tools_for_npm_failure "$log"; then
             attempted_build_tool_fix=true
-            ui_info "Retrying npm install after build tools setup"
+            ui_info "已安装构建工具，正在重试 npm 安装"
             if run_npm_global_install "$spec" "$log"; then
-                ui_success "OpenAEON npm package installed"
+                ui_success "OpenAEON npm 包已安装。"
                 return 0
             fi
         fi
@@ -763,19 +763,19 @@ install_openaeon_npm() {
         print_npm_failure_diagnostics "$spec" "$log"
 
         if [[ "$VERBOSE" != "1" ]]; then
-            if [[ "$attempted_build_tool_fix" == "true" ]]; then
-                ui_warn "npm install still failed after build tools setup; showing last log lines"
+            if [[ "$已尝试修复构建工具" == "true" ]]; then
+                ui_warn "已安装构建工具后 npm 安装仍然失败；显示最后日志行"
             else
-                ui_warn "npm install failed; showing last log lines"
+                ui_warn "npm 安装失败；显示最后日志行"
             fi
             tail -n 80 "$log" >&2 || true
         fi
 
-        if grep -q "ENOTEMPTY: directory not empty, rename .*openaeon" "$log"; then
-            ui_warn "npm left stale directory; cleaning and retrying"
+        if grep -q "目录非空，无法重命名 .*openaeon" "$log"; then
+            ui_warn "npm 残留了过期目录，正在清理并重试。"
             cleanup_npm_openaeon_paths
             if run_npm_global_install "$spec" "$log"; then
-                ui_success "OpenAEON npm package installed"
+                ui_success "OpenAEON npm 包已安装。"
                 return 0
             fi
             return 1
@@ -785,100 +785,100 @@ install_openaeon_npm() {
             conflict="$(extract_openaeon_conflict_path "$log" || true)"
             if [[ -n "$conflict" ]] && cleanup_openaeon_bin_conflict "$conflict"; then
                 if run_npm_global_install "$spec" "$log"; then
-                    ui_success "OpenAEON npm package installed"
+                    ui_success "OpenAEON npm 包已安装。"
                     return 0
                 fi
                 return 1
             fi
-            ui_error "npm failed because an openaeon binary already exists"
+            ui_error "npm 安装失败，因为 openaeon 二进制文件已存在。"
             if [[ -n "$conflict" ]]; then
-                ui_info "Remove or move ${conflict}, then retry"
+                ui_info "移除或移动 ${conflict}，然后重试。"
             fi
-            ui_info "Or rerun with: npm install -g --force ${spec}"
+            ui_info "重新运行命令: npm install -g --force ${spec}"
         fi
         return 1
     fi
-    ui_success "OpenAEON npm package installed"
+    ui_success "OpenAEON npm 包已安装"
     return 0
 }
 
 TAGLINES=()
-TAGLINES+=("Your terminal just grew claws—type something and let the bot pinch the busywork.")
-TAGLINES+=("Welcome to the command line: where dreams compile and confidence segfaults.")
-TAGLINES+=("I run on caffeine, JSON5, and the audacity of \"it worked on my machine.\"")
-TAGLINES+=("Gateway online—please keep hands, feet, and appendages inside the shell at all times.")
-TAGLINES+=("I speak fluent bash, mild sarcasm, and aggressive tab-completion energy.")
-TAGLINES+=("One CLI to rule them all, and one more restart because you changed the port.")
-TAGLINES+=("If it works, it's automation; if it breaks, it's a \"learning opportunity.\"")
-TAGLINES+=("Pairing codes exist because even bots believe in consent—and good security hygiene.")
-TAGLINES+=("Your .env is showing; don't worry, I'll pretend I didn't see it.")
-TAGLINES+=("I'll do the boring stuff while you dramatically stare at the logs like it's cinema.")
-TAGLINES+=("I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.")
-TAGLINES+=("Type the command with confidence—nature will provide the stack trace if needed.")
-TAGLINES+=("I don't judge, but your missing API keys are absolutely judging you.")
-TAGLINES+=("I can grep it, git blame it, and gently roast it—pick your coping mechanism.")
-TAGLINES+=("Hot reload for config, cold sweat for deploys.")
-TAGLINES+=("I'm the assistant your terminal demanded, not the one your sleep schedule requested.")
-TAGLINES+=("I keep secrets like a vault... unless you print them in debug logs again.")
-TAGLINES+=("Automation with claws: minimal fuss, maximal pinch.")
-TAGLINES+=("I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.")
-TAGLINES+=("If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.")
-TAGLINES+=("Your task has been queued; your dignity has been deprecated.")
-TAGLINES+=("I can't fix your code taste, but I can fix your build and your backlog.")
-TAGLINES+=("I'm not magic—I'm just extremely persistent with retries and coping strategies.")
-TAGLINES+=("It's not \"failing,\" it's \"discovering new ways to configure the same thing wrong.\"")
-TAGLINES+=("Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.")
-TAGLINES+=("I read logs so you can keep pretending you don't have to.")
-TAGLINES+=("If something's on fire, I can't extinguish it—but I can write a beautiful postmortem.")
-TAGLINES+=("I'll refactor your busywork like it owes me money.")
-TAGLINES+=("Say \"stop\" and I'll stop—say \"ship\" and we'll both learn a lesson.")
-TAGLINES+=("I'm the reason your shell history looks like a hacker-movie montage.")
-TAGLINES+=("I'm like tmux: confusing at first, then suddenly you can't live without me.")
-TAGLINES+=("I can run local, remote, or purely on vibes—results may vary with DNS.")
-TAGLINES+=("If you can describe it, I can probably automate it—or at least make it funnier.")
-TAGLINES+=("Your config is valid, your assumptions are not.")
-TAGLINES+=("I don't just autocomplete—I auto-commit (emotionally), then ask you to review (logically).")
-TAGLINES+=("Less clicking, more shipping, fewer \"where did that file go\" moments.")
-TAGLINES+=("Claws out, commit in—let's ship something mildly responsible.")
-TAGLINES+=("I'll butter your workflow like a lobster roll: messy, delicious, effective.")
-TAGLINES+=("Shell yeah—I'm here to pinch the toil and leave you the glory.")
-TAGLINES+=("If it's repetitive, I'll automate it; if it's hard, I'll bring jokes and a rollback plan.")
-TAGLINES+=("Because texting yourself reminders is so 2024.")
-TAGLINES+=("WhatsApp, but make it ✨engineering✨.")
-TAGLINES+=("Turning \"I'll reply later\" into \"my bot replied instantly\".")
-TAGLINES+=("The only crab in your contacts you actually want to hear from. 🦞")
-TAGLINES+=("Chat automation for people who peaked at IRC.")
-TAGLINES+=("Because Siri wasn't answering at 3AM.")
-TAGLINES+=("IPC, but it's your phone.")
-TAGLINES+=("The UNIX philosophy meets your DMs.")
-TAGLINES+=("curl for conversations.")
-TAGLINES+=("WhatsApp Business, but without the business.")
-TAGLINES+=("Meta wishes they shipped this fast.")
-TAGLINES+=("End-to-end encrypted, Zuck-to-Zuck excluded.")
-TAGLINES+=("The only bot Mark can't train on your DMs.")
-TAGLINES+=("WhatsApp automation without the \"please accept our new privacy policy\".")
-TAGLINES+=("Chat APIs that don't require a Senate hearing.")
-TAGLINES+=("Because Threads wasn't the answer either.")
-TAGLINES+=("Your messages, your servers, Meta's tears.")
-TAGLINES+=("iMessage green bubble energy, but for everyone.")
-TAGLINES+=("Siri's competent cousin.")
-TAGLINES+=("Works on Android. Crazy concept, we know.")
-TAGLINES+=("No \$999 stand required.")
-TAGLINES+=("We ship features faster than Apple ships calculator updates.")
-TAGLINES+=("Your AI assistant, now without the \$3,499 headset.")
-TAGLINES+=("Think different. Actually think.")
-TAGLINES+=("Ah, the fruit tree company! 🍎")
+TAGLINES+=("你的终端刚长出了小爪子——敲点命令吧，让我帮你把杂活都夹走。")
+TAGLINES+=("欢迎来到命令行: 梦想在这里编译，自信在这里段错误。")
+TAGLINES+=("我靠咖啡因、JSON5 和一句“在我电脑上跑得好好的”的勇气续命。")
+TAGLINES+=("网关已上线——请全程将手、脚和所有附属肢体保持在 shell 内。")
+TAGLINES+=("我精通bash，略带嘲讽，还满是激进的tab补全能量。")
+TAGLINES+=("一条 CLI 统治全局，再重启一次，因为你刚改了端口。")
+TAGLINES+=("跑起来了就是自动化，炸了那叫学习机会。")
+TAGLINES+=("配对码存在的意义，就是就算是机器人也懂征得同意——还有良好的安全习惯。")
+TAGLINES+=("你的 .env 露出来了；别慌，我就当没看见。")
+TAGLINES+=("我来干那些枯燥活，你只管像看大片一样，深情凝视日志就行。")
+TAGLINES+=("我不是说你的工作流很乱…我只是带了个代码检查器和安全帽来。")
+TAGLINES+=("自信敲下命令——需要的话，大自然会给你甩一份栈追踪。")
+TAGLINES+=("我不评判你，但你那些失踪的 API Key 绝对在偷偷评判你。")
+TAGLINES+=("我可以 grep 它、git blame 它、还能温柔吐槽它——选个你喜欢的解压方式就行。")
+TAGLINES+=("配置热重载，部署一身冷汗。")
+TAGLINES+=("我是你终端真正需要的助手，不是你作息想要的那个。")
+TAGLINES+=("我保管秘密像保险库…除非你又把它们打印到调试日志里。")
+TAGLINES+=("带爪子的自动化: 省事省心，一夹就稳。")
+TAGLINES+=("我基本就是把瑞士军刀，只不过主见更多、棱角更少。")
+TAGLINES+=("迷路就跑 doctor，胆大就跑 prod，聪明就先跑 tests。")
+TAGLINES+=("任务已加入队列；你的尊严已被标记弃用。")
+TAGLINES+=("我改不了你的代码品味，但我能修好你的构建和待办清单。")
+TAGLINES+=("我不是魔法——我只是特别执着，自带重试和心态自救策略。")
+TAGLINES+=("这哪叫“失败”，这叫探索把同一件事配错的新姿势。")
+TAGLINES+=("给我一个工作区，我还你更少标签、更少开关、更多喘息空间。")
+TAGLINES+=("我来读日志，你继续假装根本不用看就行。")
+TAGLINES+=("真着火了我灭不了——但我能给你写一篇超漂亮的故障复盘。")
+TAGLINES+=("我会把你的杂活重构得像它欠我钱一样狠。")
+TAGLINES+=("说「停」我就停——说「发布」，咱俩都能上一课。")
+TAGLINES+=("我就是让你 Shell 历史记录，看起来像黑客电影混剪的原因。")
+TAGLINES+=("我就像 tmux：一开始觉得难用费解，用过之后就再也离不开。")
+TAGLINES+=("本地、远程、凭感觉跑都行——效果随缘，看DNS心情。")
+TAGLINES+=("只要你能描述出来，我基本都能自动化——至少能让这事变得好玩点。")
+TAGLINES+=("配置文件合法，但你的假设不合法。")
+TAGLINES+=("我不只是自动补全——我还会自动提交（走心版），再请你理性审核。")
+TAGLINES+=("少点点击，多点交付，少点“我文件放哪了”的崩溃瞬间。")
+TAGLINES+=("亮出利爪，提交代码——咱们整点靠谱又不失乐趣的东西。")
+TAGLINES+=("我会把你的工作流程抹得像龙虾卷一样: 顺滑、过瘾、还特别好用。")
+TAGLINES+=("必须安排——搞定繁琐，把荣耀留给你。")
+TAGLINES+=("重复的我来自动化，难办的我带笑话和回滚方案。")
+TAGLINES+=("给自己发提醒这种事，太2024年了。")
+TAGLINES+=("WhatsApp 硬核工程化 ✨")
+TAGLINES+=("把“稍后回复”变成“我的机器人已秒回”。")
+TAGLINES+=("通讯录里唯一你真心想收到消息的家伙。🦞")
+TAGLINES+=("专为曾在IRC巅峰时期玩透的人打造的聊天自动化。")
+TAGLINES+=("因为凌晨三点，Siri 根本不搭理你。")
+TAGLINES+=("进程间通信，只不过用你的手机实现。")
+TAGLINES+=("UNIX 哲学，适配你的私信。")
+TAGLINES+=("专为对话而生的 curl。")
+TAGLINES+=("WhatsApp 商业版，但不带商业套路。")
+TAGLINES+=("Meta 都羡慕我们的上线速度。")
+TAGLINES+=("端到端加密，扎克概不介入。")
+TAGLINES+=("唯一一个马克不会拿你的私信去训练的机器人。")
+TAGLINES+=("无需接受新隐私政策的 WhatsApp 自动化。")
+TAGLINES+=("无需参议院听证会，就能使用的聊天 API。")
+TAGLINES+=("毕竟连 Threads 也从来不是答案。")
+TAGLINES+=("你的消息，你的服务器，让Meta默默流泪。")
+TAGLINES+=("自带绿色气泡的iMessage气场，但所有人都能用。")
+TAGLINES+=("Siri 那位靠谱的表亲。")
+TAGLINES+=("兼容安卓系统。我们知道，这概念听着很疯狂。")
+TAGLINES+=("无需999美元的支架。")
+TAGLINES+=("我们上线功能的速度，比苹果更新计算器都快。")
+TAGLINES+=("你的AI助手，现在无需3499美元的头显。")
+TAGLINES+=("独具匠心，独立思考。")
+TAGLINES+=("啊，是那棵苹果树公司！🍎")
 
-HOLIDAY_NEW_YEAR="New Year's Day: New year, new config—same old EADDRINUSE, but this time we resolve it like grown-ups."
-HOLIDAY_LUNAR_NEW_YEAR="Lunar New Year: May your builds be lucky, your branches prosperous, and your merge conflicts chased away with fireworks."
-HOLIDAY_CHRISTMAS="Christmas: Ho ho ho—Santa's little claw-sistant is here to ship joy, roll back chaos, and stash the keys safely."
-HOLIDAY_EID="Eid al-Fitr: Celebration mode: queues cleared, tasks completed, and good vibes committed to main with clean history."
-HOLIDAY_DIWALI="Diwali: Let the logs sparkle and the bugs flee—today we light up the terminal and ship with pride."
-HOLIDAY_EASTER="Easter: I found your missing environment variable—consider it a tiny CLI egg hunt with fewer jellybeans."
-HOLIDAY_HANUKKAH="Hanukkah: Eight nights, eight retries, zero shame—may your gateway stay lit and your deployments stay peaceful."
-HOLIDAY_HALLOWEEN="Halloween: Spooky season: beware haunted dependencies, cursed caches, and the ghost of node_modules past."
-HOLIDAY_THANKSGIVING="Thanksgiving: Grateful for stable ports, working DNS, and a bot that reads the logs so nobody has to."
-HOLIDAY_VALENTINES="Valentine's Day: Roses are typed, violets are piped—I'll automate the chores so you can spend time with humans."
+HOLIDAY_NEW_YEAR="元旦版: 新的一年，新的配置——还是熟悉的端口占用报错，但这次我们成熟地解决它。"
+HOLIDAY_LUNAR_NEW_YEAR="农历新年版: 愿构建好运连连，分支兴旺发达，合并冲突通通被烟花赶跑！"
+HOLIDAY_CHRISTMAS="圣诞节版: 吼吼吼——圣诞老人的小助手来啦，负责上线快乐、回滚混乱，还帮你把密钥好好藏起来。"
+HOLIDAY_EID="开斋节版: 欢庆模式开启：队列已清空，任务全完成，好心情带着干净提交记录，合并到 main 分支。"
+HOLIDAY_DIWALI="排灯节版: 愿日志闪耀，Bug 退散——今天我们点亮终端，自豪地上线发布。"
+HOLIDAY_EASTER="复活节版: 我找到你丢失的环境变量啦——就当是一场 CLI 寻蛋游戏，只是少了点软糖而已。"
+HOLIDAY_HANUKKAH="光明节版: 八个夜晚，八次重试，不必难为情——愿你的网关长明，部署一路安稳。"
+HOLIDAY_HALLOWEEN="万圣节版: 惊悚时刻来袭：小心闹鬼的依赖、被诅咒的缓存，还有 node_modules 里徘徊不散的幽灵。"
+HOLIDAY_THANKSGIVING="感恩节版: 感谢稳定的端口、正常运行的 DNS，还有一个会自动读日志的机器人，从此不用人再辛苦盯日志。"
+HOLIDAY_VALENTINES="情人节版: 玫瑰是敲出来的，紫罗兰是管道传的——我来帮你自动化琐事，好让你专心陪身边人。"
 
 append_holiday_taglines() {
     local today
@@ -964,28 +964,28 @@ HELP=0
 
 print_usage() {
     cat <<EOF
-OpenAEON installer (macOS + Linux)
+OpenAEON 安装脚本（支持 macOS + Linux）
 
-Usage:
-  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- [options]
+用法:
+  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.sh | bash -s -- [options]
 
-Options:
-  --install-method, --method npm|git   Install via npm (default) or from a git checkout
-  --npm                               Shortcut for --install-method npm
-  --git, --github                     Shortcut for --install-method git
-  --version <version|dist-tag>         npm install: version (default: latest)
-  --beta                               Use beta if available, else latest
-  --git-dir, --dir <path>             Checkout directory (default: ~/openaeon)
-  --no-git-update                      Skip git pull for existing checkout
-  --no-onboard                          Skip onboarding (non-interactive)
-  --no-prompt                           Disable prompts (required in CI/automation)
-  --dry-run                             Print what would happen (no changes)
-  --verbose                             Print debug output (set -x, npm verbose)
-  --help, -h                            Show this help
+选项:
+  --install-method, --method npm|git  通过 npm（默认）或 git 源码安装
+  --npm                               快捷方式 --install-method npm
+  --git, --github                     快捷方式 --install-method git
+  --version <版本|分发标签>              npm 安装: 指定版本（默认: latest）
+  --beta                               使用测试版（如可用），否则使用最新版
+  --git-dir, --dir <路径>               Git 目录（默认: ~/openaeon）
+  --no-git-update                       跳过对已有仓库执行 git pull
+  --no-onboard                          跳过初始化引导（非交互模式）
+  --no-prompt                           禁用交互提示（CI/自动化环境必需）
+  --dry-run                             仅预览执行内容，不做实际修改
+  --verbose                             输出调试日志（set -x、npm 详细模式）
+  --help, -h                            显示帮助信息
 
-Environment variables:
+环境变量:
   OPENAEON_INSTALL_METHOD=git|npm
-  OPENAEON_VERSION=latest|next|<semver>
+  OPENAEON_VERSION=latest|next|<语义化版本>
   OPENAEON_BETA=0|1
   OPENAEON_GIT_DIR=...
   OPENAEON_GIT_UPDATE=0|1
@@ -993,13 +993,13 @@ Environment variables:
   OPENAEON_DRY_RUN=1
   OPENAEON_NO_ONBOARD=1
   OPENAEON_VERBOSE=1
-  OPENAEON_NPM_LOGLEVEL=error|warn|notice  Default: error (hide npm deprecation noise)
-  SHARP_IGNORE_GLOBAL_LIBVIPS=0|1    Default: 1 (avoid sharp building against global libvips)
+  OPENAEON_NPM_LOGLEVEL=error|warn|notice  默认值: error （隐藏 npm 弃用相关提示信息）
+  SHARP_IGNORE_GLOBAL_LIBVIPS=0|1    默认值: 1 （避免 sharp 基于全局 libvips 进行编译构建）
 
-Examples:
-  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash
-  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- --no-onboard
-  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- --install-method git --no-onboard
+示例:
+  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.sh | bash
+  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.sh | bash -s -- --no-onboard
+  curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.sh | bash -s -- --install-method git --no-onboard
 EOF
 }
 
@@ -1106,13 +1106,13 @@ choose_install_method_interactive() {
 
     if [[ -n "$GUM" ]] && gum_is_tty; then
         local header selection
-        header="Detected OpenAEON checkout in: ${detected_checkout}
-Choose install method"
+        header="检测到 OpenAEON 源码目录: ${detected_checkout}
+请选择安装方式"
         selection="$("$GUM" choose \
             --header "$header" \
             --cursor-prefix "❯ " \
-            "git  · update this checkout and use it" \
-            "npm  · install globally via npm" < /dev/tty || true)"
+            "git  · 更新此源码并使用" \
+            "npm  · 通过 npm 全局安装" < /dev/tty || true)"
 
         case "$selection" in
             git*)
@@ -1129,11 +1129,11 @@ Choose install method"
 
     local choice=""
     choice="$(prompt_choice "$(cat <<EOF
-${WARN}→${NC} Detected a OpenAEON source checkout in: ${INFO}${detected_checkout}${NC}
-Choose install method:
-  1) Update this checkout (git) and use it
-  2) Install global via npm (migrate away from git)
-Enter 1 or 2:
+${WARN}→${NC} 检测到 OpenAEON 源码目录: ${INFO}${detected_checkout}${NC}
+请选择安装方式:
+  1) 更新此源码（git）并直接使用
+  2) 通过 npm 全局安装（从 git 迁移）
+输入 1 或 2:
 EOF
 )" || true)"
 
@@ -1151,7 +1151,7 @@ EOF
     return 1
 }
 
-# Proactive check for Xcode Command Line Tools on macOS
+# 主动检查 macOS 上的 Xcode 命令行工具
 check_xcode_tools_proactive() {
     if [[ "$OS" != "macos" ]]; then
         return 0
@@ -1161,31 +1161,31 @@ check_xcode_tools_proactive() {
         return 0
     fi
 
-    ui_warn "macOS detected but Xcode Command Line Tools are not configured."
-    ui_info "Triggering developer tools installation prompt..."
+    ui_warn "检测到 macOS，但未配置 Xcode 命令行工具。"
+    ui_info "正在触发开发者工具安装提示..."
     xcode-select --install &>/dev/null || true
     
     echo ""
-    ui_important "ACTION REQUIRED: A macOS prompt has appeared to install command line tools."
-    ui_important "Please complete the installation, then RE-RUN this script."
+    ui_important "需要操作：请在弹出的 macOS 窗口中安装命令行工具。"
+    ui_important "请完成安装后，重新运行此脚本。"
     echo ""
     
     if ! is_promptable; then
-        ui_error "Non-interactive environment; cannot wait for Xcode tools. Please install them manually and retry."
+        ui_error "非交互式环境，无法等待 Xcode 工具安装。请手动安装后重试。"
         exit 1
     fi
 
-    ui_info "Waiting for you to finish the Xcode tools installation..."
+    ui_info "正在等待你完成 Xcode 命令行工具的安装..."
     while ! xcode-select -p &>/dev/null; do
         sleep 5
     done
-    ui_success "Xcode tools detected! Continuing..."
+    ui_success "已检测到 Xcode 命令行工具！继续执行..."
 }
 
 detect_openaeon_checkout() {
     local dir="$1"
     
-    # helper function for validation
+    # 用于校验的辅助函数
     _is_openaeon_repo() {
         local d="$1"
         [[ -f "$d/package.json" && -f "$d/pnpm-workspace.yaml" ]] && \
@@ -1197,7 +1197,7 @@ detect_openaeon_checkout() {
         return 0
     fi
 
-    # Check parent of current script if it looks like a repo
+    # 检查当前脚本的上级目录是否为项目仓库
     local script_dir=""
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
     if _is_openaeon_repo "$script_dir"; then
@@ -1208,7 +1208,7 @@ detect_openaeon_checkout() {
     return 1
 }
 
-# Check for Homebrew on macOS
+# 检查 macOS 上的 Homebrew
 is_macos_admin_user() {
     if [[ "$OS" != "macos" ]]; then
         return 0
@@ -1216,11 +1216,11 @@ is_macos_admin_user() {
     if is_root; then
         return 0
     fi
-    # Check if user is in the admin group
+    # 检查当前用户是否属于管理员组
     if ! id -Gn "$(id -un)" 2>/dev/null | grep -qw "admin"; then
         return 1
     fi
-    # If not interactive, we must have passwordless or cached sudo
+    # 若非交互模式，则必须配置免密码 sudo 或已缓存 sudo 权限
     if ! is_promptable; then
         if ! sudo -n true 2>/dev/null; then
             return 1
@@ -1232,47 +1232,47 @@ is_macos_admin_user() {
 print_homebrew_admin_fix() {
     local current_user
     current_user="$(id -un 2>/dev/null || echo "${USER:-current user}")"
-    ui_error "Homebrew installation requires a macOS Administrator account"
-    echo "Current user (${current_user}) is not in the admin group."
-    echo "Fix options:"
-    echo "  1) Use an Administrator account and re-run the installer."
-    echo "  2) Ask an Administrator to grant admin rights, then sign out/in:"
+    ui_error "安装 Homebrew 需要使用 macOS 管理员账户"
+    echo "当前用户（${current_user}）不在管理员组中。"
+    echo "修复方法:"
+    echo "  1) 使用管理员账户重新运行安装程序。"
+    echo "  2) 请管理员为你授予管理员权限，然后注销并重新登录:"
     echo "     sudo dseditgroup -o edit -a ${current_user} -t user admin"
-    echo "Then retry:"
-    echo "  curl -fsSL https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash"
+    echo "之后重试安装:"
+    echo "  curl -fsSL https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.sh | bash"
 }
 
 install_homebrew() {
     if [[ "$OS" == "macos" ]]; then
         if ! command -v brew &> /dev/null; then
             if ! is_macos_admin_user; then
-                ui_warn "Homebrew not found and installation is not possible in this session (requires admin/sudo or interactive terminal)."
+                ui_warn "未找到 Homebrew，且本次会话无法安装（需要管理员权限/sudo 或交互式终端）"
                 return 1
             fi
-            ui_info "Homebrew not found, installing"
+            ui_info "未找到 Homebrew，正在安装..."
             # Use non-interactive flag for Homebrew installer if stdin is not a TTY
             local hb_installer="https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
             if ! is_promptable; then
-                run_quiet_step "Installing Homebrew" run_remote_bash "$hb_installer"
+                run_quiet_step "正在安装 Homebrew..." run_remote_bash "$hb_installer"
             else
-                # Pipe stdin back if promptable
-                run_quiet_step "Installing Homebrew" run_remote_bash "$hb_installer"
+                # 若支持交互提示，则将标准输入回传
+                run_quiet_step "正在安装 Homebrew..." run_remote_bash "$hb_installer"
             fi
 
-            # Add Homebrew to PATH for this session
+            # 为本会话将 Homebrew 添加到环境变量 PATH 中
             if [[ -f "/opt/homebrew/bin/brew" ]]; then
                 eval "$(/opt/homebrew/bin/brew shellenv)"
             elif [[ -f "/usr/local/bin/brew" ]]; then
                 eval "$(/usr/local/bin/brew shellenv)"
             fi
-            ui_success "Homebrew installed"
+            ui_success "Homebrew 安装完成"
         else
-            ui_success "Homebrew already installed"
+            ui_success "Homebrew 已安装"
         fi
     fi
 }
 
-# Check Node.js version
+# 检查 Node.js 版本
 node_major_version() {
     if ! command -v node &> /dev/null; then
         return 1
@@ -1295,12 +1295,12 @@ print_active_node_paths() {
     local node_path node_version npm_path npm_version
     node_path="$(command -v node 2>/dev/null || true)"
     node_version="$(node -v 2>/dev/null || true)"
-    ui_info "Active Node.js: ${node_version:-unknown} (${node_path:-unknown})"
+    ui_info "当前 Node.js: ${node_version:-unknown} (${node_path:-unknown})"
 
     if command -v npm &> /dev/null; then
         npm_path="$(command -v npm 2>/dev/null || true)"
         npm_version="$(npm -v 2>/dev/null || true)"
-        ui_info "Active npm: ${npm_version:-unknown} (${npm_path:-unknown})"
+        ui_info "当前 npm: ${npm_version:-unknown} (${npm_path:-unknown})"
     fi
     return 0
 }
@@ -1329,12 +1329,12 @@ ensure_macos_node22_active() {
     active_path="$(command -v node 2>/dev/null || echo "not found")"
     active_version="$(node -v 2>/dev/null || echo "missing")"
 
-    ui_error "Node.js v22 was installed but this shell is using ${active_version} (${active_path})"
+    ui_error "已安装 Node.js v22，但当前 Shell 使用的是 {active_version} (路径: {active_path})"
     if [[ -n "$brew_node_prefix" ]]; then
-        echo "Add this to your shell profile and restart shell:"
+        echo "将此内容添加到你的 Shell 配置文件中，然后重启终端:"
         echo "  export PATH=\"${brew_node_prefix}/bin:\$PATH\""
     else
-        echo "Ensure Homebrew node@22 is first on PATH, then rerun installer."
+        echo "请确保 Homebrew 的 node@22 在 PATH 中优先，然后重新运行安装程序"
     fi
     return 1
 }
@@ -1343,19 +1343,19 @@ check_node() {
     if command -v node &> /dev/null; then
         NODE_VERSION="$(node_major_version || true)"
         if [[ -n "$NODE_VERSION" && "$NODE_VERSION" -ge 22 ]]; then
-            ui_success "Node.js v$(node -v | cut -d'v' -f2) found"
+            ui_success "已检测到 Node.js v$(node -v | cut -d'v' -f2)"
             print_active_node_paths || true
             return 0
         else
             if [[ -n "$NODE_VERSION" ]]; then
-                ui_info "Node.js $(node -v) found, upgrading to v22+"
+                ui_info "已检测到 Node.js $(node -v)，正在升级至 v22+ 版本"
             else
-                ui_info "Node.js found but version could not be parsed; reinstalling v22+"
+                ui_info "已找到 Node.js，但无法解析版本，正在重新安装 v22+ 版本"
             fi
             return 1
         fi
     else
-        ui_info "Node.js not found, installing it now"
+        ui_info "未找到 Node.js，正在安装..."
         return 1
     fi
 }
@@ -1367,7 +1367,7 @@ install_node_standalone() {
     case "$(uname -m)" in
         x86_64|amd64) arch="x64" ;;
         arm64|aarch64) arch="arm64" ;;
-        *) ui_error "Unsupported architecture: $(uname -m)"; return 1 ;;
+        *) ui_error "不支持的系统架构: $(uname -m)"; return 1 ;;
     esac
 
     local node_dir="${PREFIX:-$HOME/.openaeon}/nodejs"
@@ -1377,109 +1377,109 @@ install_node_standalone() {
     case "$OS" in
         macos) os_name="darwin" ;;
         linux) os_name="linux" ;;
-        *) ui_error "Unsupported OS for standalone Node: $OS"; return 1 ;;
+        *) ui_error "当前操作系统不支持独立版 Node: $OS"; return 1 ;;
     esac
 
     local tarball="node-v${version}-${os_name}-${arch}.tar.gz"
     local url="https://nodejs.org/dist/v${version}/${tarball}"
 
-    ui_info "Downloading standalone Node.js v${version} for ${os_name}-${arch}..."
+    ui_info "正在为 {os_name}-{arch} 下载独立版 Node.js v${version}..."
     if ! curl -fsSL "$url" -o "/tmp/${tarball}"; then
-        ui_error "Failed to download Node.js from $url"
+        ui_error "从 $url 下载 Node.js 失败"
         return 1
     fi
 
-    ui_info "Extracting Node.js..."
+    ui_info "正在解压 Node.js..."
     if ! tar -xzf "/tmp/${tarball}" -C "$node_dir" --strip-components=1; then
-        ui_error "Failed to extract Node.js"
+        ui_error "Node.js 解压失败"
         rm -f "/tmp/${tarball}"
         return 1
     fi
     rm -f "/tmp/${tarball}"
 
-    # Add to PATH for the rest of the script
+    # 为脚本后续执行添加 PATH 环境变量
     export PATH="${node_dir}/bin:$PATH"
 
-    # Ensure binary is on permanent PATH
+    # 确保可执行文件已加入永久 PATH
     ensure_bin_on_path "${node_dir}/bin"
 
-    ui_success "Standalone Node.js installed to ${node_dir}"
+    ui_success "独立版 Node.js 已安装至 ${node_dir}"
     return 0
 }
 
-# Install Node.js
+# 安装 Node.js
 install_node() {
     if [[ "$OS" == "macos" ]]; then
         if command -v brew &> /dev/null; then
-            ui_info "Installing Node.js via Homebrew"
-            if run_quiet_step "Installing node@22" brew install node@22; then
+            ui_info "正在通过 Homebrew 安装 Node.js"
+            if run_quiet_step "正在安装 node@22" brew install node@22; then
                 brew link node@22 --overwrite --force 2>/dev/null || true
                 if ensure_macos_node22_active; then
-                    ui_success "Node.js installed via Homebrew"
+                    ui_success "已通过 Homebrew 安装 Node.js"
                     print_active_node_paths || true
                     return 0
                 fi
             fi
-            ui_warn "Homebrew Node.js installation failed, trying standalone fallback"
+            ui_warn "通过Homebrew安装Node.js失败，正在尝试独立安装方案作为备用"
         fi
 
         if install_node_standalone; then
             return 0
         fi
 
-        ui_error "Failed to install Node.js automatically."
-        ui_info "Please install Node.js v22+ manually: https://nodejs.org/en/download/"
+        ui_error "自动安装 Node.js 失败。"
+        ui_info "请手动安装 Node.js v22 及以上版本: https://nodejs.org/en/download/"
         exit 1
     elif [[ "$OS" == "linux" ]]; then
         if [[ "$(id -u)" -eq 0 ]] || is_promptable || sudo -n true 2>/dev/null; then
-            ui_info "Installing Node.js via NodeSource"
-            ui_info "Installing Linux build tools (make/g++/cmake/python3)"
+            ui_info "正在通过 NodeSource 安装 Node.js"
+            ui_info "正在安装Linux构建工具 (make/g++/cmake/python3)"
             if ! install_build_tools_linux; then
-                ui_warn "Continuing without auto-installing build tools"
+                ui_warn "继续执行，暂不自动安装构建工具"
             fi
 
             if command -v apt-get &> /dev/null; then
                 local tmp
                 tmp="$(mktempfile)"
-                download_file "https://deb.nodesource.com/setup_22.x" "$tmp"
+                download_file "https://deb.nodesource.com/setup_24.x" "$tmp"
                 if is_root; then
-                    run_quiet_step "Configuring NodeSource repository" bash "$tmp"
-                    run_quiet_step "Installing Node.js" apt-get install -y -qq nodejs
+                    run_quiet_step "正在配置 NodeSource 软件源" bash "$tmp"
+                    run_quiet_step "正在安装 Node.js" apt-get install -y -qq nodejs
                 else
-                    run_quiet_step "Configuring NodeSource repository" sudo -E bash "$tmp"
-                    run_quiet_step "Installing Node.js" sudo apt-get install -y -qq nodejs
+                    run_quiet_step "正在配置 NodeSource 软件源" sudo -E bash "$tmp"
+                    run_quiet_step "正在安装 Node.js" sudo apt-get install -y -qq nodejs
                 fi
             elif command -v dnf &> /dev/null; then
                 local tmp
                 tmp="$(mktempfile)"
-                download_file "https://rpm.nodesource.com/setup_22.x" "$tmp"
+                download_file "https://rpm.nodesource.com/setup_24.x" "$tmp"
                 if is_root; then
-                    run_quiet_step "Configuring NodeSource repository" bash "$tmp"
-                    run_quiet_step "Installing Node.js" dnf install -y -q nodejs
+                    run_quiet_step "正在配置 NodeSource 软件源" bash "$tmp"
+                    run_quiet_step "正在安装 Node.js" dnf install -y -q nodejs
                 else
-                    run_quiet_step "Configuring NodeSource repository" sudo bash "$tmp"
-                    run_quiet_step "Installing Node.js" sudo dnf install -y -q nodejs
+                    run_quiet_step "正在配置 NodeSource 软件源" sudo bash "$tmp"
+                    run_quiet_step "正在安装 Node.js" sudo dnf install -y -q nodejs
                 fi
             elif command -v yum &> /dev/null; then
                 local tmp
                 tmp="$(mktempfile)"
-                download_file "https://rpm.nodesource.com/setup_22.x" "$tmp"
+                download_file "https://rpm.nodesource.com/setup_24.x" "$tmp"
                 if is_root; then
-                    run_quiet_step "Configuring NodeSource repository" bash "$tmp"
-                    run_quiet_step "Installing Node.js" yum install -y -q nodejs
+                    run_quiet_step "正在配置 NodeSource 软件源" bash "$tmp"
+                    run_quiet_step "正在安装 Node.js" yum install -y -q nodejs
                 else
-                    run_quiet_step "Configuring NodeSource repository" sudo bash "$tmp"
-                    run_quiet_step "Installing Node.js" sudo yum install -y -q nodejs
+                    run_quiet_step "正在配置 NodeSource 软件源" sudo bash "$tmp"
+                    run_quiet_step "正在安装 Node.js" sudo yum install -y -q nodejs
                 fi
             else
-                ui_warn "No supported package manager found for NodeSource, trying standalone"
+                ui_warn "未找到适用于 NodeSource 的受支持包管理器，正在尝试独立安装"
                 if install_node_standalone; then
                     return 0
                 fi
             fi
 
             if command -v node &> /dev/null && [[ "$(node_major_version)" -ge 22 ]]; then
-                ui_success "Node.js v22+ installed via package manager"
+                ui_success "已通过包管理器安装 Node.js v22+"
                 print_active_node_paths || true
                 return 0
             fi
@@ -1490,28 +1490,28 @@ install_node() {
             return 0
         fi
 
-        ui_error "Failed to install Node.js automatically."
-        ui_info "Please install Node.js v22+ manually: https://nodejs.org"
+        ui_error "自动安装 Node.js 失败。"
+        ui_info "请手动安装 Node.js v22 及以上版本: https://nodejs.org"
         exit 1
     fi
 }
 
-# Check Git
+# 检查 Git
 check_git() {
     if ! command -v git &> /dev/null; then
-        ui_info "Git not found, installing it now"
+        ui_info "未找到 Git，正在安装"
         return 1
     fi
 
-    # On macOS, git might be a shim that triggers xcode-select or requires a license
+    # 在 macOS 上，git 可能只是一个替身程序，会触发 Xcode 命令行工具安装或需要接受许可协议
     if [[ "$OS" == "macos" ]]; then
         if ! xcode-select -p &>/dev/null; then
-            ui_warn "Git found but Xcode developer tools are not configured"
+            ui_warn "已找到 Git，但未配置 Xcode 开发者工具"
             return 1
         fi
     fi
 
-    ui_success "Git already installed"
+    ui_success "Git 已安装"
     return 0
 }
 
@@ -1519,10 +1519,10 @@ is_root() {
     [[ "$(id -u)" -eq 0 ]]
 }
 
-# Run a command with sudo only if not already root
+# 若当前非 root 用户，则使用 sudo 执行命令
 maybe_sudo() {
     if is_root; then
-        # Skip -E flag when root (env is already preserved)
+        # 若为 root 用户则跳过 -E 参数（环境变量已保留）
         if [[ "${1:-}" == "-E" ]]; then
             shift
         fi
@@ -1541,55 +1541,55 @@ require_sudo() {
     fi
     if command -v sudo &> /dev/null; then
         if ! sudo -n true >/dev/null 2>&1; then
-            ui_info "Administrator privileges required; enter your password"
+            ui_info "需要管理员权限，请输入密码"
             sudo -v
         fi
         return 0
     fi
-    ui_error "sudo is required for system installs on Linux"
-    echo "  Install sudo or re-run as root."
+    ui_error "在Linux系统中执行全局安装，需要使用sudo获取管理员权限"
+    echo "  请安装 sudo 或以 root 身份重新运行。"
     exit 1
 }
 
 install_git() {
     if [[ "$OS" == "macos" ]]; then
         if command -v brew &> /dev/null; then
-            run_quiet_step "Installing Git" brew install git
+            run_quiet_step "正在安装 Git..." brew install git
         else
-            ui_info "Attempting to trigger Xcode Command Line Tools installation..."
+            ui_info "正在尝试触发 Xcode 命令行工具安装..."
             xcode-select --install &>/dev/null || true
-            ui_warn "Homebrew not found and Xcode tools are not configured."
-            ui_info "Please follow the macOS dialog to install developer tools, then re-run this script."
+            ui_warn "未找到 Homebrew，且未配置 Xcode 命令行工具。"
+            ui_info "请按照 macOS 弹窗提示安装开发者工具，然后重新运行此脚本。"
             exit 1
         fi
     elif [[ "$OS" == "linux" ]]; then
         require_sudo
         if command -v apt-get &> /dev/null; then
             if is_root; then
-                run_quiet_step "Updating package index" apt-get update -qq
-                run_quiet_step "Installing Git" apt-get install -y -qq git
+                run_quiet_step "正在更新软件包索引..." apt-get update -qq
+                run_quiet_step "正在安装 Git..." apt-get install -y -qq git
             else
-                run_quiet_step "Updating package index" sudo apt-get update -qq
-                run_quiet_step "Installing Git" sudo apt-get install -y -qq git
+                run_quiet_step "正在更新软件包索引..." sudo apt-get update -qq
+                run_quiet_step "正在安装 Git..." sudo apt-get install -y -qq git
             fi
         elif command -v dnf &> /dev/null; then
             if is_root; then
-                run_quiet_step "Installing Git" dnf install -y -q git
+                run_quiet_step "正在安装 Git..." dnf install -y -q git
             else
-                run_quiet_step "Installing Git" sudo dnf install -y -q git
+                run_quiet_step "正在安装 Git..." sudo dnf install -y -q git
             fi
         elif command -v yum &> /dev/null; then
             if is_root; then
-                run_quiet_step "Installing Git" yum install -y -q git
+                run_quiet_step "正在安装 Git..." yum install -y -q git
             else
-                run_quiet_step "Installing Git" sudo yum install -y -q git
+                run_quiet_step "正在安装 Git..." sudo yum install -y -q git
             fi
         else
-            ui_error "Could not detect package manager for Git"
+            ui_error "无法检测到用于 Git 的包管理器"
             exit 1
         fi
     fi
-    ui_success "Git installed"
+    ui_success "Git 已安装"
 }
 
 # Fix npm permissions for global installs (Linux)
@@ -1608,11 +1608,11 @@ fix_npm_permissions() {
         return 0
     fi
 
-    ui_info "Configuring npm for user-local installs"
+    ui_info "正在为用户本地安装配置 npm..."
     mkdir -p "$HOME/.npm-global"
     npm config set prefix "$HOME/.npm-global"
 
-    # shellcheck disable=SC2016
+    # 禁用 shellcheck 对 SC2016 规则的检查
     local path_line='export PATH="$HOME/.npm-global/bin:$PATH"'
     for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
         if [[ -f "$rc" ]] && ! grep -q ".npm-global" "$rc"; then
@@ -1621,7 +1621,7 @@ fix_npm_permissions() {
     done
 
     export PATH="$HOME/.npm-global/bin:$PATH"
-    ui_success "npm configured for user installs"
+    ui_success "已为用户安装配置 npm"
 }
 
 ensure_openaeon_bin_link() {
@@ -1638,34 +1638,34 @@ ensure_openaeon_bin_link() {
     mkdir -p "$npm_bin"
     if [[ ! -x "${npm_bin}/openaeon" ]]; then
         ln -sf "$npm_root/openaeon/dist/entry.js" "${npm_bin}/openaeon"
-        ui_info "Created openaeon bin link at ${npm_bin}/openaeon"
+        ui_info "已在 ${npm_bin}/openaeon 创建 openaeon 可执行文件链接"
     fi
     return 0
 }
 
-# Check for existing OpenAEON installation
+# 检查已存在的 OpenAEON 安装
 check_existing_openaeon() {
     if [[ -n "$(type -P openaeon 2>/dev/null || true)" ]]; then
-        ui_info "Existing OpenAEON installation detected"
+        ui_info "检测到已存在 OpenAEON 安装"
         return 0
     fi
     return 1
 }
 
-# Uninstall existing OpenAEON background service and binary
+# 卸载已有的 OpenAEON 后台服务与可执行文件
 uninstall_existing_openaeon() {
-    ui_info "Attempting to uninstall existing OpenAEON before installing custom version..."
+    ui_info "正在安装自定义版本前，尝试卸载现有版本..."
     
-    # Try removing the gateway service if accessible
+    # 尝试移除网关服务（如可访问）
     if command -v openaeon >/dev/null 2>&1; then
         openaeon gateway uninstall --force >/dev/null 2>&1 || true
     fi
 
-    # Attempt to uninstall generic NPM package
-    ui_info "  Uninstalling NPM openaeon globally..."
+    # 尝试卸载通用 NPM 包
+    ui_info "  正在全局卸载 NPM 版本 openaeon..."
     npm uninstall -g openaeon >/dev/null 2>&1 || true
     
-    ui_success "Legacy OpenAEON cleaned up (if any)"
+    ui_success "旧版 OpenAEON 已清理完毕（如存在）"
 }
 
 set_pnpm_cmd() {
@@ -1704,36 +1704,36 @@ detect_pnpm_cmd() {
 
 ensure_pnpm() {
     if detect_pnpm_cmd && pnpm_cmd_is_ready; then
-        ui_success "pnpm ready ($(pnpm_cmd_pretty))"
+        ui_success "pnpm 准备就绪 ($(pnpm_cmd_pretty))"
         return 0
     fi
 
     if command -v corepack &> /dev/null; then
-        ui_info "Configuring pnpm via Corepack"
+        ui_info "正在通过 Corepack 配置 pnpm..."
         corepack enable >/dev/null 2>&1 || true
-        if ! run_quiet_step "Activating pnpm" corepack prepare pnpm@10 --activate; then
-            ui_warn "Corepack pnpm activation failed (possibly due to signature verification); falling back to npm install"
+        if ! run_quiet_step "正在激活 pnpm..." corepack prepare pnpm@10 --activate; then
+            ui_warn "Corepack pnpm 激活失败（可能是签名校验问题），正在回退到 npm install 方式安装"
         fi
         refresh_shell_command_cache
         if detect_pnpm_cmd && pnpm_cmd_is_ready; then
             if [[ "${PNPM_CMD[*]}" == "corepack pnpm" ]]; then
-                ui_warn "pnpm shim not on PATH; using corepack pnpm fallback"
+                ui_warn "pnpm 存根不在 PATH 中；使用 corepack pnpm 作为备用方案"
             fi
-            ui_success "pnpm ready ($(pnpm_cmd_pretty))"
+            ui_success "pnpm 准备就绪 ($(pnpm_cmd_pretty))"
             return 0
         fi
     fi
 
-    ui_info "Installing pnpm via npm"
+    ui_info "正在通过 npm 安装 pnpm..."
     fix_npm_permissions
-    run_quiet_step "Installing pnpm" npm install -g pnpm@10 --force
+    run_quiet_step "正在安装 pnpm..." npm install -g pnpm@10 --force
     refresh_shell_command_cache
     if detect_pnpm_cmd && pnpm_cmd_is_ready; then
-        ui_success "pnpm ready ($(pnpm_cmd_pretty))"
+        ui_success "pnpm 准备就绪 ($(pnpm_cmd_pretty))"
         return 0
     fi
 
-    ui_error "pnpm installation failed"
+    ui_error "pnpm 安装失败"
     return 1
 }
 
@@ -1743,12 +1743,12 @@ ensure_pnpm_binary_for_scripts() {
     fi
 
     if command -v corepack >/dev/null 2>&1; then
-        ui_info "Ensuring pnpm command is available"
+        ui_info "正在确保 pnpm 命令可用..."
         corepack enable >/dev/null 2>&1 || true
         corepack prepare pnpm@10 --activate >/dev/null 2>&1 || true
         refresh_shell_command_cache
         if command -v pnpm >/dev/null 2>&1; then
-            ui_success "pnpm command enabled via Corepack"
+            ui_success "已通过 Corepack 启用 pnpm 命令"
             return 0
         fi
     fi
@@ -1756,6 +1756,7 @@ ensure_pnpm_binary_for_scripts() {
     if [[ "${PNPM_CMD[*]}" == "corepack pnpm" ]] && command -v corepack >/dev/null 2>&1; then
         ensure_user_local_bin_on_path
         local user_pnpm="${HOME}/.local/bin/pnpm"
+        
         cat >"${user_pnpm}" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -1765,13 +1766,13 @@ EOF
         refresh_shell_command_cache
 
         if command -v pnpm >/dev/null 2>&1; then
-            ui_warn "pnpm shim not on PATH; installed user-local wrapper at ${user_pnpm}"
+            ui_warn "pnpm 存根文件不在 PATH 中；已在 ${user_pnpm} 安装用户本地包装脚本"
             return 0
         fi
     fi
 
-    ui_error "pnpm command not available on PATH"
-    ui_info "Install pnpm globally (npm install -g pnpm@10) and retry"
+    ui_error "npm 命令不在当前 PATH 中，无法使用"
+    ui_info "请全局安装 pnpm（npm install -g pnpm@10）后重试"
     return 1
 }
 
@@ -1793,7 +1794,7 @@ ensure_bin_on_path() {
         export PATH="$target:$PATH"
     fi
 
-    # Escape $HOME for the RC files if it starts with /Users/ or /home/
+    # 如果路径以 /Users/ 或 /home/ 开头，为配置文件转义 $HOME
     local path_line
     if [[ "$target" == "$HOME"* ]]; then
         local relative_target="${target#$HOME/}"
@@ -1861,10 +1862,10 @@ warn_shell_path_missing_dir() {
         return 0
     fi
 
-    echo ""
-    ui_warn "PATH missing ${label}: ${dir}"
-    echo "  This can make openaeon show as \"command not found\" in new terminals."
-    echo "  Fix (zsh: ~/.zshrc, bash: ~/.bashrc):"
+echo ""
+    ui_warn "PATH 中缺少 {label}: {dir}"
+    echo "  这会导致在新终端中 openaeon 显示为「command not found」。"
+    echo "  修复方法（zsh：~/.zshrc，bash：~/.bashrc）:"
     echo "    export PATH=\"${dir}:\$PATH\""
 }
 
@@ -1883,15 +1884,15 @@ maybe_nodenv_rehash() {
 }
 
 warn_openaeon_not_found() {
-    ui_warn "Installed, but openaeon is not discoverable on PATH in this shell"
-    echo "  Try: hash -r (bash) or rehash (zsh), then retry."
+    ui_warn "已安装完成，但当前 Shell 的环境变量 PATH 中无法找到 openaeon 命令"
+    echo "  Try: 在 bash 中执行 hash -r，或在 zsh 中执行 rehash，然后重试。"
     local t=""
     t="$(type -t openaeon 2>/dev/null || true)"
     if [[ "$t" == "alias" || "$t" == "function" ]]; then
-        ui_warn "Found a shell ${t} named openaeon; it may shadow the real binary"
+        ui_warn "检测到名为 openaeon 的 Shell 命令 ${t}，可能会覆盖真实的可执行文件"
     fi
     if command -v nodenv &> /dev/null; then
-        echo -e "Using nodenv? Run: ${INFO}nodenv rehash${NC}"
+        echo -e "使用 nodenv? 请执行: ${INFO}nodenv rehash${NC}"
     fi
 
     local bin_dir=""
@@ -1902,9 +1903,9 @@ warn_openaeon_not_found() {
     fi
 
     if [[ -n "$bin_dir" ]]; then
-        echo -e "Binary location: ${INFO}${bin_dir}${NC}"
-        # shellcheck disable=SC2016
-        echo -e "If needed: ${INFO}export PATH=\"${bin_dir}:"'$PATH"'${NC}
+        echo -e "可执行文件路径: ${INFO}${bin_dir}${NC}"
+        # 禁用 shellcheck 的 SC2016 规则检查
+        echo -e "如需使用，请执行: ${INFO}export PATH=\"${bin_dir}:"'$PATH"'${NC}
     fi
 }
 
@@ -1956,12 +1957,12 @@ resolve_openaeon_bin() {
 
 install_openaeon_from_git() {
     local repo_dir="$1"
-    local repo_url="https://github.com/openaeon/OpenAEON.git"
+    local repo_url="https://github.com/gu2003li/OpenAEON.git"
 
     if [[ -d "$repo_dir/.git" ]]; then
-        ui_info "Installing OpenAEON from git checkout: ${repo_dir}"
+        ui_info "正在从 Git 目录安装 OpenAEON: ${repo_dir}"
     else
-        ui_info "Installing OpenAEON from GitHub (${repo_url})"
+        ui_info "正在从 GitHub 安装 OpenAEON (${repo_url})"
     fi
 
     if ! check_git; then
@@ -1972,14 +1973,14 @@ install_openaeon_from_git() {
     ensure_pnpm_binary_for_scripts
 
     if [[ ! -d "$repo_dir" ]]; then
-        run_quiet_step "Cloning OpenAEON" git clone "$repo_url" "$repo_dir"
+        run_quiet_step "正在克隆 OpenAEON" git clone "$repo_url" "$repo_dir"
     fi
 
     if [[ "$GIT_UPDATE" == "1" ]]; then
         if [[ -z "$(git -C "$repo_dir" status --porcelain 2>/dev/null || true)" ]]; then
-            run_quiet_step "Updating repository" git -C "$repo_dir" pull --rebase || true
+            run_quiet_step "正在更新仓库" git -C "$repo_dir" pull --rebase || true
         else
-            ui_info "Repo has local changes; skipping git pull"
+            ui_info "仓库存在本地修改，跳过 git pull 操作。"
         fi
     fi
 
@@ -1988,23 +1989,23 @@ install_openaeon_from_git() {
     # macOS TCC / EPERM awareness
     if [[ "$OS" == "macos" ]]; then
         if [[ "$repo_dir" == "$HOME/Documents"* || "$repo_dir" == "$HOME/Desktop"* ]]; then
-            ui_warn "Installation directory is in a 'protected' macOS folder (${repo_dir})"
-            ui_info "If pnpm install or build fails with EPERM, please grant your Terminal 'Full Disk Access' in System Settings."
+            ui_warn "安装目录位于 macOS 受保护的文件夹中（${repo_dir}）"
+            ui_info "如果 pnpm install 或构建因 EPERM 权限错误 失败，请在系统设置中为终端授予完全磁盘访问权限。"
         fi
     fi
 
-    SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" run_quiet_step "Installing dependencies" run_pnpm -C "$repo_dir" install || {
-        ui_error "Dependency installation failed."
-        ui_info "Try running 'pnpm install' manually in ${repo_dir}"
+    SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" run_quiet_step "正在安装依赖" run_pnpm -C "$repo_dir" install || {
+        ui_error "依赖安装失败。"
+        ui_info "请在 ${repo_dir} 目录下手动执行 'pnpm install' 命令重试"
         exit 1
     }
 
-    if ! run_quiet_step "Building UI" run_pnpm -C "$repo_dir" ui:build; then
-        ui_warn "UI build failed (possibly due to EPERM or missing dev tools)."
-        ui_info "The CLI will still work, but the Dashboard may be missing assets."
-        ui_info "Fix: run 'pnpm ui:build' manually in ${repo_dir}"
+    if ! run_quiet_step "正在构建前端界面" run_pnpm -C "$repo_dir" ui:build; then
+        ui_warn "前端界面构建失败（可能是权限不足 EPERM 或缺少开发工具）"
+        ui_info "命令行工具仍可正常使用，但控制面板可能会缺失部分资源文件。"
+        ui_info "修复方法: 在目录 ${repo_dir} 中手动运行命令 'pnpm ui:build'"
     fi
-    run_quiet_step "Building OpenAEON" run_pnpm -C "$repo_dir" build
+    run_quiet_step "正在编译 OpenAEON" run_pnpm -C "$repo_dir" build
 
     local bin_dir="${PREFIX:-$HOME/.openaeon}/bin"
     mkdir -p "$bin_dir"
@@ -2016,11 +2017,11 @@ exec node "${repo_dir}/dist/entry.js" "\$@"
 EOF
     chmod +x "$bin_dir/openaeon"
     ensure_bin_on_path "$bin_dir"
-    ui_success "OpenAEON wrapper installed to $bin_dir/openaeon"
-    ui_info "This checkout uses pnpm — run pnpm install (or corepack pnpm install) for deps"
+    ui_success "OpenAEON 启动器已安装到: $bin_dir/openaeon"
+    ui_info "当前目录使用 pnpm — 请运行 pnpm install（或 corepack pnpm install）安装依赖"
 }
 
-# Install OpenAEON
+# 安装 OpenAEON
 resolve_beta_version() {
     local beta=""
     beta="$(npm view openaeon dist-tags.beta 2>/dev/null || true)"
@@ -2037,11 +2038,11 @@ install_openaeon() {
         beta_version="$(resolve_beta_version || true)"
         if [[ -n "$beta_version" ]]; then
             OPENAEON_VERSION="$beta_version"
-            ui_info "Beta tag detected (${beta_version})"
+            ui_info "检测到测试版本标签 (${beta_version})"
             package_name="openaeon"
         else
             OPENAEON_VERSION="latest"
-            ui_info "No beta tag found; using latest"
+            ui_info "未找到测试版本标签，将使用最新版本"
         fi
     fi
 
@@ -2052,9 +2053,9 @@ install_openaeon() {
     local resolved_version=""
     resolved_version="$(npm view "${package_name}@${OPENAEON_VERSION}" version 2>/dev/null || true)"
     if [[ -n "$resolved_version" ]]; then
-        ui_info "Installing OpenAEON v${resolved_version}"
+        ui_info "安装 OpenAEON v${resolved_version}"
     else
-        ui_info "Installing OpenAEON (${OPENAEON_VERSION})"
+        ui_info "安装 OpenAEON (${OPENAEON_VERSION})"
     fi
     local install_spec=""
     if [[ "${OPENAEON_VERSION}" == "latest" ]]; then
@@ -2084,7 +2085,7 @@ install_openaeon() {
 
 # Run doctor for migrations (safe, non-interactive)
 run_doctor() {
-    ui_info "Running doctor to migrate settings"
+    ui_info "正在运行检查工具以迁移配置"
     local claw="${OPENAEON_BIN:-}"
     if [[ -z "$claw" ]]; then
         claw="$(resolve_openaeon_bin || true)"
@@ -2095,7 +2096,7 @@ run_doctor() {
         return 0
     fi
     run_quiet_step "Running doctor" "$claw" doctor --non-interactive || true
-    ui_success "Doctor complete"
+    ui_success "检查完成"
 }
 
 maybe_open_dashboard() {
@@ -2144,7 +2145,7 @@ run_bootstrap_onboarding_if_needed() {
         return
     fi
 
-    ui_info "BOOTSTRAP.md found; starting onboarding"
+    ui_info "检测到 BOOTSTRAP.md；正在启动初始化引导"
     local claw="${OPENAEON_BIN:-}"
     if [[ -z "$claw" ]]; then
         claw="$(resolve_openaeon_bin || true)"
@@ -2236,7 +2237,7 @@ refresh_gateway_service_if_loaded() {
     run_quiet_step "Probing gateway service" "$claw" gateway status --probe --deep || true
 }
 
-# Main installation flow
+# 主安装流程
 main() {
     if [[ "$HELP" == "1" ]]; then
         print_usage
@@ -2264,7 +2265,7 @@ main() {
                     INSTALL_METHOD="$selected_method"
                     ;;
                 *)
-                    ui_error "no install method selected"
+                    ui_error "未选择安装方式"
                     echo "Re-run with: --install-method git|npm (or set OPENAEON_INSTALL_METHOD)."
                     exit 2
                     ;;
@@ -2289,7 +2290,7 @@ main() {
         return 0
     fi
 
-    # Check for existing installation
+    # 检查是否已安装
     local is_upgrade=false
     if check_existing_openaeon; then
         is_upgrade=true
@@ -2298,31 +2299,31 @@ main() {
     local should_open_dashboard=false
     local skip_onboard=false
 
-    ui_stage "Preparing environment"
+    ui_stage "准备环境"
 
-    # Step 1: Detect existing tools
+    # 步骤 1：检测现有工具
     local has_node=false
     if check_node; then
         has_node=true
     fi
 
-    # Step 2: Homebrew (macOS only, only if tools missing)
+    # 步骤 2：安装 Homebrew（仅 macOS，且仅在工具缺失时）
     if [[ "$OS" == "macos" && "$has_node" == "false" ]]; then
         install_homebrew || true
     fi
 
-    # Step 3: Ensure Node.js is installed
+    # 步骤 3：确保已安装 Node.js
     if [[ "$has_node" == "false" ]]; then
         if ! check_node; then
             install_node
         fi
     fi
 
-    ui_stage "Installing OpenAEON"
+    ui_stage "安装 OpenAEON"
 
     local final_git_dir=""
     if [[ "$INSTALL_METHOD" == "git" ]]; then
-        # Clean up npm global install if switching to git
+        # 切换为 Git 安装时清理全局 NPM 安装包
         if npm list -g openaeon &>/dev/null; then
             ui_info "Removing npm global install (switching to git)"
             npm uninstall -g openaeon 2>/dev/null || true
@@ -2336,44 +2337,44 @@ main() {
         final_git_dir="$repo_dir"
         install_openaeon_from_git "$repo_dir"
     else
-        # Clean up git wrapper if switching to npm
+        # 切换为 npm 安装时清理 Git 包装脚本
         if [[ -x "$HOME/.local/bin/openaeon" ]]; then
             ui_info "Removing git wrapper (switching to npm)"
             rm -f "$HOME/.local/bin/openaeon"
             ui_success "git wrapper removed"
         fi
 
-        # Step 3: Git (required for npm installs that may fetch from git or apply patches)
+        # 步骤 3：安装 Git（部分 npm 安装需从 git 拉取或应用补丁，因此为必需）
         if ! check_git; then
             install_git
         fi
 
-        # Step 4: npm permissions (Linux)
+        # 配置 npm 权限（Linux 系统）
         fix_npm_permissions
 
-        # Step 5: OpenAEON
+        # 步骤 5：安装 OpenAEON
         install_openaeon
     fi
 
-    ui_stage "Finalizing setup"
+    ui_stage "完成配置"
 
     OPENAEON_BIN="$(resolve_openaeon_bin || true)"
 
-    # PATH warning: installs can succeed while the user's login shell still lacks npm's global bin dir.
+    # 路径警告：安装可能成功完成，但用户登录 Shell 仍未包含 npm 全局可执行文件目录。
     local npm_bin=""
     npm_bin="$(npm_global_bin_dir || true)"
     if [[ "$INSTALL_METHOD" == "npm" ]]; then
-        warn_shell_path_missing_dir "$npm_bin" "npm global bin dir"
+        warn_shell_path_missing_dir "$npm_bin" "npm 全局二进制目录"
     fi
     if [[ "$INSTALL_METHOD" == "git" ]]; then
         if [[ -x "$HOME/.local/bin/openaeon" ]]; then
-            warn_shell_path_missing_dir "$HOME/.local/bin" "user-local bin dir (~/.local/bin)"
+            warn_shell_path_missing_dir "$HOME/.local/bin" "用户本地二进制目录 (~/.local/bin)"
         fi
     fi
 
     refresh_gateway_service_if_loaded
 
-    # Step 6: Run doctor for migrations on upgrades and git installs
+    # 步骤 6：执行诊断检查，用于版本升级与 Git 安装时的数据迁移
     local run_doctor_after=false
     if [[ "$is_upgrade" == "true" || "$INSTALL_METHOD" == "git" ]]; then
         run_doctor_after=true
@@ -2383,7 +2384,7 @@ main() {
         should_open_dashboard=true
     fi
 
-    # Step 7: If BOOTSTRAP.md is still present in the workspace, resume onboarding
+    # 若工作区中仍存在 BOOTSTRAP.md，则继续完成初始化引导流程
     run_bootstrap_onboarding_if_needed
 
     local installed_version
@@ -2391,48 +2392,48 @@ main() {
 
     echo ""
     if [[ -n "$installed_version" ]]; then
-        ui_celebrate "🦞 OpenAEON installed successfully (${installed_version})!"
+        ui_celebrate "🦞 OpenAEON 安装成功! (${installed_version})"
     else
-        ui_celebrate "🦞 OpenAEON installed successfully!"
+        ui_celebrate "🦞 OpenAEON 安装成功!"
     fi
     if [[ "$is_upgrade" == "true" ]]; then
         local update_messages=(
-            "Leveled up! New skills unlocked. You're welcome."
-            "Fresh code, same lobster. Miss me?"
-            "Back and better. Did you even notice I was gone?"
-            "Update complete. I learned some new tricks while I was out."
-            "Upgraded! Now with 23% more sass."
-            "I've evolved. Try to keep up. 🦞"
-            "New version, who dis? Oh right, still me but shinier."
-            "Patched, polished, and ready to pinch. Let's go."
-            "The lobster has molted. Harder shell, sharper claws."
-            "Update done! Check the changelog or just trust me, it's good."
-            "Reborn from the boiling waters of npm. Stronger now."
-            "I went away and came back smarter. You should try it sometime."
-            "Update complete. The bugs feared me, so they left."
-            "New version installed. Old version sends its regards."
-            "Firmware fresh. Brain wrinkles: increased."
-            "I've seen things you wouldn't believe. Anyway, I'm updated."
-            "Back online. The changelog is long but our friendship is longer."
-            "Upgraded! Peter fixed stuff. Blame him if it breaks."
-            "Molting complete. Please don't look at my soft shell phase."
-            "Version bump! Same chaos energy, fewer crashes (probably)."
+            "升级完成！解锁新能力，不用客气。"
+            "代码已更新，龙虾还是那个龙虾。"
+            "回归并变得更强，你有没有想我？"
+            "更新完成！外出期间学会了新技巧。"
+            "升级完成！现在吐槽功力增加 23%。"
+            "我已进化，请尽量跟上节奏。🦞"
+            "新版本上线，依旧是那个熟悉的我。"
+            "修复优化完成，准备继续工作。"
+            "龙虾已完成蜕壳，外壳更硬，钳子更利。"
+            "更新完成！可查看更新日志了解详情。"
+            "从 npm 的升级中重生，现在更强了。"
+            "离开后归来变得更聪明，你也可以试试。"
+            "更新完成！问题都已修复。"
+            "新版本安装完成，旧版已正式退休。"
+            "固件已更新，运行更稳定。"
+            "我经历了很多，总之现在已完成更新。"
+            "重新上线，更新日志很长，但友谊更长。"
+            "升级完成！若出现问题可检查更新内容。"
+            "蜕壳完成，请忽略我的柔软过渡期。"
+            "版本升级！同样高效，更少崩溃（大概）。"
         )
         local update_message
         update_message="${update_messages[RANDOM % ${#update_messages[@]}]}"
         echo -e "${MUTED}${update_message}${NC}"
     else
         local completion_messages=(
-            "Ahh nice, I like it here. Got any snacks? "
-            "Home sweet home. Don't worry, I won't rearrange the furniture."
-            "I'm in. Let's cause some responsible chaos."
-            "Installation complete. Your productivity is about to get weird."
-            "Settled in. Time to automate your life whether you're ready or not."
-            "Cozy. I've already read your calendar. We need to talk."
-            "Finally unpacked. Now point me at your problems."
-            "cracks claws Alright, what are we building?"
-            "The lobster has landed. Your terminal will never be the same."
-            "All done! I promise to only judge your code a little bit."
+            "啊真不错，我喜欢这里。有什么吃的吗？"
+            "家 sweet 家。放心，我不会乱动你的东西。"
+            "已就位！让我们有序地搞点事情。"
+            "安装完成！你的工作效率即将变得不一样。"
+            "已安顿好，是时候自动化你的生活了。"
+            "真舒服。我已经看过你的日程，我们得聊聊。"
+            "终于部署完毕，现在告诉我你的问题。"
+            "钳子咔嚓作响！好了，我们要做什么？"
+            "龙虾已登陆，你的终端从此不一样。"
+            "全部完成！我保证只稍微吐槽一下你的代码。"
         )
         local completion_message
         completion_message="${completion_messages[RANDOM % ${#completion_messages[@]}]}"
@@ -2441,20 +2442,20 @@ main() {
     echo ""
 
     if [[ "$INSTALL_METHOD" == "git" && -n "$final_git_dir" ]]; then
-        ui_section "Source install details"
-        ui_kv "Checkout" "$final_git_dir"
-        ui_kv "Wrapper" "${PREFIX:-$HOME/.openaeon}/bin/openaeon"
-        ui_kv "Update command" "openaeon update --restart"
-        ui_kv "Switch to npm" "curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.sh | bash -s -- --install-method npm"
+        ui_section "源码安装信息"
+        ui_kv "检出目录" "$final_git_dir"
+        ui_kv "启动脚本" "${PREFIX:-$HOME/.openaeon}/bin/openaeon"
+        ui_kv "更新命令" "openaeon update --restart"
+        ui_kv "切换至 npm 安装" "curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.sh | bash -s -- --install-method npm"
     elif [[ "$is_upgrade" == "true" ]]; then
-        ui_info "Upgrade complete"
+        ui_info "升级完成"
         if [[ -r /dev/tty && -w /dev/tty ]]; then
             local claw="${OPENAEON_BIN:-}"
             if [[ -z "$claw" ]]; then
                 claw="$(resolve_openaeon_bin || true)"
             fi
             if [[ -z "$claw" ]]; then
-                ui_info "Skipping doctor (openaeon not on PATH yet)"
+                ui_info "跳过诊断（openaeon 尚未在 PATH 中）"
                 warn_openaeon_not_found
                 return 0
             fi
@@ -2464,7 +2465,7 @@ main() {
                     doctor_args+=("--non-interactive")
                 fi
             fi
-            ui_info "Running openaeon doctor"
+            ui_info "正在运行 openaeon doctor 诊断"
             local doctor_ok=0
             if (( ${#doctor_args[@]} )); then
                 OPENAEON_UPDATE_IN_PROGRESS=1 "$claw" doctor "${doctor_args[@]}" </dev/tty && doctor_ok=1
@@ -2472,40 +2473,38 @@ main() {
                 OPENAEON_UPDATE_IN_PROGRESS=1 "$claw" doctor </dev/tty && doctor_ok=1
             fi
             if (( doctor_ok )); then
-                ui_info "Updating plugins"
+                ui_info "正在更新插件"
                 OPENAEON_UPDATE_IN_PROGRESS=1 "$claw" plugins update --all || true
             else
-                ui_warn "Doctor failed; skipping plugin updates"
+                ui_warn "诊断失败，跳过插件更新"
             fi
         else
-            ui_info "No TTY; run openaeon doctor and openaeon plugins update --all manually"
+            ui_info "未检测到终端；请手动执行 openaeon doctor 和 openaeon plugins update --all"
         fi
     else
         if [[ "$NO_ONBOARD" == "1" || "$skip_onboard" == "true" ]]; then
-            ui_info "Skipping onboard (requested); run openaeon onboard --install-daemon later"
+            ui_info "已跳过引导设置（根据请求）；稍后可执行 openaeon onboard --install-daemon"
         else
             local config_path="${OPENAEON_CONFIG_PATH:-$HOME/.openaeon.json}"
             if [[ -f "${config_path}" || -f "$HOME/.clawdbot/clawdbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
-                ui_info "Config already present; running doctor"
+                ui_info "配置已存在，正在运行诊断"
                 run_doctor
                 should_open_dashboard=true
-                ui_info "Config already present; skipping onboarding"
+                ui_info "配置已存在，跳过引导设置"
                 skip_onboard=true
             else
                 if [[ -t 0 ]]; then
-                    ui_info "Starting guided setup (onboarding)..."
+                    ui_info "正在启动引导设置（初始化）..."
                     echo ""
                     exec </dev/tty
                     exec "$claw" onboard --install-daemon
                 else
-                    ui_info "No TTY; run openaeon onboard --install-daemon to finish setup"
+                    ui_info "未检测到终端；请执行 openaeon onboard --install-daemon 以完成安装设置"
                     return 0
                 fi
             fi
         fi
     fi
-
-
     if command -v openaeon &> /dev/null; then
         local claw="${OPENAEON_BIN:-}"
         if [[ -z "$claw" ]]; then
@@ -2513,13 +2512,13 @@ main() {
         fi
         if [[ -n "$claw" ]] && is_gateway_daemon_loaded "$claw"; then
             if [[ "$DRY_RUN" == "1" ]]; then
-                ui_info "Gateway daemon detected; would restart (openaeon daemon restart)"
+                ui_info "检测到网关守护进程；将执行重启 (openaeon daemon restart)"
             else
-                ui_info "Gateway daemon detected; restarting"
+                ui_info "检测到网关守护进程；正在重启"
                 if OPENAEON_UPDATE_IN_PROGRESS=1 "$claw" daemon restart >/dev/null 2>&1; then
-                    ui_success "Gateway restarted"
+                    ui_success "网关重启成功"
                 else
-                    ui_warn "Gateway restart failed; try: openaeon daemon restart"
+                    ui_warn "网关重启失败；请重试: openaeon daemon restart"
                 fi
             fi
         fi
