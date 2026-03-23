@@ -1,6 +1,6 @@
 {
   "name": "@openaeon/synology-chat",
-  "version": "2026.3.1",
+  "version": "2026.3.23",
   "description": "Synology Chat channel plugin for OpenAEON",
   "type": "module",
   "dependencies": {

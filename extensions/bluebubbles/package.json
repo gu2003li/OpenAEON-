@@ -1,6 +1,6 @@
 {
   "name": "@openaeon/bluebubbles",
-  "version": "2026.3.1",
+  "version": "2026.3.23",
   "description": "OpenAEON BlueBubbles channel plugin",
   "type": "module",
   "openaeon": {

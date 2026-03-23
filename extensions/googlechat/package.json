@@ -1,6 +1,6 @@
 {
   "name": "@openaeon/googlechat",
-  "version": "2026.3.1",
+  "version": "2026.3.23",
   "private": true,
   "description": "OpenAEON Google Chat channel plugin",
   "type": "module",

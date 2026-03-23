@@ -1,6 +1,6 @@
 {
   "name": "@openaeon/discord",
-  "version": "2026.3.1",
+  "version": "2026.3.23",
   "description": "OpenAEON Discord channel plugin",
   "type": "module",
   "openaeon": {
