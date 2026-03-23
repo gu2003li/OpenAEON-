@@ -20,6 +20,8 @@ let relayConnectPromise = null;
 let relayGatewayToken = "";
 /** @type {string|null} */
 let relayConnectRequestId = null;
+/** @type {string|null} Last relay connection error message for status display. */
+let lastRelayError = null;
 
 let nextSession = 1;
 
@@ -205,6 +207,7 @@ function onRelayClosed(reason) {
   relayWs = null;
   relayGatewayToken = "";
   relayConnectRequestId = null;
+  lastRelayError = reason ? String(reason) : "Relay disconnected";
 
   for (const [id, p] of pending.entries()) {
     pending.delete(id);
@@ -912,7 +915,34 @@ chrome.tabs.onActivated.addListener(
 
 chrome.runtime.onInstalled.addListener(() => {
   void chrome.runtime.openOptionsPage();
+
+  // Register right-click context menus for quick actions.
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: "attach-tab",
+      title: "Attach this tab to OpenAEON",
+      contexts: ["page", "frame"],
+    });
+    chrome.contextMenus.create({
+      id: "snapshot-tab",
+      title: "Take a snapshot of this page",
+      contexts: ["page", "frame"],
+    });
+  });
 });
+
+// Handle right-click context menu actions.
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (!tab?.id) return;
+  if (info.menuItemId === "attach-tab") {
+    void whenReady(() => connectOrToggleForActiveTab());
+  }
+  if (info.menuItemId === "snapshot-tab") {
+    // Notify user to use the popup or CLI for snapshot after attaching.
+    chrome.action.openPopup?.().catch(() => {});
+  }
+});
+
 
 // MV3 keepalive via chrome.alarms — more reliable than setInterval across
 // service worker restarts. Checks relay health and refreshes badges.
@@ -973,23 +1003,84 @@ async function whenReady(fn) {
 // Relay check handler for the options page. The service worker has
 // host_permissions and bypasses CORS preflight, so the options page
 // delegates token-validation requests here.
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  if (msg?.type !== "relayCheck") return false;
-  const { url, token } = msg;
-  const headers = token ? { "x-openaeon-relay-token": token } : {};
-  fetch(url, { method: "GET", headers, signal: AbortSignal.timeout(2000) })
-    .then(async (res) => {
-      const contentType = String(res.headers.get("content-type") || "");
-      let json = null;
-      if (contentType.includes("application/json")) {
-        try {
-          json = await res.json();
-        } catch {
-          json = null;
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type === "getStatus") {
+    // Collect attached tab metadata asynchronously, then respond.
+    const connectedEntries = Array.from(tabs.entries()).filter(([, t]) => t.state === "connected");
+    const tabInfoPromises = connectedEntries.map(([chromeTabId]) =>
+      chrome.tabs.get(chromeTabId).then((tabInfo) => ({
+        chromeTabId,
+        id: tabs.get(chromeTabId)?.sessionId ?? String(chromeTabId),
+        title: tabInfo.title || "Tab",
+        url: tabInfo.url || "",
+        favicon: tabInfo.favIconUrl || "",
+      })).catch(() => ({
+        chromeTabId,
+        id: tabs.get(chromeTabId)?.sessionId ?? String(chromeTabId),
+        title: "Tab",
+        url: "",
+        favicon: "",
+      }))
+    );
+
+    chrome.tabs.query({ active: true, currentWindow: true }).then(async ([activeTab]) => {
+      const attachedTabs = await Promise.all(tabInfoPromises);
+      const currentTabEntry = activeTab
+        ? { attached: tabs.get(activeTab.id)?.state === "connected" }
+        : { attached: false };
+
+      sendResponse({
+        relayConnected: relayWs && relayWs.readyState === WebSocket.OPEN,
+        relayConnecting: relayWs && relayWs.readyState === WebSocket.CONNECTING,
+        tabAttached: currentTabEntry.attached,
+        lastError: lastRelayError || null,
+        currentTab: currentTabEntry,
+        attachedTabs,
+      });
+    }).catch(() => sendResponse({ relayConnected: false, relayConnecting: false, attachedTabs: [] }));
+    return true; // async sendResponse
+  }
+
+  if (msg?.type === "toggleAttach") {
+    void whenReady(() => connectOrToggleForActiveTab());
+    sendResponse({ ok: true });
+    return false;
+  }
+
+  if (msg?.type === "detachTab") {
+    const { tabId } = msg;
+    if (tabId != null) {
+      void whenReady(() => detachTab(tabId, "user-request"));
+    }
+    sendResponse({ ok: true });
+    return false;
+  }
+
+  if (msg?.type === "ping") {
+    sendResponse({ ok: true, ts: Date.now() });
+    return false;
+  }
+
+  if (msg?.type === "reconnect") {
+    void whenReady(() => connectRelay());
+    sendResponse({ ok: true });
+    return false;
+  }
+
+  if (msg?.type === "relayCheck") {
+    const { url, token } = msg;
+    const headers = token ? { "x-openaeon-relay-token": token } : {};
+    fetch(url, { method: "GET", headers, signal: AbortSignal.timeout(2000) })
+      .then(async (res) => {
+        const contentType = String(res.headers.get("content-type") || "");
+        let json = null;
+        if (contentType.includes("application/json")) {
+          try { json = await res.json(); } catch { json = null; }
         }
-      }
-      sendResponse({ status: res.status, ok: res.ok, contentType, json });
-    })
-    .catch((err) => sendResponse({ status: 0, ok: false, error: String(err) }));
-  return true;
+        sendResponse({ status: res.status, ok: res.ok, contentType, json });
+      })
+      .catch((err) => sendResponse({ status: 0, ok: false, error: String(err) }));
+    return true;
+  }
+  return false;
 });
