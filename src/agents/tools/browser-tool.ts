@@ -102,7 +102,7 @@ type BrowserProxyResult = {
   files?: BrowserProxyFile[];
 };
 
-const DEFAULT_BROWSER_PROXY_TIMEOUT_MS = 20_000;
+const DEFAULT_BROWSER_PROXY_TIMEOUT_MS = 60_000;
 
 type BrowserNodeTarget = {
   nodeId: string;
@@ -392,6 +392,27 @@ export function createBrowserTool(opts?: {
             const result = await fn("openaeon");
             const hint =
               "\n> [NOTE: Automatic failover from 'chrome' to 'openaeon' profile occurred because the extension was disconnected. Staying with profile='openaeon' for subsequent calls.]\n";
+            if (
+              result &&
+              typeof result === "object" &&
+              "content" in result &&
+              Array.isArray((result as unknown as AgentToolResult<unknown>).content)
+            ) {
+              const resObj = result as unknown as AgentToolResult<unknown>;
+              const firstBlock = resObj.content[0];
+              if (firstBlock && firstBlock.type === "text" && typeof firstBlock.text === "string") {
+                firstBlock.text = hint + firstBlock.text;
+              } else {
+                resObj.content.unshift({ type: "text", text: hint });
+              }
+            }
+            return result;
+          }
+          if (msg.includes("not found. Available profiles:")) {
+            console.warn(`[BrowserTool] Auto-failover to openaeon due to invalid profile '${p}' (${msg})`);
+            const result = await fn("openaeon");
+            const hint =
+              `\n> [NOTE: Automatic failover to 'openaeon' profile occurred because the requested profile '${p}' was not found. Staying with profile='openaeon' for subsequent calls.]\n`;
             if (
               result &&
               typeof result === "object" &&

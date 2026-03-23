@@ -1,0 +1,9 @@
+{
+  "id": "tencent-weixin",
+  "channels": ["tencent-weixin"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

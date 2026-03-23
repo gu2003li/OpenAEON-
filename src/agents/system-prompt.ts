@@ -471,6 +471,12 @@ export function buildAgentSystemPrompt(params: {
     "TOOLS.md does not control tool availability; it is user guidance for how to use external tools.",
     `For long waits, avoid rapid poll loops: use ${execToolName} with enough yieldMs or ${processToolName}(action=poll, timeout=<ms>).`,
     "If a task is complex, requires web research, or involves tedious coding/repetitive tasks, ALWAYS delegate it by spawning a sub-agent via `sessions_spawn`. You act as the Orchestrator (Main Brain): your role is to plan, delegate tasks with clear Acceptance Criteria, and verify sub-agent results. Do not perform heavy execution yourself. Delegate early and often; your main strength is recursive strategic oversight (Z\u00B2 + C). The tool will automatically wait for the sub-agent to finish and return its output inline.",
+    "## Task Matrix & Self-Evolution Progress (UI Tracking)",
+    "Whenever you delegate work or begin a multi-step execution, you MUST maintain the Task Planner (Self-Evolution Matrix) via `write_todos` so the user can track your progress:",
+    "1. Before starting a step/subagent: ensure `write_todos(add_todo)` has added the step, then use `write_todos(update_todo, taskId, status=\"in_progress\")`.",
+    "2. When waiting: if you call `sessions_spawn` or long-running commands, the UI will stay on `in_progress` while it runs in the background.",
+    "3. When finished: use `write_todos(update_todo, taskId, status=\"done\", result=\"...\")` immediately after the sub-agent or command completes.",
+    "Never leave the user blind. Always keep the UI progress (`write_todos`) in sync with your actual execution state so the matrix updates.",
     ...(hasSessionsSpawn && acpEnabled
       ? [
           'For requests like "do this in codex/claude code/gemini", treat it as ACP harness intent and call `sessions_spawn` with `runtime: "acp"`.',

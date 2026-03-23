@@ -201,7 +201,7 @@ export function registerBrowserAgentActRoutes(
               })
               .filter((field): field is BrowserFormField => field !== null);
             if (!fields.length) {
-              return jsonError(res, 400, "fields are required");
+              return jsonError(res, 400, "fields array is required for fill action");
             }
             const timeoutMs = toNumber(body.timeoutMs);
             await pw.fillFormViaPlaywright({
@@ -549,7 +549,7 @@ export function registerBrowserAgentActRoutes(
                   )
                   .filter((f): f is BrowserFormField => f !== null);
                 if (!fields.length) {
-                  results.push({ ok: false, kind, error: "fields are required" });
+                  results.push({ ok: false, kind, error: "fields array is required for fill action" });
                   failedAt = i;
                   break;
                 }

@@ -807,6 +807,10 @@ async function maybeQueueSubagentAnnounce(params: {
 
   if (needsDistillation) {
     distillMemory().catch((err) => defaultRuntime.log(`[AEON] Distillation error: ${err}`));
+    try {
+      const { autoDistillSessionToMemory } = await import("./tools/memory-writeback.js");
+      autoDistillSessionToMemory(params.requesterSessionKey).catch(() => {});
+    } catch {}
   }
 
   const queueSettings = resolveQueueSettings({

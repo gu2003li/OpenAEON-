@@ -1,0 +1,44 @@
+{
+  "name": "@openaeon/tencent-weixin",
+  "version": "2026.3.1",
+  "description": "OpenAEON Weixin channel plugin",
+  "license": "MIT",
+  "author": "Tencent",
+  "type": "module",
+  "files": [
+    "src/",
+    "!src/**/*.test.ts",
+    "!src/**/node_modules/",
+    "index.ts",
+    "README.md",
+    "README.zh_CN.md",
+    "CHANGELOG.md",
+    "CHANGELOG.zh_CN.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "zod": "^4.3.6"
+  },
+  "openaeon": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "channel": {
+      "id": "tencent-weixin",
+      "label": "Weixin",
+      "selectionLabel": "Weixin",
+      "docsPath": "/channels/tencent-weixin",
+      "docsLabel": "tencent-weixin",
+      "blurb": "Weixin channel",
+      "order": 75
+    },
+    "install": {
+      "npmSpec": "@openaeon/tencent-weixin",
+      "localPath": "extensions/tencent-weixin",
+      "defaultChoice": "npm"
+    }
+  }
+}
