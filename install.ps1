@@ -1,6 +1,6 @@
-# OpenAEON Installer for Windows
-# Usage: iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.ps1 | iex
-#        & ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.ps1))) -Tag beta -NoOnboard -DryRun
+# OpenAEON 安装程序 Windows
+# 使用方法: iwr -useb https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.ps1 | iex
+#        & ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.ps1))) -Tag beta -NoOnboard -DryRun
 
 param(
     [string]$Tag = "latest",
@@ -15,16 +15,16 @@ param(
 $ErrorActionPreference = "Stop"
 
 Write-Host ""
-Write-Host "  OpenAEON Installer" -ForegroundColor Cyan
+Write-Host "  OpenAEON 安装程序" -ForegroundColor Cyan
 Write-Host ""
 
-# Check if running in PowerShell
+# 检查是否在 PowerShell 中运行
 if ($PSVersionTable.PSVersion.Major -lt 5) {
-    Write-Host "Error: PowerShell 5+ required" -ForegroundColor Red
+    Write-Host "错误：需要 PowerShell 5 或更高版本" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "[OK] Windows detected" -ForegroundColor Green
+Write-Host "[OK] 已检测到 Windows 系统" -ForegroundColor Green
 
 if (-not $PSBoundParameters.ContainsKey("InstallMethod")) {
     if (-not [string]::IsNullOrWhiteSpace($env:OPENAEON_INSTALL_METHOD)) {
@@ -57,99 +57,96 @@ if ([string]::IsNullOrWhiteSpace($GitDir)) {
     $GitDir = (Join-Path $userHome "openaeon")
 }
 
-# Check for Node.js
+# 检查 Node.js
 function Check-Node {
     try {
         $nodeVersion = (node -v 2>$null)
         if ($nodeVersion) {
             $version = [int]($nodeVersion -replace 'v(\d+)\..*', '$1')
             if ($version -ge 22) {
-                Write-Host "[OK] Node.js $nodeVersion found" -ForegroundColor Green
+                Write-Host "[OK] 已找到 Node.js $nodeVersion" -ForegroundColor Green
                 return $true
             } else {
-                Write-Host "[!] Node.js $nodeVersion found, but v22+ required" -ForegroundColor Yellow
+                Write-Host "[!] 已找到 Node.js $nodeVersion，但需要 v22 或更高版本" -ForegroundColor Yellow
                 return $false
             }
         }
     } catch {
-        Write-Host "[!] Node.js not found" -ForegroundColor Yellow
+        Write-Host "[!] 未找到 Node.js" -ForegroundColor Yellow
         return $false
     }
     return $false
 }
 
-# Install Node.js
+# 安装 Node.js
 function Install-Node {
-    Write-Host "[*] Installing Node.js..." -ForegroundColor Yellow
+    Write-Host "[*] 正在安装 Node.js..." -ForegroundColor Yellow
 
-    # Try winget first (Windows 11 / Windows 10 with App Installer)
+    # 优先使用 winget
     if (Get-Command winget -ErrorAction SilentlyContinue) {
-        Write-Host "  Using winget..." -ForegroundColor Gray
+        Write-Host "  使用 winget..." -ForegroundColor Gray
         winget install OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements
 
-        # Refresh PATH
+        # 刷新环境变量
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-        Write-Host "[OK] Node.js installed via winget" -ForegroundColor Green
+        Write-Host "[OK] 已通过 winget 安装 Node.js" -ForegroundColor Green
         return
     }
 
-    # Try Chocolatey
+    # 尝试 Chocolatey
     if (Get-Command choco -ErrorAction SilentlyContinue) {
-        Write-Host "  Using Chocolatey..." -ForegroundColor Gray
+        Write-Host "  使用 Chocolatey..." -ForegroundColor Gray
         choco install nodejs-lts -y
 
-        # Refresh PATH
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-        Write-Host "[OK] Node.js installed via Chocolatey" -ForegroundColor Green
+        Write-Host "[OK] 已通过 Chocolatey 安装 Node.js" -ForegroundColor Green
         return
     }
 
-    # Try Scoop
+    # 尝试 Scoop
     if (Get-Command scoop -ErrorAction SilentlyContinue) {
-        Write-Host "  Using Scoop..." -ForegroundColor Gray
+        Write-Host "  使用 Scoop..." -ForegroundColor Gray
         scoop install nodejs-lts
-        Write-Host "[OK] Node.js installed via Scoop" -ForegroundColor Green
+        Write-Host "[OK] 已通过 Scoop 安装 Node.js" -ForegroundColor Green
         return
     }
 
-    # Manual download fallback
+    # 无包管理器，提示手动安装
     Write-Host ""
-    Write-Host "Error: Could not find a package manager (winget, choco, or scoop)" -ForegroundColor Red
+    Write-Host "错误：未找到可用的包管理器（winget、choco 或 scoop）" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Please install Node.js 22+ manually:" -ForegroundColor Yellow
+    Write-Host "请手动安装 Node.js 22+：" -ForegroundColor Yellow
     Write-Host "  https://nodejs.org/en/download/" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "Or install winget (App Installer) from the Microsoft Store." -ForegroundColor Gray
+    Write-Host "或从微软应用商店安装 winget（应用安装程序）。" -ForegroundColor Gray
     exit 1
 }
 
-# Check for existing OpenAEON installation
+# 检查是否已安装 OpenAEON
 function Check-ExistingOpenAEON {
     try {
         $null = Get-Command openaeon -ErrorAction Stop
-        Write-Host "[*] Existing OpenAEON installation detected" -ForegroundColor Yellow
+        Write-Host "[*] 检测到已安装的 OpenAEON" -ForegroundColor Yellow
         return $true
     } catch {
         return $false
     }
 }
 
-# Uninstall existing OpenAEON background service and binary
+# 卸载旧版 OpenAEON
 function Uninstall-ExistingOpenAEON {
-    Write-Host "[*] Attempting to uninstall existing OpenAEON before installing custom version..." -ForegroundColor Yellow
+    Write-Host "[*] 正在卸载现有版本，准备安装新版..." -ForegroundColor Yellow
     
-    # Try removing the gateway service if accessible
     try {
         openaeon gateway uninstall --force 2>$null | Out-Null
     } catch {}
 
-    # Attempt to uninstall generic NPM package
     try {
-        Write-Host "  Uninstalling NPM openaeon globally..." -ForegroundColor Gray
+        Write-Host "  正在全局卸载 NPM 包 openaeon..." -ForegroundColor Gray
         npm uninstall -g openaeon 2>$null | Out-Null
     } catch {}
     
-    Write-Host "[OK] Legacy OpenAEON cleaned up (if any)" -ForegroundColor Green
+    Write-Host "[OK] 旧版 OpenAEON 已清理完成（如有）" -ForegroundColor Green
 }
 
 function Check-Git {
@@ -164,13 +161,14 @@ function Check-Git {
 function Require-Git {
     if (Check-Git) { return }
     Write-Host ""
-    Write-Host "Error: Git is required for --InstallMethod git." -ForegroundColor Red
-    Write-Host "Install Git for Windows:" -ForegroundColor Yellow
+    Write-Host "错误：使用 git 安装方式必须先安装 Git" -ForegroundColor Red
+    Write-Host "请安装 Git for Windows：" -ForegroundColor Yellow
     Write-Host "  https://git-scm.com/download/win" -ForegroundColor Cyan
-    Write-Host "Then re-run this installer." -ForegroundColor Yellow
+    Write-Host "安装完成后重新运行此脚本。" -ForegroundColor Yellow
     exit 1
 }
 
+# 确保 openaeon 命令在 PATH 中可用
 function Ensure-OpenAEONOnPath {
     if (Get-Command openaeon -ErrorAction SilentlyContinue) {
         return $true
@@ -189,23 +187,24 @@ function Ensure-OpenAEONOnPath {
         if (-not ($userPath -split ";" | Where-Object { $_ -ieq $npmBin })) {
             [Environment]::SetEnvironmentVariable("Path", "$userPath;$npmBin", "User")
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-            Write-Host "[!] Added $npmBin to user PATH (restart terminal if command not found)" -ForegroundColor Yellow
+            Write-Host "[!] 已将 $npmBin 添加到用户 PATH（若命令未找到请重启终端）" -ForegroundColor Yellow
         }
         if (Test-Path (Join-Path $npmBin "openaeon.cmd")) {
             return $true
         }
     }
 
-    Write-Host "[!] openaeon is not on PATH yet." -ForegroundColor Yellow
-    Write-Host "Restart PowerShell or add the npm global bin folder to PATH." -ForegroundColor Yellow
+    Write-Host "[!] openaeon 暂未加入 PATH" -ForegroundColor Yellow
+    Write-Host "请重启 PowerShell 或将 npm 全局目录添加到 PATH。" -ForegroundColor Yellow
     if ($npmPrefix) {
-        Write-Host "Expected path: $npmPrefix\\bin" -ForegroundColor Cyan
+        Write-Host "预期路径：$npmPrefix\\bin" -ForegroundColor Cyan
     } else {
-        Write-Host "Hint: run \"npm config get prefix\" to find your npm global path." -ForegroundColor Gray
+        Write-Host "提示：执行 npm config get prefix 查看全局路径" -ForegroundColor Gray
     }
     return $false
 }
 
+# 确保安装 pnpm
 function Ensure-Pnpm {
     if (Get-Command pnpm -ErrorAction SilentlyContinue) {
         return
@@ -215,29 +214,28 @@ function Ensure-Pnpm {
             corepack enable | Out-Null
             corepack prepare pnpm@latest --activate | Out-Null
             if (Get-Command pnpm -ErrorAction SilentlyContinue) {
-                Write-Host "[OK] pnpm installed via corepack" -ForegroundColor Green
+                Write-Host "[OK] 已通过 corepack 安装 pnpm" -ForegroundColor Green
                 return
             }
         } catch {
-            # fallthrough to npm install
         }
     }
-    Write-Host "[*] Installing pnpm..." -ForegroundColor Yellow
+    Write-Host "[*] 正在安装 pnpm..." -ForegroundColor Yellow
     npm install -g pnpm
-    Write-Host "[OK] pnpm installed" -ForegroundColor Green
+    Write-Host "[OK] pnpm 安装完成" -ForegroundColor Green
 }
 
-# Install OpenAEON
+# 通过 npm 安装 OpenAEON
 function Install-OpenAEON {
     if ([string]::IsNullOrWhiteSpace($Tag)) {
         $Tag = "latest"
     }
-    # Use openaeon package for beta, openaeon for stable
     $packageName = "openaeon"
     if ($Tag -eq "beta" -or $Tag -match "^beta\.") {
         $packageName = "openaeon"
     }
-    Write-Host "[*] Installing OpenAEON ($packageName@$Tag)..." -ForegroundColor Yellow
+    Write-Host "[*] 正在安装 OpenAEON ($packageName@$Tag)..." -ForegroundColor Yellow
+
     $prevLogLevel = $env:NPM_CONFIG_LOGLEVEL
     $prevUpdateNotifier = $env:NPM_CONFIG_UPDATE_NOTIFIER
     $prevFund = $env:NPM_CONFIG_FUND
@@ -246,17 +244,18 @@ function Install-OpenAEON {
     $env:NPM_CONFIG_UPDATE_NOTIFIER = "false"
     $env:NPM_CONFIG_FUND = "false"
     $env:NPM_CONFIG_AUDIT = "false"
+
     try {
         $npmOutput = npm install -g "$packageName@$Tag" 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "[!] npm install failed" -ForegroundColor Red
+            Write-Host "[!] npm 安装失败" -ForegroundColor Red
             if ($npmOutput -match "spawn git" -or $npmOutput -match "ENOENT.*git") {
-                Write-Host "Error: git is missing from PATH." -ForegroundColor Red
-                Write-Host "Install Git for Windows, then reopen PowerShell and retry:" -ForegroundColor Yellow
+                Write-Host "错误：PATH 中未找到 git" -ForegroundColor Red
+                Write-Host "请安装 Git for Windows 后重启终端重试：" -ForegroundColor Yellow
                 Write-Host "  https://git-scm.com/download/win" -ForegroundColor Cyan
             } else {
-                Write-Host "Re-run with verbose output to see the full error:" -ForegroundColor Yellow
-                Write-Host "  iwr -useb https://raw.githubusercontent.com/openaeon/OpenAEON/main/install.ps1 | iex" -ForegroundColor Cyan
+                Write-Host "可使用详细输出查看完整错误：" -ForegroundColor Yellow
+                Write-Host "  iwr -useb https://raw.githubusercontent.com/gu2003li/OpenAEON/main/install.ps1 | iex" -ForegroundColor Cyan
             }
             $npmOutput | ForEach-Object { Write-Host $_ }
             exit 1
@@ -267,10 +266,10 @@ function Install-OpenAEON {
         $env:NPM_CONFIG_FUND = $prevFund
         $env:NPM_CONFIG_AUDIT = $prevAudit
     }
-    Write-Host "[OK] OpenAEON installed" -ForegroundColor Green
+    Write-Host "[OK] OpenAEON 安装完成" -ForegroundColor Green
 }
 
-# Install OpenAEON from GitHub
+# 通过 GitHub 源码安装
 function Install-OpenAEONFromGit {
     param(
         [string]$RepoDir,
@@ -279,8 +278,8 @@ function Install-OpenAEONFromGit {
     Require-Git
     Ensure-Pnpm
 
-    $repoUrl = "https://github.com/openaeon/OpenAEON.git"
-    Write-Host "[*] Installing OpenAEON from GitHub ($repoUrl)..." -ForegroundColor Yellow
+    $repoUrl = "https://github.com/gu2003li/OpenAEON.git"
+    Write-Host "[*] 正在从 GitHub 安装 OpenAEON ($repoUrl)..." -ForegroundColor Yellow
 
     if (-not (Test-Path $RepoDir)) {
         git clone $repoUrl $RepoDir
@@ -290,17 +289,17 @@ function Install-OpenAEONFromGit {
         if (-not (git -C $RepoDir status --porcelain 2>$null)) {
             git -C $RepoDir pull --rebase 2>$null
         } else {
-            Write-Host "[!] Repo is dirty; skipping git pull" -ForegroundColor Yellow
+            Write-Host "[!] 仓库存在修改，跳过 git pull" -ForegroundColor Yellow
         }
     } else {
-        Write-Host "[!] Git update disabled; skipping git pull" -ForegroundColor Yellow
+        Write-Host "[!] 已禁用 Git 更新，跳过拉取" -ForegroundColor Yellow
     }
 
     Remove-LegacySubmodule -RepoDir $RepoDir
 
     pnpm -C $RepoDir install
     if (-not (pnpm -C $RepoDir ui:build)) {
-        Write-Host "[!] UI build failed; continuing (CLI may still work)" -ForegroundColor Yellow
+        Write-Host "[!] UI 构建失败，继续执行（CLI 仍可使用）" -ForegroundColor Yellow
     }
     pnpm -C $RepoDir build
 
@@ -316,22 +315,21 @@ function Install-OpenAEONFromGit {
     if (-not ($userPath -split ";" | Where-Object { $_ -ieq $binDir })) {
         [Environment]::SetEnvironmentVariable("Path", "$userPath;$binDir", "User")
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-        Write-Host "[!] Added $binDir to user PATH (restart terminal if command not found)" -ForegroundColor Yellow
+        Write-Host "[!] 已将 $binDir 添加到用户 PATH（若命令未找到请重启终端）" -ForegroundColor Yellow
     }
 
-    Write-Host "[OK] OpenAEON wrapper installed to $cmdPath" -ForegroundColor Green
-    Write-Host "[i] This checkout uses pnpm. For deps, run: pnpm install (avoid npm install in the repo)." -ForegroundColor Gray
+    Write-Host "[OK] 已安装 OpenAEON 启动脚本到 $cmdPath" -ForegroundColor Green
+    Write-Host "[i] 源码版本使用 pnpm，依赖安装请用 pnpm install，不要用 npm install" -ForegroundColor Gray
 }
 
-# Run doctor for migrations (safe, non-interactive)
+# 执行迁移检查
 function Run-Doctor {
-    Write-Host "[*] Running doctor to migrate settings..." -ForegroundColor Yellow
+    Write-Host "[*] 正在执行配置迁移检查..." -ForegroundColor Yellow
     try {
         openaeon doctor --non-interactive
     } catch {
-        # Ignore errors from doctor
     }
-    Write-Host "[OK] Migration complete" -ForegroundColor Green
+    Write-Host "[OK] 迁移完成" -ForegroundColor Green
 }
 
 function Test-GatewayServiceLoaded {
@@ -350,6 +348,7 @@ function Test-GatewayServiceLoaded {
     return $false
 }
 
+# 刷新网关服务
 function Refresh-GatewayServiceIfLoaded {
     if (-not (Get-Command openaeon -ErrorAction SilentlyContinue)) {
         return
@@ -358,20 +357,20 @@ function Refresh-GatewayServiceIfLoaded {
         return
     }
 
-    Write-Host "[*] Refreshing loaded gateway service..." -ForegroundColor Yellow
+    Write-Host "[*] 正在刷新已加载的网关服务..." -ForegroundColor Yellow
     try {
         openaeon gateway install --force | Out-Null
     } catch {
-        Write-Host "[!] Gateway service refresh failed; continuing." -ForegroundColor Yellow
+        Write-Host "[!] 网关服务刷新失败，继续执行" -ForegroundColor Yellow
         return
     }
 
     try {
         openaeon gateway restart | Out-Null
         openaeon gateway status --probe --json | Out-Null
-        Write-Host "[OK] Gateway service refreshed" -ForegroundColor Green
+        Write-Host "[OK] 网关服务已刷新" -ForegroundColor Green
     } catch {
-        Write-Host "[!] Gateway service restart failed; continuing." -ForegroundColor Yellow
+        Write-Host "[!] 网关服务重启失败，继续执行" -ForegroundColor Yellow
     }
 }
 
@@ -392,59 +391,58 @@ function Remove-LegacySubmodule {
     }
     $legacyDir = Join-Path $RepoDir "Peekaboo"
     if (Test-Path $legacyDir) {
-        Write-Host "[!] Removing legacy submodule checkout: $legacyDir" -ForegroundColor Yellow
+        Write-Host "[!] 正在清理旧的子模块目录：$legacyDir" -ForegroundColor Yellow
         Remove-Item -Recurse -Force $legacyDir
     }
 }
 
-# Main installation flow
+# 主安装流程
 function Main {
     if ($InstallMethod -ne "npm" -and $InstallMethod -ne "git") {
-        Write-Host "Error: invalid -InstallMethod (use npm or git)." -ForegroundColor Red
+        Write-Host "错误：无效的安装方式，请使用 npm 或 git" -ForegroundColor Red
         exit 2
     }
 
     if ($DryRun) {
-        Write-Host "[OK] Dry run" -ForegroundColor Green
-        Write-Host "[OK] Install method: $InstallMethod" -ForegroundColor Green
+        Write-Host "[OK] 模拟运行模式" -ForegroundColor Green
+        Write-Host "[OK] 安装方式：$InstallMethod" -ForegroundColor Green
         if ($InstallMethod -eq "git") {
-            Write-Host "[OK] Git dir: $GitDir" -ForegroundColor Green
+            Write-Host "[OK] Git 目录：$GitDir" -ForegroundColor Green
             if ($NoGitUpdate) {
-                Write-Host "[OK] Git update: disabled" -ForegroundColor Green
+                Write-Host "[OK] Git 更新：已禁用" -ForegroundColor Green
             } else {
-                Write-Host "[OK] Git update: enabled" -ForegroundColor Green
+                Write-Host "[OK] Git 更新：已启用" -ForegroundColor Green
             }
         }
         if ($NoOnboard) {
-            Write-Host "[OK] Onboard: skipped" -ForegroundColor Green
+            Write-Host "[OK] 初始化引导：已跳过" -ForegroundColor Green
         }
         return
     }
 
     Remove-LegacySubmodule -RepoDir $RepoDir
 
-    # Check for existing installation
+    # 检查旧版本
     $isUpgrade = Check-ExistingOpenAEON
     if ($isUpgrade) {
         Uninstall-ExistingOpenAEON
     }
 
-    # Step 1: Node.js
+    # 检查并安装 Node.js
     if (-not (Check-Node)) {
         Install-Node
 
-        # Verify installation
         if (-not (Check-Node)) {
             Write-Host ""
-            Write-Host "Error: Node.js installation may require a terminal restart" -ForegroundColor Red
-            Write-Host "Please close this terminal, open a new one, and run this installer again." -ForegroundColor Yellow
+            Write-Host "错误：Node.js 安装完成后可能需要重启终端" -ForegroundColor Red
+            Write-Host "请关闭当前终端，重新打开后再运行安装脚本。" -ForegroundColor Yellow
             exit 1
         }
     }
 
     $finalGitDir = $null
 
-    # Step 2: OpenAEON
+    # 安装 OpenAEON
     if ($InstallMethod -eq "git") {
         $finalGitDir = $GitDir
         Install-OpenAEONFromGit -RepoDir $GitDir -SkipUpdate:$NoGitUpdate
@@ -453,14 +451,14 @@ function Main {
     }
 
     if (-not (Ensure-OpenAEONOnPath)) {
-        Write-Host "Install completed, but OpenAEON is not on PATH yet." -ForegroundColor Yellow
-        Write-Host "Open a new terminal, then run: openaeon doctor" -ForegroundColor Cyan
+        Write-Host "安装完成，但 OpenAEON 暂未加入 PATH" -ForegroundColor Yellow
+        Write-Host "打开新终端后执行：openaeon doctor" -ForegroundColor Cyan
         return
     }
 
     Refresh-GatewayServiceIfLoaded
 
-    # Step 3: Run doctor for migrations if upgrading or git install
+    # 升级或源码安装时执行迁移
     if ($isUpgrade -or $InstallMethod -eq "git") {
         Run-Doctor
     }
@@ -484,70 +482,72 @@ function Main {
 
     Write-Host ""
     if ($installedVersion) {
-        Write-Host "OpenAEON installed successfully ($installedVersion)!" -ForegroundColor Green
+        Write-Host "OpenAEON 安装成功（版本：$installedVersion）！" -ForegroundColor Green
     } else {
-        Write-Host "OpenAEON installed successfully!" -ForegroundColor Green
+        Write-Host "OpenAEON 安装成功！" -ForegroundColor Green
     }
     Write-Host ""
+
+    # 结尾趣味文案
     if ($isUpgrade) {
         $updateMessages = @(
-            "Leveled up! New skills unlocked. You're welcome.",
-            "Fresh code, same lobster. Miss me?",
-            "Back and better. Did you even notice I was gone?",
-            "Update complete. I learned some new tricks while I was out.",
-            "Upgraded! Now with 23% more sass.",
-            "I've evolved. Try to keep up.",
-            "New version, who dis? Oh right, still me but shinier.",
-            "Patched, polished, and ready to pinch. Let's go.",
-            "The lobster has molted. Harder shell, sharper claws.",
-            "Update done! Check the changelog or just trust me, it's good.",
-            "Reborn from the boiling waters of npm. Stronger now.",
-            "I went away and came back smarter. You should try it sometime.",
-            "Update complete. The bugs feared me, so they left.",
-            "New version installed. Old version sends its regards.",
-            "Firmware fresh. Brain wrinkles: increased.",
-            "I've seen things you wouldn't believe. Anyway, I'm updated.",
-            "Back online. The changelog is long but our friendship is longer.",
-            "Upgraded! Peter fixed stuff. Blame him if it breaks.",
-            "Molting complete. Please don't look at my soft shell phase.",
-            "Version bump! Same chaos energy, fewer crashes (probably)."
+            "等级提升！解锁新技能。不用谢~",
+            "代码焕然一新，龙虾还是那只～想我了吗？",
+            "强势回归，更强更稳。你有没有发现我消失过？",
+            "更新完成！出门这段时间学了点新把戏。",
+            "升级完成！现在傲娇值提升 23%。",
+            "我已进化。努力跟上我的节奏吧。",
+            "新版本上线，你哪位？哦是我，只是更闪亮了。",
+            "漏洞修完，打磨完毕，钳子就位。开干。",
+            "龙虾已完成蜕壳。壳更硬，钳更利。",
+            "更新搞定！想看更新日志也行，信我准没错。",
+            "从 npm 的沸水里重生归来，现在更强了。",
+            "离开一趟，回来更聪明了。你有空也试试。",
+            "更新完成。BUG 都被我吓跑了。",
+            "新版本已安装。旧版本托我向你问好。",
+            "固件全新升级，脑回路更丰富了。",
+            "我见过你难以置信的东西。总之，我更新好了。",
+            "重新上线。更新日志很长，但我们的友谊更长。",
+            "升级完成！Peter 修了一堆问题，炸了找他。",
+            "蜕壳完毕。拜托别看我软软的那段时期。",
+            "版本号提升！还是原来的整活风格，崩溃更少了（大概）。"
         )
         Write-Host (Get-Random -InputObject $updateMessages) -ForegroundColor Gray
         Write-Host ""
     } else {
         $completionMessages = @(
-            "Ahh nice, I like it here. Got any snacks? ",
-            "Home sweet home. Don't worry, I won't rearrange the furniture.",
-            "I'm in. Let's cause some responsible chaos.",
-            "Installation complete. Your productivity is about to get weird.",
-            "Settled in. Time to automate your life whether you're ready or not.",
-            "Cozy. I've already read your calendar. We need to talk.",
-            "Finally unpacked. Now point me at your problems.",
-            "cracks claws Alright, what are we building?",
-            "The lobster has landed. Your terminal will never be the same.",
-            "All done! I promise to only judge your code a little bit."
+            "嗯不错，这地方我喜欢。有啥吃的没？",
+            "到家啦。放心，我不会乱翻你东西的。",
+            "就位成功。让我们来点可控的小混乱。",
+            "安装完成。你的工作效率即将变得不太正常。",
+            "安顿好了。是时候自动化你的生活了，不管你准没准备好。",
+            "真舒服。我已经看过你的日程了，我们得聊聊。",
+            "终于收拾完毕。现在，把你的问题都交出来。",
+            "钳子咔咔作响 好了，我们要做点什么？",
+            "龙虾已登陆。你的终端从此不再普通。",
+            "搞定！我保证只稍微吐槽一下你的代码。"
         )
         Write-Host (Get-Random -InputObject $completionMessages) -ForegroundColor Gray
         Write-Host ""
     }
 
     if ($InstallMethod -eq "git") {
-        Write-Host "Source checkout: $finalGitDir" -ForegroundColor Cyan
-        Write-Host "Wrapper: $env:USERPROFILE\\.local\\bin\\openaeon.cmd" -ForegroundColor Cyan
+        Write-Host "源码目录：$finalGitDir" -ForegroundColor Cyan
+        Write-Host "启动脚本：$env:USERPROFILE\\.local\\bin\openaeon.cmd" -ForegroundColor Cyan
         Write-Host ""
     }
 
     if ($isUpgrade) {
-        Write-Host "Upgrade complete. Run " -NoNewline
+        Write-Host "升级完成。执行 " -NoNewline
         Write-Host "openaeon doctor" -ForegroundColor Cyan -NoNewline
-        Write-Host " to check for additional migrations."
+        Write-Host " 检查剩余迁移项。"
     } else {
         if ($NoOnboard) {
-            Write-Host "Skipping onboard (requested). Run " -NoNewline
+            Write-Host "已跳过初始化引导。稍后可执行 " -NoNewline
             Write-Host "openaeon onboard" -ForegroundColor Cyan -NoNewline
-            Write-Host " later."
+            Write-Host " 开始配置。"
         } else {
-            Write-Host "Starting setup..." -ForegroundColor Cyan
+            Write-Host "正在启动初始化引导..." -ForegroundColor Cyan
             Write-Host ""
             openaeon onboard
         }
