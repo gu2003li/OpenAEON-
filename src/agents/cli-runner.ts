@@ -281,7 +281,7 @@ export async function runCliAgent(params: {
 
         if (result.exitCode !== 0 || result.reason !== "exit") {
           if (result.reason === "no-output-timeout" || result.noOutputTimedOut) {
-            const timeoutReason = `CLI produced no output for ${Math.round(noOutputTimeoutMs / 1000)}s and was terminated.`;
+            const timeoutReason = `CLI produced no output for ${Math.round((noOutputTimeoutMs ?? 0) / 1000)}s and was terminated.`;
             log.warn(
               `cli watchdog timeout: provider=${params.provider} model=${modelId} session=${resolvedSessionId ?? params.sessionId} noOutputTimeoutMs=${noOutputTimeoutMs} pid=${managedRun.pid ?? "unknown"}`,
             );

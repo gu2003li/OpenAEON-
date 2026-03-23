@@ -318,6 +318,15 @@ const DOCKS: Record<ChatChannelId, ChannelDock> = {
       },
     },
   },
+  "tencent-weixin": {
+    id: "tencent-weixin",
+    capabilities: {
+      chatTypes: ["direct"],
+      media: true,
+      blockStreaming: true,
+    },
+    outbound: DEFAULT_OUTBOUND_TEXT_CHUNK_LIMIT_4000,
+  },
   discord: {
     id: "discord",
     capabilities: {
