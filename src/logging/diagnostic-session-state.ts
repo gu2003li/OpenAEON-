@@ -9,6 +9,7 @@ export type SessionState = {
   toolCallHistory?: ToolCallRecord[];
   toolLoopWarningBuckets?: Map<string, number>;
   commandPollCounts?: Map<string, { count: number; lastPollAt: number }>;
+  currentTaskPhase?: "planning" | "execution" | "verification" | "complete";
 };
 
 export type ToolCallRecord = {

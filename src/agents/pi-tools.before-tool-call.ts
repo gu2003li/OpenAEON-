@@ -90,6 +90,28 @@ export async function runBeforeToolCallHook(args: {
       sessionId: args.ctx?.agentId,
     });
 
+    // Intent Analyzer: Restrict mutating tools in planning phase
+    if (sessionState.currentTaskPhase === "planning") {
+      const blockedTools = new Set([
+        "exec",
+        "bash",
+        "write",
+        "write_to_file",
+        "apply_patch",
+        "replace_file_content",
+        "multi_replace_file_content",
+        "run_command",
+        "sessions_spawn",
+      ]);
+      if (blockedTools.has(toolName)) {
+        log.warn(`Intent Analyzer blocked ${toolName} (task phase is planning)`);
+        return {
+          blocked: true,
+          reason: `Cognitive OS Engine: The tool '${toolName}' is blocked because the task is currently in the 'planning' phase. You must use 'write_todos' (action: set_phase) to transition to 'execution' before mutating the environment or delegating tasks.`,
+        };
+      }
+    }
+
     const loopResult = detectToolCallLoop(sessionState, toolName, params, args.ctx.loopDetection);
 
     if (loopResult.stuck) {

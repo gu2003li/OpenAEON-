@@ -272,6 +272,15 @@ export function createTaskPlannerTool(options?: {
         const savePlan = async (plan: TaskPlan) => {
           await fs.mkdir(plannerDir, { recursive: true });
           await fs.writeFile(plannerFile, JSON.stringify(plan, null, 2), "utf-8");
+          try {
+            const { getDiagnosticSessionState } = await import(
+              "../../logging/diagnostic-session-state.js"
+            );
+            const state = getDiagnosticSessionState({ sessionKey: targetSessionKey });
+            state.currentTaskPhase = plan.phase;
+          } catch {
+            // ignore diagnostic updates if module is not available
+          }
         };
 
         if (action === "create_plan") {
@@ -320,6 +329,10 @@ export function createTaskPlannerTool(options?: {
           plan.todos = plan.todos.map((t) => ({ ...t, status: "done" as const }));
           plan.phase = "complete";
           await savePlan(plan);
+          try {
+            const { autoDistillSessionToMemory } = await import("./memory-writeback.js");
+            autoDistillSessionToMemory(targetSessionKey).catch(() => {});
+          } catch {}
           return jsonResult({ status: "ok", message: "All tasks marked as done.", plan });
         }
 
@@ -444,6 +457,12 @@ export function createTaskPlannerTool(options?: {
           }
           ensureDoneResultWhenRequired(item);
           await savePlan(plan);
+          if (item.status === "done") {
+            try {
+              const { autoDistillSessionToMemory } = await import("./memory-writeback.js");
+              autoDistillSessionToMemory(targetSessionKey).catch(() => {});
+            } catch {}
+          }
           return jsonResult({ status: "ok", updated: item, plan });
         }
 

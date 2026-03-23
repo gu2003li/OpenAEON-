@@ -49,9 +49,37 @@ temp/
 
 # Sub-projects
 landing-page/.next/
-package-lock.json
-package-lock.json
-package-lock.json
-package-lock.json
-*.json
+
+# Project-specific artifacts
+ocbot-*
+ocbot-*.zip
+ocbot-*/
+node
+package/
+.pi/
+*.log
+lint.txt
+test_output.txt
+tsc_errors.log
 .pnpm-store/
+.artifacts/
+.gemini/
+brain/
+tmp/
+temp/
+
+# Manual tests and scratch scripts
+test-*.*
+verify_*.ts
+demo-*.js
+DIVERGENCE_TEST.md
+test_exec.ts
+
+# Dynamic Cognitive OS Assets (Memory & Vision)
+MEMORY.md
+LOGIC_GATES.md
+EVOLUTION.md
+EVOLUTION_LOG.md
+PLAN.md
+VISION.md
+docs.acp.md

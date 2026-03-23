@@ -293,7 +293,12 @@ export async function evaluateViaPlaywright(opts: {
         "use strict";
         var fnBody = args.fnBody, timeoutMs = args.timeoutMs;
         try {
-          var candidate = eval("(" + fnBody + ")");
+          var candidate;
+          try {
+            candidate = eval("(" + fnBody + ")");
+          } catch (e) {
+            candidate = eval(fnBody);
+          }
           var result = typeof candidate === "function" ? candidate(el) : candidate;
           if (result && typeof result.then === "function") {
             return Promise.race([
@@ -333,7 +338,12 @@ export async function evaluateViaPlaywright(opts: {
         "use strict";
         var fnBody = args.fnBody, timeoutMs = args.timeoutMs;
         try {
-          var candidate = eval("(" + fnBody + ")");
+          var candidate;
+          try {
+            candidate = eval("(" + fnBody + ")");
+          } catch (e) {
+            candidate = eval(fnBody);
+          }
           var result = typeof candidate === "function" ? candidate() : candidate;
           if (result && typeof result.then === "function") {
             return Promise.race([
