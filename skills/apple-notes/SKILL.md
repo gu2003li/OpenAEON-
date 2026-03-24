@@ -1,6 +1,6 @@
 ---
 name: apple-notes
-description: Manage Apple Notes via the `memo` CLI on macOS (create, view, edit, delete, search, move, and export notes). Use when a user asks OpenAEON to add a note, list notes, search notes, or manage note folders.
+description: 通过 macOS 上的 memo CLI 管理 Apple Notes（创建、查看、编辑、删除、搜索、移动和导出笔记）。当用户要求 OpenAEON 添加笔记、列出笔记、搜索笔记或管理笔记文件夹时使用。
 homepage: https://github.com/antoniorodr/memo
 metadata:
   {
