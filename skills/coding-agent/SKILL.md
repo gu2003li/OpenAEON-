@@ -1,6 +1,6 @@
 ---
 name: coding-agent
-description: 'Delegate coding tasks to Codex, Claude Code, or Pi agents via background process. Use when: (1) building/creating new features or apps, (2) reviewing PRs (spawn in temp dir), (3) refactoring large codebases, (4) iterative coding that needs file exploration. NOT for: simple one-liner fixes (just edit), reading code (use read tool), thread-bound ACP harness requests in chat (for example spawn/run Codex or Claude Code in a Discord thread; use sessions_spawn with runtime:"acp"), or any work in ~/clawd workspace (never spawn agents here). Requires a bash tool that supports pty:true.'
+description: '通过后台进程将编码任务委托给 Codex、Claude Code 或 Pi 智能体。适用于：(1) 构建/创建新功能或应用，(2) 审查 PR（在临时目录生成），(3) 重构大型代码库，(4) 需要文件探索的迭代编码。不适用于：简单的单行修复（直接编辑）、读取代码（使用 read 工具）、聊天中的线程绑定 ACP 工具请求（例如在 Discord 线程中生成/运行 Codex 或 Claude Code；使用 sessions_spawn 且 runtime:"acp"），或在 ~/clawd 工作区中的任何工作（切勿在此生成智能体）。需要支持 pty:true 的 bash 工具。'
 metadata:
   {
     "openaeon": { "emoji": "🧩", "requires": { "anyBins": ["claude", "codex", "opencode", "pi"] } },
