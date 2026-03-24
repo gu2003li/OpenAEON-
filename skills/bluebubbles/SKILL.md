@@ -1,6 +1,6 @@
 ---
 name: bluebubbles
-description: Use when you need to send or manage iMessages via BlueBubbles (recommended iMessage integration). Calls go through the generic message tool with channel="bluebubbles".
+description: 当需要通过 BlueBubbles（推荐的 iMessage 集成）发送或管理 iMessage 时使用。调用通过通用消息工具进行，channel 设为 "bluebubbles"。
 metadata: { "openaeon": { "emoji": "🫧", "requires": { "config": ["channels.bluebubbles"] } } }
 ---
 
