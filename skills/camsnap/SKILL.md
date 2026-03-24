@@ -1,6 +1,6 @@
 ---
 name: camsnap
-description: Capture frames or clips from RTSP/ONVIF cameras.
+description: 从 RTSP/ONVIF 摄像头捕获画面或片段。
 homepage: https://camsnap.ai
 metadata:
   {
