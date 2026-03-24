@@ -1,6 +1,6 @@
 # Canvas Skill
 
-Display HTML content on connected OpenAEON nodes (Mac app, iOS, Android).
+在已连接的 OpenAEON 节点（Mac 应用、iOS、Android）上显示 HTML 内容。
 
 ## Overview
 
